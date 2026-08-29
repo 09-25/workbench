@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="paper">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c2452c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>我的工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">册</div>
+      <div class="brand-text">
+        <h1>我的工作台</h1>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <a class="nav-item active" data-action="goto" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+        <span>概览</span>
+      </a>
+      <a class="nav-item" data-action="goto" data-page="timetable">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
+        <span>课程表</span>
+      </a>
+      <a class="nav-item" data-action="goto" data-page="todos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg>
+        <span>待办</span>
+      </a>
+      <a class="nav-item" data-action="goto" data-page="journal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.2C10 4.8 7 4.2 4 4.2v13.6c3 0 6 .6 8 2 2-1.4 5-2 8-2V4.2c-3 0-6 .6-8 2z"/><path d="M12 6.2v13.6"/></svg>
+        <span>日志</span>
+      </a>
+      <a class="nav-item" data-action="goto" data-page="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M19.5 7H20M4 17h.5M10 17h10"/><circle cx="16.5" cy="7" r="2.5"/><circle cx="7.5" cy="17" r="2.5"/></svg>
+        <span>设置</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button class="theme-dot" data-action="toggle-theme" title="切换纸间 / 夜灯"></button>
+      <span>v1.3 · 数据保存在本机</span>
+    </div>
+  </aside>
+
+  <!-- ============ 主内容 ============ -->
+  <main class="main">
+
+    <!-- —— 概览 —— -->
+    <section class="page active" id="page-dashboard">
+      <div class="hero card">
+        <div class="tape"></div>
+        <div class="hero-left">
+          <div class="hero-greet" id="greet"></div>
+          <div class="hero-date" id="hero-date"></div>
+          <div class="hero-sub" id="hero-sub"></div>
+        </div>
+        <div class="hero-clock" id="clock">--:--</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <h2><span class="hl">今天的课</span></h2>
+            <span class="muted" id="today-courses-count"></span>
+          </div>
+          <div class="timeline" id="today-courses"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2><span class="hl">今日待办</span></h2>
+            <button class="btn btn-sm" data-action="goto" data-page="todos">全部 →</button>
+          </div>
+          <div id="today-todos"></div>
+          <div class="progress-wrap">
+            <div class="progress"><i id="todo-progress"></i></div>
+            <span class="muted" id="todo-progress-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-head">
+            <h2>倒计时</h2>
+            <button class="btn btn-sm" data-action="goto" data-page="settings">管理</button>
+          </div>
+          <div class="count-list" id="countdowns"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>坚持打卡</h2></div>
+          <div class="habit-summary" id="habit-summary"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>常用入口</h2>
+            <button class="btn btn-sm" data-action="goto" data-page="settings">编辑</button>
+          </div>
+          <div class="link-grid" id="quick-links"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- —— 课程表 —— -->
+    <section class="page" id="page-timetable">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">课程表</h1>
+          <p class="page-sub" id="tt-sub"></p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" data-action="open-import">📥 从教务导入</button>
+          <button class="btn btn-primary" data-action="add-course-any">＋ 添加课程</button>
+        </div>
+      </div>
+      <div class="card tt-wrap"><div class="tt" id="tt-grid"></div></div>
+      <p class="hint">点空格子新增一节课，点课程块可修改或删除；「单周 / 双周」按设置里的学期开始日自动计算。</p>
+    </section>
+
+    <!-- —— 待办 —— -->
+    <section class="page" id="page-todos">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">待办清单</h1>
+          <p class="page-sub" id="todo-sub"></p>
+        </div>
+      </div>
+      <div class="card">
+        <form class="todo-form" id="todo-form">
+          <input id="todo-text" placeholder="要做什么？回车快速添加…" maxlength="60" required>
+          <input type="date" id="todo-due" title="截止日期">
+          <select id="todo-pri" title="优先级">
+            <option value="3">高优先</option>
+            <option value="2" selected>中优先</option>
+            <option value="1">低优先</option>
+          </select>
+          <button class="btn btn-primary" type="submit">添加</button>
+        </form>
+        <div class="tabs" id="todo-tabs">
+          <button data-filter="open">未完成</button>
+          <button data-filter="today">今天</button>
+          <button data-filter="all">全部</button>
+          <button data-filter="done">已完成</button>
+        </div>
+        <div id="todo-list"></div>
+      </div>
+    </section>
+
+    <!-- —— 日志 —— -->
+    <section class="page" id="page-journal">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">每日记录</h1>
+          <p class="page-sub">记下每天干了什么，坚持打卡，随手写点想法</p>
+        </div>
+      </div>
+
+      <div class="journal-datebar card">
+        <button class="icon-btn" data-action="j-prev" title="前一天">‹</button>
+        <div class="jdate">
+          <div id="j-title"></div>
+          <span class="muted" id="j-week"></span>
+        </div>
+        <input type="date" id="j-date-picker">
+        <button class="icon-btn" data-action="j-next" title="后一天">›</button>
+        <button class="btn btn-sm" data-action="j-today">回到今天</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>今天干了啥</h2></div>
+          <form class="entry-form" id="entry-form">
+            <input id="entry-text" placeholder="记录一件刚完成的事…" maxlength="80" required>
+            <button class="btn btn-primary" type="submit">记下</button>
+          </form>
+          <div class="timeline" id="entry-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>今日打卡</h2>
+            <button class="btn btn-sm" data-action="goto" data-page="settings">管理</button>
+          </div>
+          <div class="habit-list" id="habit-list"></div>
+          <div class="card-head note-head"><h2>随手记</h2></div>
+          <textarea id="j-note" rows="6" placeholder="今天的想法、心情、碎碎念…（自动保存）"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- —— 设置 —— -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">设置</h1>
+          <p class="page-sub">都改完记得点各栏的保存按钮</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>个人信息</h2></div>
+          <div class="form-grid">
+            <label>称呼<input id="s-name" placeholder="怎么称呼你"></label>
+            <label>学期开始日（周一）<input type="date" id="s-semester"></label>
+          </div>
+          <p class="hint">周次与单双周按这个日期计算，改成你教务系统的开学日即可。</p>
+          <button class="btn btn-primary" data-action="save-profile">保存个人信息</button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>外观</h2></div>
+          <div class="theme-picker">
+            <label class="theme-opt"><input type="radio" name="s-theme" value="paper"><span class="sw paper-swatch">纸间</span></label>
+            <label class="theme-opt"><input type="radio" name="s-theme" value="night"><span class="sw night-swatch">夜灯</span></label>
+          </div>
+          <div class="card-head note-head"><h2>作息时间</h2></div>
+          <div id="s-slots"></div>
+          <button class="btn btn-primary" data-action="save-slots">保存作息</button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>倒计时</h2></div>
+          <div id="s-countdowns"></div>
+          <button class="btn" data-action="add-countdown">＋ 加一个</button>
+          <button class="btn btn-primary" data-action="save-countdowns">保存倒计时</button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>打卡习惯</h2></div>
+          <div id="s-habits"></div>
+          <button class="btn" data-action="add-habit">＋ 加一个</button>
+          <button class="btn btn-primary" data-action="save-habits">保存习惯</button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>常用入口</h2></div>
+          <div id="s-links"></div>
+          <button class="btn" data-action="add-link">＋ 加一个</button>
+          <button class="btn btn-primary" data-action="save-links">保存入口</button>
+        </div>
+      </div>
+
+      <div class="card sync-card">
+        <div class="card-head">
+          <h2>云同步（电脑 ⇄ 手机）</h2>
+          <div id="sync-status" class="sync-status"></div>
+        </div>
+        <div class="form-grid">
+          <label>GitHub Token（私密，只存本机）
+            <input id="sync-token" type="password" placeholder="粘贴 GitHub Token" autocomplete="off">
+          </label>
+          <label>Gist ID（第一次不用填，自动创建）
+            <input id="sync-gist" placeholder="自动创建" autocomplete="off">
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" data-action="sync-connect">连接并开始同步</button>
+          <button class="btn" data-action="sync-now">立即同步</button>
+          <button class="btn btn-danger" data-action="sync-disconnect">断开</button>
+          <a class="btn" style="text-decoration:none" href="https://github.com/settings/tokens/new?scopes=gist&description=workbench-sync" target="_blank" rel="noopener">去生成 Token →</a>
+        </div>
+        <p class="hint">Token 只保存在这台设备的浏览器里。连接后改动会在几秒内自动推到云端，其他设备 30 秒内自动拉取合并；网页打不开 GitHub 时本地照常用，恢复后自动补推。手机和电脑需登录<b>同一个</b> GitHub 账号的 Token。</p>
+      </div>
+
+      <div class="card data-card">
+        <div class="card-head"><h2>数据</h2></div>
+        <p class="hint">所有数据只存在这台电脑的浏览器里（localStorage）。换电脑或重装浏览器前，先导出一份 JSON 备份。</p>
+        <div class="btn-row">
+          <button class="btn" data-action="export-data">导出备份</button>
+          <button class="btn" data-action="import-data">导入备份</button>
+          <button class="btn" data-action="load-demo">载入示例数据</button>
+          <button class="btn btn-danger" data-action="reset-all">清空全部数据</button>
+          <input type="file" id="import-file" accept="application/json" hidden>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ 移动端底部导航 ============ -->
+<nav class="tabbar" id="tabbar">
+  <a data-action="goto" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><span>概览</span></a>
+  <a data-action="goto" data-page="timetable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg><span>课表</span></a>
+  <a data-action="goto" data-page="todos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg><span>待办</span></a>
+  <a data-action="goto" data-page="journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.2C10 4.8 7 4.2 4 4.2v13.6c3 0 6 .6 8 2 2-1.4 5-2 8-2V4.2c-3 0-6 .6-8 2z"/><path d="M12 6.2v13.6"/></svg><span>日志</span></a>
+  <a data-action="goto" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M19.5 7H20M4 17h.5M10 17h10"/><circle cx="16.5" cy="7" r="2.5"/><circle cx="7.5" cy="17" r="2.5"/></svg><span>设置</span></a>
+</nav>
+
+<!-- ============ 课程编辑弹窗 ============ -->
+<div class="modal-mask" id="course-modal" hidden>
+  <div class="modal card">
+    <div class="modal-head">
+      <h3 id="cm-title">添加课程</h3>
+      <button class="icon-btn" data-action="close-modal">✕</button>
+    </div>
+    <form id="course-form">
+      <label class="field">课程名称<input id="f-name" required maxlength="20" placeholder="如：操作系统"></label>
+      <div class="row2">
+        <label class="field">教师<input id="f-teacher" maxlength="12" placeholder="可选"></label>
+        <label class="field">教室<input id="f-room" maxlength="16" placeholder="可选"></label>
+      </div>
+      <div class="row2">
+        <label class="field">星期<select id="f-day"></select></label>
+        <label class="field">节次<select id="f-slot"></select></label>
+      </div>
+      <label class="field">周次
+        <div style="display:flex;gap:8px">
+          <select id="f-weeks" style="flex:1">
+            <option value="all">每周都上</option>
+            <option value="odd">单周上</option>
+            <option value="even">双周上</option>
+            <option value="custom">自定义…</option>
+          </select>
+          <input id="f-weeks-custom" placeholder="如 1-16周 / 1-15单周 / 1,3,5" style="flex:1.4;display:none">
+        </div>
+      </label>
+      <label class="field">便利贴颜色<div class="swatches" id="f-colors"></div></label>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-danger" id="cm-del" data-action="del-course" hidden>删除这节课</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<!-- ============ 教务导入弹窗 ============ -->
+<div class="modal-mask" id="import-modal" hidden>
+  <div class="modal card imp-modal">
+    <div class="modal-head">
+      <h3>从教务导入课表</h3>
+      <button class="icon-btn" data-action="close-import">✕</button>
+    </div>
+
+    <div class="imp-steps">
+      <b>陕理工 EAMS 教务系统导入步骤：</b>
+      ① 登录 <code>jwgl.snut.edu.cn/eams/ssoLogin.action</code>（需校园网）
+      ② 打开「我的课表 / 学期课表」页面
+      ③ 在课表页面 <b>Ctrl+A 全选 → Ctrl+C 复制</b>（或网页右键另存为 .html 文件）
+      ④ 回到这里的粘贴框 <b>Ctrl+V</b>，或直接选文件
+    </div>
+
+    <div class="imp-pastebox" id="imp-paste" contenteditable="true" spellcheck="false" data-placeholder="在这里粘贴（Ctrl+V）从教务系统复制的课表…支持网页全选复制 / Excel 全选复制"></div>
+
+    <div class="imp-drop" id="imp-drop">
+      <input type="file" id="imp-file" accept=".html,.htm,.xls,.txt" hidden>
+      <button class="btn btn-sm" data-action="pick-import-file">选择 .html / .txt / .xls 文件</button>
+      <span class="muted">或把文件拖到这里</span>
+    </div>
+
+    <div id="imp-status" class="imp-status" hidden></div>
+
+    <div id="imp-preview-wrap" hidden>
+      <div class="card-head" style="margin-top:14px">
+        <h2>解析结果预览 <span class="muted" id="imp-count"></span></h2>
+        <button class="btn btn-sm" data-action="imp-clear">清空预览</button>
+      </div>
+      <div id="imp-preview" class="imp-preview"></div>
+      <div class="modal-foot">
+        <span class="hint" style="margin:0;flex:1">点每行 ✕ 可剔除识别错的内容，同一门课会自动用同一种颜色。</span>
+        <button class="btn" data-action="imp-merge">合并导入</button>
+        <button class="btn btn-primary" data-action="imp-replace">替换整个课表</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
