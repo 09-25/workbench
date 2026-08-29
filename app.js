@@ -1522,6 +1522,25 @@ impDrop.addEventListener("drop", e => {
 /* ============================================================
    启动
    ============================================================ */
+
+/* 一键配置云同步：#sync=base64({"token":"…","gist":"…"})（配置后立即从 URL 中清除） */
+(function () {
+  const m = location.hash.match(/#sync=([A-Za-z0-9+/=_-]+)/);
+  if (!m) return;
+  try {
+    const cfg = JSON.parse(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (cfg.token && cfg.gist) {
+      localStorage.setItem(TOKEN_KEY, cfg.token);
+      state.sync.gistId = cfg.gist;
+      state.sync.lastPush = 0;
+      state.sync.lastPull = 0;
+      save(false);
+      history.replaceState(null, "", location.pathname + location.search);
+      setTimeout(() => pullSync(true), 600);
+    }
+  } catch (e) { console.warn("sync config parse failed", e); }
+})();
+
 applyTheme();
 switchPage("dashboard");
 updateClock();
