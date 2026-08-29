@@ -1180,7 +1180,10 @@ $("#import-file").addEventListener("change", e => {
     try {
       const data = JSON.parse(reader.result);
       if (!data || typeof data !== "object" || !("courses" in data)) throw new Error("bad");
+      const keep = { sync: state.sync, tombstones: state.tombstones };   // 本机同步配置/墓碑不因导入丢失
       state = normalize(data);
+      state.sync = keep.sync;
+      state.tombstones = keep.tombstones;
       stampAll(state);
       save(); applyTheme(); renderCurrent();
       toast("导入成功");
