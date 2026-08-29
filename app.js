@@ -1536,7 +1536,7 @@ impDrop.addEventListener("drop", e => {
       state.sync.lastPull = 0;
       save(false);
       history.replaceState(null, "", location.pathname + location.search);
-      setTimeout(() => pullSync(true), 600);
+      setTimeout(() => { pullSync(true); switchPage("timetable"); }, 600);
     }
   } catch (e) { console.warn("sync config parse failed", e); }
 })();
