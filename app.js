@@ -170,13 +170,23 @@ async function pullSync(manual = false) {
     if (!file || file.truncated) throw new Error("云端数据文件异常");
     const remote = JSON.parse(file.content);
     if (remote.device !== deviceName() || manual) {
-      const { merged, changes } = mergeState(state, remote);
-      if (changes > 0) {
-        state = merged;
-        save();                       // 合并结果回写云端
+      const remoteHasData = (remote.courses?.length || remote.todos?.length || remote.habits?.length) > 0;
+      if (isPristineDemo(state) && remoteHasData) {
+        // 全新设备（还是初始示例数据）：直接采用云端，避免示例混入真实数据
+        state = normalize(remote);
+        state.sync.gistId = state.sync.gistId || gist.id;
+        save();
         applyTheme(); renderCurrent();
-        toast(`已从云端合并 ${changes} 处更新`);
-      } else if (manual) toast("云端没有新内容");
+        toast("已从云端载入数据");
+      } else {
+        const { merged, changes } = mergeState(state, remote);
+        if (changes > 0) {
+          state = merged;
+          save();                       // 合并结果回写云端
+          applyTheme(); renderCurrent();
+          toast(`已从云端合并 ${changes} 处更新`);
+        } else if (manual) toast("云端没有新内容");
+      }
     }
     state.sync.lastPull = now_ts();
     save(false);
@@ -184,6 +194,13 @@ async function pullSync(manual = false) {
   } catch (e) {
     if (manual) toast("云同步拉取失败：" + e.message); else console.warn("pull failed:", e.message);
   } finally { syncing = false; }
+}
+
+/* 判断是否还是"纯初始示例"状态（所有条目都是内置示例 / 或为空） */
+function isPristineDemo(s) {
+  const allDemo = arr => arr.every(x => String(x.id || "").startsWith("demo-"));
+  const logsDemo = Object.values(s.logs).every(l => (l.entries || []).every(e => String(e.id || "").startsWith("demo-")));
+  return allDemo(s.courses) && allDemo(s.todos) && allDemo(s.habits) && allDemo(s.countdowns) && allDemo(s.links) && logsDemo;
 }
 async function fullSync() { await pullSync(true); await pushSync(); }
 
