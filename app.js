@@ -17,11 +17,11 @@ const DAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周�
 const COLOR_N = 8;
 
 const DEFAULT_SLOTS = [
-  { label: "第一大节", start: "08:00", end: "09:40" },
-  { label: "第二大节", start: "10:00", end: "11:40" },
-  { label: "第三大节", start: "14:00", end: "15:40" },
-  { label: "第四大节", start: "16:00", end: "17:40" },
-  { label: "晚课",     start: "19:00", end: "20:40" },
+  { label: "第1-2节",  start: "08:00", end: "09:50" },
+  { label: "第3-4节",  start: "10:10", end: "12:00" },
+  { label: "第5-6节",  start: "14:00", end: "15:50" },
+  { label: "第7-8节",  start: "16:10", end: "18:00" },
+  { label: "第9-10节", start: "19:00", end: "20:50" },
 ];
 
 const todayStr = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
