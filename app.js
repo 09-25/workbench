@@ -451,18 +451,19 @@ function weekSet(spec) {
   if (!spec || spec === "all") return null;
   if (spec === "odd")  return new Set(Array.from({ length: 15 }, (_, i) => i * 2 + 1));
   if (spec === "even") return new Set(Array.from({ length: 15 }, (_, i) => i * 2 + 2));
-  const m = spec.match(/^(\d+)\s*-\s*(\d+)([单双])?$/);
-  if (m) {
-    const s = new Set();
-    for (let w = +m[1]; w <= Math.min(+m[2], 30); w++)
+  // 通用解析：逗号分隔的 token，每个 token = "a"、"a-b"、"a-b单/双"（可混合）
+  const s = new Set();
+  let matched = false;
+  for (const t of String(spec).split(/[，,\s]+/)) {
+    const m = t.match(/^(\d{1,2})(?:\s*-\s*(\d{1,2}))?([单双])?$/);
+    if (!m) continue;
+    matched = true;
+    const a = +m[1], b = m[2] ? +m[2] : a;
+    for (let w = Math.min(a, b); w <= Math.min(Math.max(a, b), 30); w++)
       if (!m[3] || (m[3] === "单" ? w % 2 === 1 : w % 2 === 0)) s.add(w);
-    return s;
   }
-  if (/^[\d,，\s]+$/.test(spec)) {
-    const s = new Set(spec.split(/[，,\s]+/).filter(Boolean).map(Number).filter(n => n >= 1 && n <= 30));
-    return s.size ? s : new Set([999]);
-  }
-  return null;
+  if (!matched) return null;
+  return s.size ? s : new Set([999]);
 }
 function canonicalWeeks(set) {
   if (!set) return "all";
@@ -622,38 +623,76 @@ function updateClock() {
 }
 
 /* ============================================================
-   课程表
+   课程表（单周视图 / 整学期视图）
    ============================================================ */
-RENDERERS.timetable = function renderTimetable() {
-  const w = weekOf(todayStr());
-  $("#tt-sub").textContent = w >= 1
-    ? `本学期第 ${w} 周 · ${weekParity(w)}（学期开始日：${state.profile.semesterStart}）`
-    : `还没开学（${state.profile.semesterStart} 开始），课表全部正常显示`;
+let weekMode = "week";     // 'week' 按周看 | 'term' 整学期总览
+let viewWeek = null;       // null = 跟随本周
+const todayIdx = () => (new Date().getDay() === 0 ? 7 : new Date().getDay());
 
-  const todayIdx = new Date().getDay() === 0 ? 7 : new Date().getDay();
-  const thisMonday = mondayOf(new Date());
+function weekStartDate(week) {   // 第 week 周的周一
+  const base = mondayOf(parseDate(state.profile.semesterStart || todayStr()));
+  return addDays(base, (week - 1) * 7);
+}
+
+RENDERERS.timetable = function renderTimetable() {
+  const curWeek = weekOf(todayStr());
+  if (viewWeek !== null) viewWeek = Math.max(1, Math.min(25, viewWeek));
+  const week = weekMode === "term" ? curWeek : (viewWeek ?? Math.max(curWeek, 1));
+  const atCurrentWeek = week === curWeek;
+
+  /* —— 周切换器 —— */
+  const parity = week % 2 === 1 ? "单周" : "双周";
+  $("#wk-label").textContent = weekMode === "term" ? "整学期" : `第 ${week} 周·${parity}`;
+  $("#wk-today-btn").hidden = weekMode === "term" || atCurrentWeek;
+  $("#wk-mode-btn").textContent = weekMode === "term" ? "按周看" : "整学期";
+
+  const weekStart = weekStartDate(week);
+  const rangeTxt = `${weekStart.getMonth() + 1}.${weekStart.getDate()} – ${addDays(weekStart, 6).getMonth() + 1}.${addDays(weekStart, 6).getDate()}`;
+  $("#tt-sub").textContent = weekMode === "term"
+    ? (curWeek >= 1
+        ? `本学期第 ${curWeek} 周 · ${weekParity(curWeek)}（学期开始日：${state.profile.semesterStart}）；淡色 = 本周不上`
+        : `还没开学（${state.profile.semesterStart} 开始），课表全部正常显示`)
+    : (curWeek >= 1
+        ? `${rangeTxt} · 显示这一周要上的课`
+        : `还没开学（${state.profile.semesterStart} 开始）· 正在预览第 ${week} 周`);
+
+  const thisIdx = todayIdx();
+  const showToday = weekMode === "term" || atCurrentWeek;
+  const showChip = c => {
+    const sh = courseShown(c, week);
+    return weekMode === "term" ? { on: true, dim: sh.dim } : { on: sh.show, dim: false };
+  };
+
+  /* —— 网格 —— */
   let html = `<div class="tt-head"></div>`;
   for (let day = 1; day <= 7; day++) {
-    const date = addDays(thisMonday, day - 1);
-    const isToday = day === todayIdx;
+    const date = addDays(weekStartDate(week), day - 1);
+    const isToday = showToday && day === thisIdx;
     html += `<div class="tt-head${isToday ? " today" : ""}"><b>周${"一二三四五六日"[day - 1]}</b><span class="d">${date.getMonth() + 1}.${date.getDate()}</span></div>`;
   }
+  let shownCount = 0;
   state.slots.forEach((s, slotIdx) => {
     html += `<div class="tt-time"><b>${esc(s.label)}</b><span>${s.start}<br>${s.end}</span></div>`;
     for (let day = 1; day <= 7; day++) {
-      const cellCourses = state.courses.filter(c => c.day === day && c.slot === slotIdx);
+      const cellCourses = state.courses.filter(c => c.day === day && c.slot === slotIdx && showChip(c).on);
+      shownCount += cellCourses.length;
       const inner = cellCourses.map(c => {
-        const sh = courseShown(c, w);
+        const sh = courseShown(c, week);
+        const dim = weekMode === "term" ? sh.dim : false;
         const wtag = c.weeks && c.weeks !== "all" ? `<span class="w-tag">${weeksTag(c.weeks)}</span>` : "";
         const sub = [c.room, c.teacher].filter(Boolean).join(" ");
-        return `<div class="chip${sh.dim ? " dim" : ""}" data-c="${c.color % COLOR_N}"
+        return `<div class="chip${dim ? " dim" : ""}" data-c="${c.color % COLOR_N}"
           data-action="edit-course" data-id="${c.id}" title="${esc([c.teacher, c.room].filter(Boolean).join(" · "))}">
           <b>${esc(c.name)}</b>${wtag}<span class="r">${esc(sub)}</span></div>`;
       }).join("");
-      html += `<div class="tt-cell${day === todayIdx ? " today" : ""}" data-action="add-course" data-day="${day}" data-slot="${slotIdx}">${inner}</div>`;
+      html += `<div class="tt-cell${showToday && day === thisIdx ? " today" : ""}" data-action="add-course" data-day="${day}" data-slot="${slotIdx}">${inner}</div>`;
     }
   });
+
+  const emptyWeek = weekMode === "week" && shownCount === 0;
+  if (emptyWeek) html = `<div class="empty" style="grid-column:1/-1"><span class="e-ico">🏖️</span>第 ${week} 周没有课，好好休息</div>`;
   $("#tt-grid").innerHTML = html;
+  $("#tt-grid").style.display = emptyWeek ? "block" : "";
 };
 
 /* ============================================================
@@ -942,6 +981,11 @@ document.addEventListener("click", e => {
     case "j-prev": journalDate = todayStr(addDays(parseDate(journalDate), -1)); renderCurrent(); break;
     case "j-next": journalDate = todayStr(addDays(parseDate(journalDate), 1)); renderCurrent(); break;
     case "j-today": journalDate = todayStr(); renderCurrent(); break;
+    /* 周视图切换 */
+    case "week-prev": viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) - 1; renderCurrent(); break;
+    case "week-next": viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); break;
+    case "week-today": viewWeek = null; renderCurrent(); break;
+    case "week-mode": weekMode = weekMode === "week" ? "term" : "week"; renderCurrent(); break;
     case "del-entry": {
       const log = state.logs[journalDate]; if (!log) break;
       log.entries = log.entries.filter(x => x.id !== el.dataset.id);

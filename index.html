@@ -115,6 +115,13 @@
       <div class="page-head">
         <div>
           <h1 class="page-title">课程表</h1>
+          <div class="week-switch">
+            <button class="icon-btn" data-action="week-prev" title="上一周">‹</button>
+            <div class="wk-label" id="wk-label"></div>
+            <button class="icon-btn" data-action="week-next" title="下一周">›</button>
+            <button class="btn btn-sm" data-action="week-today" id="wk-today-btn" hidden>回到本周</button>
+            <button class="btn btn-sm" data-action="week-mode" id="wk-mode-btn">整学期</button>
+          </div>
           <p class="page-sub" id="tt-sub"></p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">

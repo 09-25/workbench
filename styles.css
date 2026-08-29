@@ -310,6 +310,14 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .page-title { font-size: 24px; }
 .page-sub { color: var(--ink-3); font-size: 13px; margin-top: 5px; }
 
+.week-switch { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; flex-wrap: wrap; }
+.wk-label {
+  font-family: var(--font-display); font-weight: 700; font-size: 16.5px;
+  min-width: 108px; text-align: center;
+  padding: 3px 10px;
+  background: var(--card-2); border: 1.5px dashed var(--line-strong); border-radius: 9px;
+}
+
 .tt-wrap { overflow-x: auto; padding: 16px; }
 .tt { display: grid; grid-template-columns: 74px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 780px; }
 
@@ -381,6 +389,8 @@ input, select, textarea {
   padding: 9px 11px;
   outline: none;
   transition: border-color .15s ease;
+  min-width: 0;
+  max-width: 100%;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 input::placeholder, textarea::placeholder { color: var(--ink-3); }
@@ -488,7 +498,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
    设置
    ============================================================ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.form-grid label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
+.form-grid label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--ink-2); min-width: 0; }
 .field input, .field select { font-size: 14px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 #course-form { display: flex; flex-direction: column; gap: 13px; }
@@ -499,7 +509,8 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 
 .edit-row { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 8px; margin-bottom: 8px; align-items: center; }
 .edit-row.single { grid-template-columns: 1fr 32px; }
-.edit-row input { padding: 7px 9px; font-size: 13px; }
+.edit-row input, .slot-row input { width: 100%; min-width: 0; }
+.edit-row .del-mini, .slot-row b { min-width: 0; }
 .del-mini {
   width: 30px; height: 30px;
   border: 1.5px solid var(--line); background: var(--card-2);
