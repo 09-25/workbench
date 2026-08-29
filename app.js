@@ -613,7 +613,7 @@ let lastDateStr = todayStr();
 function updateClock() {
   const el = $("#clock"); if (!el) return;
   const d = new Date();
-  el.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  el.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   const ds = todayStr(d);
   if (ds !== lastDateStr) {             // 跨天了：刷新"今天"的课程/待办，避免挂机串数据
     lastDateStr = ds;
@@ -1588,7 +1588,7 @@ impDrop.addEventListener("drop", e => {
 applyTheme();
 switchPage("dashboard");
 updateClock();
-setInterval(updateClock, 20000);
+setInterval(updateClock, 1000);
 
 if (getToken() && state.sync.gistId) {
   pullSync(false);

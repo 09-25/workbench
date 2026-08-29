@@ -206,7 +206,10 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
    概览 hero
    ============================================================ */
 .hero {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
   padding: 30px 32px;
   overflow: visible;
 }
@@ -224,17 +227,20 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .hero-greet { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
 .hero-date { margin-top: 8px; color: var(--ink-2); font-size: 14px; }
 .hero-sub { margin-top: 4px; color: var(--ink-3); font-size: 13px; }
+.hero-clock-wrap { justify-self: center; text-align: center; }
 .hero-clock {
   font-family: var(--font-display);
-  font-size: 34px; font-weight: 600;
+  font-size: 56px; font-weight: 600;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
-  padding: 8px 18px;
+  padding: 12px 26px;
   border: 1.5px dashed var(--line-strong);
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--card-2);
-  flex: none;
+  white-space: nowrap;
 }
+.hero-right { justify-self: end; }
 
 /* —— 今日课程时间线 —— */
 .timeline { display: flex; flex-direction: column; gap: 10px; }
@@ -694,8 +700,9 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   .tabbar a.active { color: var(--accent); font-weight: 600; }
 
   .grid-2, .grid-3 { grid-template-columns: 1fr; margin-top: 14px; gap: 14px; }
-  .hero { flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 22px; }
-  .hero-clock { font-size: 26px; }
+  .hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 22px; }
+  .hero-left { width: 100%; }
+  .hero-clock { font-size: 42px; padding: 10px 20px; }
   .form-grid { grid-template-columns: 1fr; }
   .page-title { font-size: 20px; }
   .todo-form .btn { flex: 1; }
