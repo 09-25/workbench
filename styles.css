@@ -720,6 +720,15 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .bot-card { border: 1.5px dashed var(--line-strong); border-radius: 10px; padding: 8px 10px; margin-top: 8px; background: var(--card); }
 .bot-card b { color: var(--accent); }
 .bot-card .btn { margin-top: 8px; }
+.bot-card .btn:disabled { opacity: .55; cursor: default; transform: none; }
+.bot-kinds { display: flex; gap: 6px; margin-bottom: 8px; }
+.bot-kind {
+  font-size: 12px; padding: 3px 13px; border-radius: 99px;
+  border: 1px solid var(--line-strong); background: var(--card-2); color: var(--ink-2);
+  cursor: pointer; transition: all .15s ease;
+}
+.bot-kind:hover { color: var(--ink); }
+.bot-kind.on { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
 .bot-input { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--card-2); }
 .bot-input input { flex: 1; min-width: 0; }
 .mic-btn { flex: none; }

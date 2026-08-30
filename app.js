@@ -1118,11 +1118,20 @@ document.addEventListener("click", e => {
     /* 小助手 */
     case "bot-toggle": {
       const panel = $("#bot-panel");
+      if (!panel.hidden && botRecording && botRec) {   // 关面板时停止语音
+        botRec.onend = () => { botRecording = false; $("#bot-mic").classList.remove("recording"); $("#bot-text").readOnly = false; $("#bot-text").placeholder = "如：明天下午3点交实验报告"; };
+        botRec.stop();
+      }
       panel.hidden = !panel.hidden;
       if (!panel.hidden) { botGreet(); setTimeout(() => $("#bot-text").focus(), 50); }
       break;
     }
     case "bot-apply": botApply(el.dataset.id); break;
+    case "bot-kind": {
+      const p = pendingBot.get(el.dataset.id);
+      if (p) { p.kind = el.dataset.k; botRefreshCard(el.dataset.id); }
+      break;
+    }
 
     /* 数据 */
     case "export-data": {
@@ -1612,9 +1621,13 @@ function parseIntent(raw) {
 
   if (/重要|紧急|必须|优先/.test(t)) out.priority = 3;
 
-  /* 相对日期 */
-  for (const [w, off] of [['大后天', 3], ['后天', 2], ['明天', 1], ['明日', 1], ['今天', 0], ['今日', 0]]) {
-    if (t.includes(w)) { out.date = addDays(today0, off); t = t.split(w).join(' '); break; }
+  /* 相对日期（明晚/今晚 额外标记晚上语境，供时间推算） */
+  for (const [w, off] of [['大后天', 3], ['后天', 2], ['明晚', 1], ['明天', 1], ['明日', 1], ['今晚', 0], ['今天', 0], ['今日', 0]]) {
+    if (t.includes(w)) {
+      out.date = addDays(today0, off);
+      if (w.includes('晚')) out.pmHint = true;
+      t = t.split(w).join(' '); break;
+    }
   }
   /* 周X / 下周X */
   if (!out.date) {
@@ -1634,15 +1647,29 @@ function parseIntent(raw) {
       out.date = d; t = t.replace(m[0], ' ');
     }
   }
+  /* 时间范围：X点到Y点 */
+  const range = t.match(/(上午|早上|中午|下午|晚上|傍晚)?\s*(\d{1,2})[点:：]\s*(半|\d{1,2})?\s*分?\s*(?:到|至|~|－|—)\s*(上午|中午|下午|晚上|傍晚)?\s*(\d{1,2})[点:：]\s*(半|\d{1,2})?\s*分?/);
+  if (range) {
+    const adj1 = /上午|早上|中午/.test(range[1] || '');
+    const adj2 = /上午|早上|中午/.test(range[4] || '');
+    let h1 = +range[2] + (!adj1 && (out.pmHint || /下午|晚上|傍晚/.test(range[1] || '')) && +range[2] < 12 ? 12 : 0);
+    let h2 = +range[5] + (!adj2 && (out.pmHint || /下午|晚上|傍晚/.test(range[4] || '')) && +range[5] < 12 ? 12 : 0);
+    const m1 = range[3] === '半' ? 30 : (+range[3] || 0);
+    const m2 = range[6] === '半' ? 30 : (+range[6] || 0);
+    if (h1 <= 23 && h2 <= 23) { out.time = `${pad(h1)}:${pad(m1)}-${pad(h2)}:${pad(m2)}`; t = t.replace(range[0], ' '); }
+  }
   /* 时间点 */
-  const tm = t.match(/(上午|早上|中午|下午|傍晚|晚上|夜里)?\s*(\d{1,2})[点时:：]\s*(半|\d{1,2})?\s*分?/);
-  if (tm) {
-    let h = +tm[2];
-    if (tm[1] && /下午|傍晚|晚上|夜里/.test(tm[1]) && h < 12) h += 12;
-    if (h <= 23) {
-      const mm = tm[3] === '半' ? 30 : (+tm[3] || 0);
-      out.time = `${pad(h)}:${pad(mm)}`;
-      t = t.replace(tm[0], ' ');
+  if (!out.time) {
+    const tm = t.match(/(上午|早上|中午|下午|傍晚|晚上|夜里)?\s*(\d{1,2})[点时:：]\s*(半|\d{1,2})?\s*分?/);
+    if (tm) {
+      let h = +tm[2];
+      const isAm = /上午|早上|中午/.test(tm[1] || '');
+      if (!isAm && (out.pmHint || /下午|傍晚|晚上|夜里/.test(tm[1] || '')) && h < 12) h += 12;
+      if (h <= 23) {
+        const mm = tm[3] === '半' ? 30 : (+tm[3] || 0);
+        out.time = `${pad(h)}:${pad(mm)}`;
+        t = t.replace(tm[0], ' ');
+      }
     }
   }
   /* 节次 */
@@ -1657,8 +1684,9 @@ function parseIntent(raw) {
   const rm = t.match(/(\d{0,2}[A-Z]\d{3}(?:\s*\/\s*\d{0,2}[A-Z]\d{3})*)|((?:教[一二三四五六七八九十\d]|外语楼|实验楼)\S{0,8})|(\S{2,14}实验室(?:\s*组\d)?)/);
   if (rm) { out.room = rm[0].trim(); t = t.replace(rm[0], ' '); }
 
-  /* 意图判定 */
-  const courseHint = out.secA > 0 || (/补课|调课|加课|换课|临时课|改课|蹭课/.test(t));
+  /* 意图判定：节次/补课调课等强信号，或“提到周几+课名带课字” */
+  const courseNoun = /课(?!程|表|时|代表|间)/.test(t);
+  const courseHint = out.secA > 0 || /补课|调课|加课|换课|蹭课|上课/.test(t) || (out.date && courseNoun);
   if (courseHint) out.kind = 'course';
   else if (out.date && /倒计时|距离|还有几天|几号考|什么时候考/.test(raw)) out.kind = 'countdown';
 
@@ -1697,55 +1725,76 @@ function botGreet() {
     '· <b>后天买教材 重要</b>');
 }
 
+function botCardHTML(p, id) {
+  const kindTabs = ['todo', 'course', 'countdown'].map(k =>
+    `<button class="bot-kind${p.kind === k ? ' on' : ''}" data-action="bot-kind" data-id="${id}" data-k="${k}">${{ todo: '待办', course: '课程', countdown: '倒计时' }[k]}</button>`).join('');
+  const priName = { 3: '高优先', 2: '中优先', 1: '低优先' }[p.priority] || '中优先';
+  let body = '';
+  if (p.kind === 'todo') {
+    body = `「${esc(p.title)}」<br>截止：${p.due ? esc(p.due) : '不限'}${p.time ? ' · ' + esc(p.time) : ''} · ${priName}`;
+  } else if (p.kind === 'course') {
+    if (!p.day) {
+      body = `「${esc(p.title)}」<br><span style="color:var(--accent)">还差星期几——在标题里带上「周几」再发一次</span>`;
+    } else {
+      const slot = Math.max(0, Math.min(4, Math.ceil((p.secA || 1) / 2) - 1));
+      p.slot = slot; p.secA = p.secA || 1; p.secB = p.secB || p.secA + 1;
+      p.weeksNorm = p.weeks === 'odd' ? 'odd' : p.weeks === 'even' ? 'even' : (p.weeks || 'all');
+      body = `「${esc(p.title)}」<br>周${'一二三四五六日'[p.day - 1]} · ${esc(state.slots[p.slot].label)}（${state.slots[p.slot].start}）· ${p.weeksNorm === 'all' ? '每周' : esc(weeksLabel(p.weeksNorm))}${p.room ? ' · ' + esc(p.room) : ''}`;
+    }
+  } else {
+    body = `「${esc(p.title)}」· ${p.due ? esc(p.due) : '<span style="color:var(--accent)">还差日期，带上「X月X日」再发一次</span>'}`;
+  }
+  const canApply = !(p.kind === 'course' && !p.day);
+  return `<div class="bot-kinds">${kindTabs}</div>识别到 → <b>${{ todo: '待办', course: '课程', countdown: '倒计时' }[p.kind]}</b><br>${body}
+    <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}" ${canApply ? '' : 'disabled'}>✓ 确认添加</button>`;
+}
+
 function botHandle(raw) {
   botSay(esc(raw), true);
   const p = parseIntent(raw);
-
-  if (p.kind === 'course' && !p.day) {
-    botSay('❓ 想帮你加进课表，但没听清是<b>星期几</b>。再说一次，带上「周几」，比如：<b>周三1-2节补课 高数 9A101</b>');
-    return;
-  }
   const id = 'bot' + ++botSeq;
-  let card = '';
-  if (p.kind === 'todo') {
-    card = `识别到 → <b>待办</b><br>「${esc(p.title)}」<br>截止：${p.due ? esc(p.due) : '不限'} · ${['', '', '中', '高'][p.priority]}优先
-      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加</button>`;
-    pendingBot.set(id, p);
-  } else if (p.kind === 'course') {
-    const slot = Math.max(0, Math.min(4, Math.ceil(p.secA / 2) - 1));
-    p.slot = slot;
-    p.weeksNorm = p.weeks === 'odd' ? 'odd' : p.weeks === 'even' ? 'even' : (p.weeks || 'all');
-    card = `识别到 → <b>课程</b><br>「${esc(p.title)}」<br>周${'一二三四五六日'[p.day - 1]} · ${esc(state.slots[p.slot].label)}（${state.slots[p.slot].start}）· ${p.weeksNorm === 'all' ? '每周' : esc(weeksLabel(p.weeksNorm))}${p.room ? ' · ' + esc(p.room) : ''}
-      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加到课表</button>`;
-    pendingBot.set(id, p);
-  } else {
-    card = `识别到 → <b>倒计时</b><br>「${esc(p.title)}」· ${esc(p.due)}
-      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加</button>`;
-    pendingBot.set(id, p);
-  }
-  botSay(card);
+  pendingBot.set(id, p);
+  const div = document.createElement('div');
+  div.className = 'bot-msg bot';
+  div.innerHTML = botCardHTML(p, id);
+  div.dataset.cardId = id;
+  const box = $("#bot-msgs");
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function botRefreshCard(id) {
+  const p = pendingBot.get(id);
+  const div = $(`#bot-msgs [data-card-id="${id}"]`);
+  if (p && div) div.innerHTML = botCardHTML(p, id);
 }
 
 function botApply(id) {
   const p = pendingBot.get(id);
   if (!p) return;
   pendingBot.delete(id);
+  let doneMsg = '';
   if (p.kind === 'todo') {
     state.todos.push(stamp({ id: uid(), text: p.title, done: false, priority: p.priority, due: p.due, createdAt: Date.now() }));
-    botSay(`✅ 已添加待办「${esc(p.title)}」${p.due ? '（' + esc(p.due) + '）' : ''}，电脑手机都会同步`);
+    doneMsg = `✅ 已添加待办「${esc(p.title)}」${p.due ? '（' + esc(p.due) + '）' : ''}，电脑手机都会同步`;
   } else if (p.kind === 'course') {
     state.courses.push(stamp({
       id: uid(), name: p.title, teacher: '', room: p.room,
       day: p.day, slot: p.slot, sec: `第${p.secA}-${p.secB}节`,
-      weeks: p.weeksNorm, color: importColor(p.title),
+      weeks: p.weeksNorm || 'all', color: importColor(p.title),
     }));
-    botSay(`✅ 已加进课表：「${esc(p.title)}」 周${'一二三四五六日'[p.day - 1]}${esc(p.sec)}${p.weeksNorm !== 'all' ? '（' + esc(weeksLabel(p.weeksNorm)) + '）' : ''}。去课程表页看看吧`);
+    doneMsg = `✅ 已加进课表：「${esc(p.title)}」 周${'一二三四五六日'[p.day - 1]}${esc(p.sec)}${p.weeksNorm && p.weeksNorm !== 'all' ? '（' + esc(weeksLabel(p.weeksNorm)) + '）' : ''}。去课程表页看看吧`;
   } else {
     state.countdowns.push(stamp({ id: uid(), name: p.title, date: p.due }));
-    botSay(`✅ 已添加倒计时「${esc(p.title)}」 ${esc(p.due)}`);
+    doneMsg = `✅ 已添加倒计时「${esc(p.title)}」 ${esc(p.due)}`;
   }
   save();
   renderCurrent();
+  $$(`#bot-msgs [data-card-id="${id}"]`).forEach(d => {
+    d.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = .5; });
+  });
+  botSay(doneMsg);
+  if (window.matchMedia('(min-width: 921px)').matches) $("#bot-text").focus();
 }
 
 $("#bot-form").addEventListener("submit", e => {
@@ -1755,6 +1804,7 @@ $("#bot-form").addEventListener("submit", e => {
   if (!v) return;
   input.value = "";
   botHandle(v);
+  if (window.matchMedia('(min-width: 921px)').matches) input.focus();   // 连续录入不用再点输入框
 });
 
 /* —— 语音输入（浏览器原生识别，Edge/Chrome 可用） —— */
