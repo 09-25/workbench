@@ -33,43 +33,223 @@
   ],
   "courses": [
     {
-      "id": "real-01",
+      "id": "eams-01",
+      "name": "通信原理",
+      "teacher": "张文丽",
+      "room": "9A110",
+      "day": 1,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "1-2",
+      "color": 0,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-02",
+      "name": "电磁场与微波实验",
+      "teacher": "聂翔",
+      "room": "电磁场与微波技术实验室",
+      "day": 1,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "10-15",
+      "color": 1,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-03",
+      "name": "通信原理",
+      "teacher": "张文丽",
+      "room": "9A615",
+      "day": 2,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "1-9,11-16",
+      "color": 0,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-04",
+      "name": "电磁场与电磁波",
+      "teacher": "聂翔",
+      "room": "9A108",
+      "day": 3,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "8-9,11-15",
+      "color": 2,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-05",
+      "name": "电磁场与电磁波",
+      "teacher": "聂翔",
+      "room": "9A611",
+      "day": 3,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "4-7",
+      "color": 2,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-06",
+      "name": "通信原理",
+      "teacher": "张文丽",
+      "room": "9A110",
+      "day": 4,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "1-4,6-9,11-16",
+      "color": 0,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-07",
       "name": "高频电子线路",
-      "teacher": "韩军团",
+      "teacher": "韩团军",
       "room": "9A201",
       "day": 5,
       "slot": 0,
       "sec": "第1-2节",
       "weeks": "1-3,6-9,11-12",
-      "color": 0,
-      "updatedAt": 1787963895927
+      "color": 3,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-02",
+      "id": "eams-08",
+      "name": "数字信号处理",
+      "teacher": "魏瑞",
+      "room": "数字信号处理实验室",
+      "day": 5,
+      "slot": 0,
+      "sec": "第1-2节",
+      "weeks": "15-18",
+      "color": 4,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-09",
+      "name": "微控制器及应用",
+      "teacher": "王平",
+      "room": "9A610",
+      "day": 1,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "2-5,7-9",
+      "color": 5,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-10",
+      "name": "数字信号处理",
+      "teacher": "魏瑞",
+      "room": "9A123",
+      "day": 1,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "11-18",
+      "color": 4,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-11",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "9A202",
+      "day": 2,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "9,12-18",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-12",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "9A220",
+      "day": 2,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "11",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-13",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "9A520",
+      "day": 2,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "3-8",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-14",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "9A102",
+      "day": 2,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "2",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-15",
       "name": "高频电子线路",
-      "teacher": "韩军团",
+      "teacher": "韩团军",
       "room": "9A613",
       "day": 3,
       "slot": 1,
       "sec": "第3-4节",
       "weeks": "1-9,11-12",
-      "color": 0,
-      "updatedAt": 1787963895927
+      "color": 3,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-03",
-      "name": "高频电子线路",
-      "teacher": "韩军团",
-      "room": "高频电路实验室",
-      "day": 1,
-      "slot": 4,
-      "sec": "第9-10节",
-      "weeks": "11-14",
-      "color": 0,
-      "updatedAt": 1787963895927
+      "id": "eams-16",
+      "name": "微控制器及应用",
+      "teacher": "王平",
+      "room": "9A513",
+      "day": 4,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "2-4,6-9",
+      "color": 5,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-04",
+      "id": "eams-17",
+      "name": "数字信号处理",
+      "teacher": "魏瑞",
+      "room": "9A106",
+      "day": 4,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "12-18",
+      "color": 4,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-18",
+      "name": "数字信号处理",
+      "teacher": "魏瑞",
+      "room": "9A610",
+      "day": 4,
+      "slot": 1,
+      "sec": "第3-4节",
+      "weeks": "11",
+      "color": 4,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-19",
       "name": "电磁场与电磁波",
       "teacher": "聂翔",
       "room": "9A101",
@@ -78,70 +258,94 @@
       "sec": "第3-4节",
       "weeks": "6-9,11-15",
       "color": 2,
-      "updatedAt": 1787963895927
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-05",
-      "name": "电磁场与电磁波",
-      "teacher": "聂翔",
-      "room": "9A108/9A611",
-      "day": 3,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "4-9,11-15",
-      "color": 2,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-06",
-      "name": "电磁场与微波实验",
-      "teacher": "聂翔",
-      "room": "微波技术实验室",
-      "day": 1,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "10-15",
-      "color": 2,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-07",
-      "name": "通信原理",
-      "teacher": "张文丽",
-      "room": "9A110",
-      "day": 1,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "1-2",
-      "color": 1,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-08",
-      "name": "通信原理",
-      "teacher": "张文丽",
-      "room": "9A110",
-      "day": 4,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "1-4,6-9,11-16",
-      "color": 1,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-09",
-      "name": "通信原理",
-      "teacher": "张文丽",
-      "room": "9A615",
+      "id": "eams-20",
+      "name": "微控制器及应用",
+      "teacher": "王平",
+      "room": "9A111",
       "day": 2,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "1-9,11-16",
-      "color": 1,
-      "updatedAt": 1787963895927
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "11",
+      "color": 5,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-10",
+      "id": "eams-21",
+      "name": "数据结构",
+      "teacher": "吴燕",
+      "room": "信息处理实验室",
+      "day": 3,
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "8-9,11-12",
+      "color": 7,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-22",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "9A120",
+      "day": 4,
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "2",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-23",
+      "name": "习近平新时代中国特色社会主义思想概论",
+      "teacher": "张海军",
+      "room": "",
+      "day": 4,
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "3-4,6",
+      "color": 6,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-24",
+      "name": "PCB设计与制作",
+      "teacher": "薛转花",
+      "room": "9A101",
+      "day": 4,
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "8-9,11-15",
+      "color": 0,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-25",
+      "name": "微控制器及应用",
+      "teacher": "王平",
+      "room": "9A110",
+      "day": 5,
+      "slot": 2,
+      "sec": "第5-6节",
+      "weeks": "11",
+      "color": 5,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-26",
+      "name": "数据结构",
+      "teacher": "吴燕",
+      "room": "9A123",
+      "day": 2,
+      "slot": 3,
+      "sec": "第7-8节",
+      "weeks": "4-9,11-12",
+      "color": 7,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-27",
       "name": "通信原理及移动通信实验",
       "teacher": "张文丽",
       "room": "通信原理实验室",
@@ -150,94 +354,58 @@
       "sec": "第7-8节",
       "weeks": "11-16",
       "color": 1,
-      "updatedAt": 1787963895927
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-11",
-      "name": "数字信号处理",
-      "teacher": "魏瑞",
-      "room": "9A123",
-      "day": 1,
-      "slot": 1,
-      "sec": "第3-4节",
-      "weeks": "11-18",
-      "color": 3,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-12",
-      "name": "数字信号处理",
-      "teacher": "魏瑞",
-      "room": "9A106/9A610",
+      "id": "eams-28",
+      "name": "大学体育（五）",
+      "teacher": "欧阳梅",
+      "room": "",
       "day": 4,
-      "slot": 1,
-      "sec": "第3-4节",
-      "weeks": "11-18",
-      "color": 3,
-      "updatedAt": 1787963895927
+      "slot": 3,
+      "sec": "第7-8节",
+      "weeks": "1-3",
+      "color": 2,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-13",
-      "name": "数字信号处理",
-      "teacher": "魏瑞",
-      "room": "数字信号处理实验室",
+      "id": "eams-29",
+      "name": "形势与政策",
+      "teacher": "王华（马）",
+      "room": "6101",
       "day": 5,
-      "slot": 0,
-      "sec": "第1-2节",
-      "weeks": "15-18",
+      "slot": 3,
+      "sec": "第7-8节",
+      "weeks": "11-12",
       "color": 3,
-      "updatedAt": 1787963895927
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-14",
-      "name": "微控制器及应用",
-      "teacher": "王平",
-      "room": "9A610",
+      "id": "eams-30",
+      "name": "形势与政策",
+      "teacher": "刘志侃",
+      "room": "",
+      "day": 5,
+      "slot": 3,
+      "sec": "第7-8节",
+      "weeks": "13-14",
+      "color": 3,
+      "updatedAt": 1788090609923
+    },
+    {
+      "id": "eams-31",
+      "name": "高频电子线路",
+      "teacher": "韩团军",
+      "room": "高频电路实验室",
       "day": 1,
-      "slot": 1,
-      "sec": "第3-4节",
-      "weeks": "2-5,7-9",
-      "color": 4,
-      "updatedAt": 1787963895927
+      "slot": 4,
+      "sec": "第9-10节",
+      "weeks": "11-14",
+      "color": 3,
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-15",
-      "name": "微控制器及应用",
-      "teacher": "王平",
-      "room": "9A513",
-      "day": 4,
-      "slot": 1,
-      "sec": "第3-4节",
-      "weeks": "2-4,6-9",
-      "color": 4,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-16",
-      "name": "微控制器及应用",
-      "teacher": "王平",
-      "room": "9A111",
-      "day": 2,
-      "slot": 2,
-      "sec": "第5-6节",
-      "weeks": "11",
-      "color": 4,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-17",
-      "name": "微控制器及应用",
-      "teacher": "王平",
-      "room": "9A110",
-      "day": 5,
-      "slot": 2,
-      "sec": "第5-6节",
-      "weeks": "11",
-      "color": 4,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-18",
+      "id": "eams-32",
       "name": "微控制器及应用",
       "teacher": "王平",
       "room": "物联网实验分室",
@@ -245,47 +413,11 @@
       "slot": 4,
       "sec": "第9-10节",
       "weeks": "8-9,11-16",
-      "color": 4,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-19",
-      "name": "数据结构",
-      "teacher": "吴燕",
-      "room": "9A123",
-      "day": 2,
-      "slot": 3,
-      "sec": "第7-8节",
-      "weeks": "4-9,11-12",
       "color": 5,
-      "updatedAt": 1787963895927
+      "updatedAt": 1788090609923
     },
     {
-      "id": "real-20",
-      "name": "数据结构",
-      "teacher": "吴燕",
-      "room": "信息处理实验室",
-      "day": 3,
-      "slot": 2,
-      "sec": "第5-6节",
-      "weeks": "8-9,11-12",
-      "color": 5,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-21",
-      "name": "PCB设计与制作",
-      "teacher": "薛转花",
-      "room": "9A101",
-      "day": 4,
-      "slot": 2,
-      "sec": "第5-6节",
-      "weeks": "8-9,11-15",
-      "color": 6,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-22",
+      "id": "eams-33",
       "name": "PCB设计与制作",
       "teacher": "薛转花",
       "room": "装配实验室",
@@ -293,56 +425,8 @@
       "slot": 4,
       "sec": "第9-10节",
       "weeks": "11-15",
-      "color": 6,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-23",
-      "name": "大学体育(五)",
-      "teacher": "欧阳梅",
-      "room": "南区",
-      "day": 4,
-      "slot": 3,
-      "sec": "第7-8节",
-      "weeks": "1-3",
-      "color": 6,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-24",
-      "name": "形势与政策",
-      "teacher": "王华/刘志侃",
-      "room": "6号楼6101",
-      "day": 5,
-      "slot": 3,
-      "sec": "第7-8节",
-      "weeks": "11-14",
-      "color": 7,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-25",
-      "name": "习近平新时代中国特色社会主义思想概论",
-      "teacher": "张海军",
-      "room": "9号楼",
-      "day": 2,
-      "slot": 1,
-      "sec": "第3-4节",
-      "weeks": "2-9,11-18",
-      "color": 7,
-      "updatedAt": 1787963895927
-    },
-    {
-      "id": "real-26",
-      "name": "习近平新时代中国特色社会主义思想概论",
-      "teacher": "张海军",
-      "room": "9A120",
-      "day": 4,
-      "slot": 2,
-      "sec": "第5-6节",
-      "weeks": "2-4,6",
-      "color": 7,
-      "updatedAt": 1787963895927
+      "color": 0,
+      "updatedAt": 1788090609923
     }
   ],
   "todos": [],
@@ -407,5 +491,110 @@
       "updatedAt": 1787963895927
     }
   ],
-  "tombstones": []
+  "tombstones": [
+    {
+      "id": "real-01",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-02",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-03",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-04",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-05",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-06",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-07",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-08",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-09",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-10",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-11",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-12",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-13",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-14",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-15",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-16",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-17",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-18",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-19",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-20",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-21",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-22",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-23",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-24",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-25",
+      "at": 1788090729559
+    },
+    {
+      "id": "real-26",
+      "at": 1788090729559
+    }
+  ]
 }
