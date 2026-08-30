@@ -1757,6 +1757,54 @@ $("#bot-form").addEventListener("submit", e => {
   botHandle(v);
 });
 
+/* —— 语音输入（浏览器原生识别，Edge/Chrome 可用） —— */
+let botRec = null, botRecording = false, botFinalText = "";
+$("#bot-mic").addEventListener("click", () => {
+  if (botRecording) { botRec && botRec.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    botSay('😯 这个浏览器不支持网页语音识别。两个替代办法：<br>1. 点输入框，用<b>输入法自带的语音键</b>（讯飞/搜狗的中文识别很准）<br>2. 直接打字');
+    return;
+  }
+  botRec = new SR();
+  botRec.lang = "zh-CN";
+  botRec.interimResults = true;
+  botFinalText = "";
+  botRec.onstart = () => {
+    botRecording = true;
+    $("#bot-mic").classList.add("recording");
+    $("#bot-text").placeholder = "🎤 正在听…请说话";
+    $("#bot-text").value = "";
+    $("#bot-text").readOnly = true;          // 语音期间锁定输入框，避免互相覆盖
+  };
+  botRec.onresult = e => {
+    let interim = "";
+    botFinalText = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) botFinalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    $("#bot-text").value = (botFinalText + interim).trim();
+  };
+  botRec.onerror = e => {
+    botRecording = false;
+    $("#bot-mic").classList.remove("recording");
+    $("#bot-text").readOnly = false;
+    $("#bot-text").placeholder = "如：明天下午3点交实验报告";
+    if (e.error === "not-allowed") botSay('🎤 麦克风权限被拒绝了。点浏览器地址栏旁边的锁图标 → 允许麦克风，再试一次');
+    else if (e.error === "network") botSay('🎤 语音识别服务连不上（网络问题）。可以用输入法的语音键代替，或直接打字');
+  };
+  botRec.onend = () => {
+    botRecording = false;
+    $("#bot-mic").classList.remove("recording");
+    $("#bot-text").readOnly = false;
+    $("#bot-text").placeholder = "如：明天下午3点交实验报告";
+    const v = $("#bot-text").value.trim();     // 说完自动交给机器人处理
+    if (v) { $("#bot-text").value = ""; botHandle(v); }
+  };
+  try { botRec.start(); } catch (e) { console.warn(e); }
+});
+
 /* 一键配置云同步：#sync=base64({"token":"…","gist":"…"})（配置后立即从 URL 中清除） */
 (function () {
   const m = location.hash.match(/#sync=([A-Za-z0-9+/=_-]+)/);

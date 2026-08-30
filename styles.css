@@ -722,6 +722,12 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .bot-card .btn { margin-top: 8px; }
 .bot-input { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--card-2); }
 .bot-input input { flex: 1; min-width: 0; }
+.mic-btn { flex: none; }
+.mic-btn.recording { color: #fff; background: var(--accent); border-color: var(--accent); animation: micPulse 1.1s ease infinite; }
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(194, 69, 44, .45); }
+  50% { box-shadow: 0 0 0 8px rgba(194, 69, 44, 0); }
+}
 
 /* ============================================================
    打印（Ctrl+P 打印当前页，如课程表）
