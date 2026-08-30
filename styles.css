@@ -227,6 +227,15 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .hero-greet { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
 .hero-date { margin-top: 8px; color: var(--ink-2); font-size: 14px; }
 .hero-sub { margin-top: 4px; color: var(--ink-3); font-size: 13px; }
+.hero-status {
+  margin-top: 10px;
+  font-size: 13.5px; font-weight: 600; color: var(--accent);
+  padding: 6px 12px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  display: inline-block;
+}
 .hero-clock-wrap { justify-self: center; text-align: center; }
 .hero-clock {
   font-family: var(--font-display);
@@ -675,6 +684,22 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   max-width: 86vw;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ============================================================
+   打印（Ctrl+P 打印当前页，如课程表）
+   ============================================================ */
+@media print {
+  body { background: #fff !important; }
+  [data-theme] { --bg: #fff; --card: #fff; --card-2: #fafafa; --ink: #111; --ink-2: #444; --ink-3: #777; --line: #ddd; --line-strong: #bbb; --shadow: none; --dot: transparent; }
+  .sidebar, .tabbar, .page-actions, .week-switch, .hint, .toast,
+  #import-modal, #course-modal, .hero-status, .theme-dot, .sidebar-foot { display: none !important; }
+  .app { display: block; }
+  .main { padding: 0; max-width: none; }
+  .card { box-shadow: none; page-break-inside: avoid; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .tt-cell { min-height: 56px; }
+}
 
 /* ============================================================
    响应式

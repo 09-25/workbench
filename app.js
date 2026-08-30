@@ -537,6 +537,29 @@ function greetWord() {
   return "晚上好";
 }
 
+/* 今日上课状态：正在上 / 下一节 / 已结束 */
+function classStatusLine() {
+  const list = todayCourses();
+  const now = new Date();
+  const m = now.getHours() * 60 + now.getMinutes();
+  const fmt = mins => {
+    if (mins >= 60) return `还有 ${Math.floor(mins / 60)} 小时${mins % 60 ? ' ' + (mins % 60) + ' 分钟' : ''}`;
+    return `还有 ${mins} 分钟`;
+  };
+  const cur = list.find(c => { const s = state.slots[c.slot]; return m >= minutesOf(s.start) && m < minutesOf(s.end); });
+  if (cur) {
+    const left = minutesOf(state.slots[cur.slot].end) - m;
+    return `🔔 正在上「${cur.name}」${cur.room ? ' @' + cur.room : ''} · 还剩 ${left} 分钟`;
+  }
+  const next = list.find(c => minutesOf(state.slots[c.slot].start) > m);
+  if (next) {
+    const s = state.slots[next.slot];
+    return `⏰ 下一节「${next.name}」${s.start} @${next.room || '待定'} · ${fmt(minutesOf(s.start) - m)}`;
+  }
+  if (list.length) return '✅ 今天的课都上完啦';
+  return '🌤️ 今天没有排课，安排点自己的事吧';
+}
+
 RENDERERS.dashboard = function renderDashboard() {
   const d = new Date();
   const w = weekOf(todayStr());
@@ -549,6 +572,7 @@ RENDERERS.dashboard = function renderDashboard() {
   $("#hero-sub").textContent = tc.length
     ? `今天有 ${tc.length} 节课，第一节 ${state.slots[tc[0].slot].start} 开上`
     : "今天没有排课，安排点自己的事吧";
+  $("#hero-status").textContent = classStatusLine();
 
   /* 今日课程 */
   $("#today-courses-count").textContent = tc.length ? `共 ${tc.length} 节` : "";
@@ -1588,6 +1612,22 @@ applyTheme();
 switchPage("dashboard");
 updateClock();
 setInterval(updateClock, 1000);
+setInterval(() => {                    // 上课状态条每 30 秒刷新
+  if (currentPage === "dashboard" && !document.hidden) {
+    const el = $("#hero-status");
+    if (el) el.textContent = classStatusLine();
+  }
+}, 30000);
+
+/* 课表页：键盘 ←/→ 翻周 */
+document.addEventListener("keydown", e => {
+  if (currentPage !== "timetable") return;
+  if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
+  const tag = document.activeElement?.tagName || "";
+  if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+  if (e.key === "ArrowLeft") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) - 1; renderCurrent(); }
+  if (e.key === "ArrowRight") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); }
+});
 
 if (getToken() && state.sync.gistId) {
   pullSync(false);
