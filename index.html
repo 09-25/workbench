@@ -345,6 +345,21 @@
 
 <div class="toast" id="toast" hidden></div>
 
+<!-- ============ 小助手（自然语言速记） ============ -->
+<button class="bot-fab" data-action="bot-toggle" title="小助手：说什么我记什么">🤖</button>
+<div class="bot-panel card" id="bot-panel" hidden>
+  <div class="bot-head">
+    <span class="bot-ava">🤖</span>
+    <div class="bot-title"><b>小助手</b><span>说什么我记什么</span></div>
+    <button class="icon-btn" data-action="bot-toggle">✕</button>
+  </div>
+  <div class="bot-msgs" id="bot-msgs"></div>
+  <form class="bot-input" id="bot-form">
+    <input id="bot-text" placeholder="如：明天下午3点交实验报告" autocomplete="off" maxlength="80">
+    <button class="btn btn-primary btn-sm" type="submit">发送</button>
+  </form>
+</div>
+
 <!-- ============ 教务导入弹窗 ============ -->
 <div class="modal-mask" id="import-modal" hidden>
   <div class="modal card imp-modal">

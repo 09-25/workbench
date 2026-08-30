@@ -1115,6 +1115,15 @@ document.addEventListener("click", e => {
     case "sync-now": fullSync(); break;
     case "sync-disconnect": disconnectSync(); break;
 
+    /* 小助手 */
+    case "bot-toggle": {
+      const panel = $("#bot-panel");
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) { botGreet(); setTimeout(() => $("#bot-text").focus(), 50); }
+      break;
+    }
+    case "bot-apply": botApply(el.dataset.id); break;
+
     /* 数据 */
     case "export-data": {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -1266,6 +1275,7 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (!$("#course-modal").hidden) closeCourseModal();
   else if (!$("#import-modal").hidden) $("#import-modal").hidden = true;
+  else if (!$("#bot-panel").hidden) $("#bot-panel").hidden = true;
 });
 
 /* ============================================================
@@ -1587,8 +1597,165 @@ impDrop.addEventListener("drop", e => {
 });
 
 /* ============================================================
-   启动
+   小助手：自然语言速记（本地规则解析，离线可用）
+   支持：待办（默认）/ 临时课程（节次+周几）/ 倒计时（日期）
    ============================================================ */
+const dstrOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const pendingBot = new Map();   // 待确认卡片
+let botSeq = 0;
+
+function parseIntent(raw) {
+  let t = ' ' + raw.trim() + ' ';
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const out = { kind: 'todo', title: '', due: '', time: '', priority: 2, day: 0, secA: 0, secB: 0, weeks: '', room: '', raw: raw.trim() };
+
+  if (/重要|紧急|必须|优先/.test(t)) out.priority = 3;
+
+  /* 相对日期 */
+  for (const [w, off] of [['大后天', 3], ['后天', 2], ['明天', 1], ['明日', 1], ['今天', 0], ['今日', 0]]) {
+    if (t.includes(w)) { out.date = addDays(today0, off); t = t.split(w).join(' '); break; }
+  }
+  /* 周X / 下周X */
+  if (!out.date) {
+    const m = t.match(/(下个?|下)?\s*(?:周|礼拜|星期)([一二三四五六日天])/);
+    if (m) {
+      let d = addDays(mondayOf(now), '一二三四五六日天'.indexOf(m[2]));
+      if (m[1] || d < today0) d = addDays(d, 7);
+      out.date = d; t = t.replace(m[0], ' ');
+    }
+  }
+  /* X月X日/X号 */
+  if (!out.date) {
+    const m = t.match(/(\d{1,2})月(\d{1,2})[日号]/);
+    if (m) {
+      let d = new Date(now.getFullYear(), +m[1] - 1, +m[2]);
+      if (d < today0) d = new Date(now.getFullYear() + 1, +m[1] - 1, +m[2]);
+      out.date = d; t = t.replace(m[0], ' ');
+    }
+  }
+  /* 时间点 */
+  const tm = t.match(/(上午|早上|中午|下午|傍晚|晚上|夜里)?\s*(\d{1,2})[点时:：]\s*(半|\d{1,2})?\s*分?/);
+  if (tm) {
+    let h = +tm[2];
+    if (tm[1] && /下午|傍晚|晚上|夜里/.test(tm[1]) && h < 12) h += 12;
+    if (h <= 23) {
+      const mm = tm[3] === '半' ? 30 : (+tm[3] || 0);
+      out.time = `${pad(h)}:${pad(mm)}`;
+      t = t.replace(tm[0], ' ');
+    }
+  }
+  /* 节次 */
+  const sec = t.match(/第?\s*(1[01]|[1-9])\s*[-–~到]\s*(1[01]|[1-9])?\s*节/);
+  if (sec) { out.secA = +sec[1]; out.secB = +(sec[2] || sec[1]); t = t.replace(sec[0], ' '); }
+  /* 周次：第X周 / X-Y周 / 单周 / 双周 */
+  const wk = t.match(/第?(\d{1,2})(?:\s*[-–~]\s*(\d{1,2}))?\s*周/);
+  if (wk) { out.weeks = wk[2] ? `${wk[1]}-${wk[2]}` : wk[1]; t = t.replace(wk[0], ' '); }
+  else if (/单周/.test(t)) { out.weeks = 'odd'; t = t.replace('单周', ' '); }
+  else if (/双周/.test(t)) { out.weeks = 'even'; t = t.replace('双周', ' '); }
+  /* 教室：支持 9A101、9A101/9A611、教三-301、XX实验室 组1 */
+  const rm = t.match(/(\d{0,2}[A-Z]\d{3}(?:\s*\/\s*\d{0,2}[A-Z]\d{3})*)|((?:教[一二三四五六七八九十\d]|外语楼|实验楼)\S{0,8})|(\S{2,14}实验室(?:\s*组\d)?)/);
+  if (rm) { out.room = rm[0].trim(); t = t.replace(rm[0], ' '); }
+
+  /* 意图判定 */
+  const courseHint = out.secA > 0 || (/补课|调课|加课|换课|临时课|改课|蹭课/.test(t));
+  if (courseHint) out.kind = 'course';
+  else if (out.date && /倒计时|距离|还有几天|几号考|什么时候考/.test(raw)) out.kind = 'countdown';
+
+  /* 标题清洗 */
+  let title = t.replace(/\s+/g, ' ').trim();
+  title = title.replace(/^(帮我|麻烦你?|辛苦|记一下|记录下?|添加|加一?个?|提醒我|我要|我需要|安排一?下?)\s*/g, '');
+  title = title.replace(/^(一?个?)(待办|任务|事情|事项|课程|课)[：:、，,]*/g, '').trim();
+  if (out.kind === 'countdown') title = title.replace(/^(倒计时|距离|记个?)\s*/g, '').replace(/还有.*$/, '').trim();
+  if (out.kind === 'todo' && out.time) title = `${out.time} ${title}`;
+  out.title = title || (out.kind === 'course' ? '补课' : out.kind === 'countdown' ? '倒计时' : '待办');
+  if (out.kind === 'course') {
+    out.day = out.date ? (out.date.getDay() === 0 ? 7 : out.date.getDay()) : 0;
+    if (out.weeks === 'odd') out.weeks = 'odd';
+    else if (out.weeks === 'even') out.weeks = 'even';
+  }
+  if (out.kind === 'todo' && out.date) out.due = dstrOf(out.date);
+  if (out.kind === 'countdown') out.due = out.date ? dstrOf(out.date) : '';
+  return out;
+}
+
+function botSay(html, isUser = false) {
+  const box = $("#bot-msgs");
+  const div = document.createElement('div');
+  div.className = 'bot-msg ' + (isUser ? 'user' : 'bot');
+  div.innerHTML = html;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function botGreet() {
+  if ($("#bot-msgs").children.length) return;
+  botSay('你好呀！跟我说一句话，我帮你记下来。比如：<br>' +
+    '· <b>明天下午3点交实验报告</b><br>' +
+    '· <b>周三1-2节补课 高数 9A101</b>（加进课表）<br>' +
+    '· <b>倒计时 12月19日 四六级</b><br>' +
+    '· <b>后天买教材 重要</b>');
+}
+
+function botHandle(raw) {
+  botSay(esc(raw), true);
+  const p = parseIntent(raw);
+
+  if (p.kind === 'course' && !p.day) {
+    botSay('❓ 想帮你加进课表，但没听清是<b>星期几</b>。再说一次，带上「周几」，比如：<b>周三1-2节补课 高数 9A101</b>');
+    return;
+  }
+  const id = 'bot' + ++botSeq;
+  let card = '';
+  if (p.kind === 'todo') {
+    card = `识别到 → <b>待办</b><br>「${esc(p.title)}」<br>截止：${p.due ? esc(p.due) : '不限'} · ${['', '', '中', '高'][p.priority]}优先
+      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加</button>`;
+    pendingBot.set(id, p);
+  } else if (p.kind === 'course') {
+    const slot = Math.max(0, Math.min(4, Math.ceil(p.secA / 2) - 1));
+    p.slot = slot;
+    p.weeksNorm = p.weeks === 'odd' ? 'odd' : p.weeks === 'even' ? 'even' : (p.weeks || 'all');
+    card = `识别到 → <b>课程</b><br>「${esc(p.title)}」<br>周${'一二三四五六日'[p.day - 1]} · ${esc(state.slots[p.slot].label)}（${state.slots[p.slot].start}）· ${p.weeksNorm === 'all' ? '每周' : esc(weeksLabel(p.weeksNorm))}${p.room ? ' · ' + esc(p.room) : ''}
+      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加到课表</button>`;
+    pendingBot.set(id, p);
+  } else {
+    card = `识别到 → <b>倒计时</b><br>「${esc(p.title)}」· ${esc(p.due)}
+      <br><button class="btn btn-primary btn-sm" data-action="bot-apply" data-id="${id}">✓ 确认添加</button>`;
+    pendingBot.set(id, p);
+  }
+  botSay(card);
+}
+
+function botApply(id) {
+  const p = pendingBot.get(id);
+  if (!p) return;
+  pendingBot.delete(id);
+  if (p.kind === 'todo') {
+    state.todos.push(stamp({ id: uid(), text: p.title, done: false, priority: p.priority, due: p.due, createdAt: Date.now() }));
+    botSay(`✅ 已添加待办「${esc(p.title)}」${p.due ? '（' + esc(p.due) + '）' : ''}，电脑手机都会同步`);
+  } else if (p.kind === 'course') {
+    state.courses.push(stamp({
+      id: uid(), name: p.title, teacher: '', room: p.room,
+      day: p.day, slot: p.slot, sec: `第${p.secA}-${p.secB}节`,
+      weeks: p.weeksNorm, color: importColor(p.title),
+    }));
+    botSay(`✅ 已加进课表：「${esc(p.title)}」 周${'一二三四五六日'[p.day - 1]}${esc(p.sec)}${p.weeksNorm !== 'all' ? '（' + esc(weeksLabel(p.weeksNorm)) + '）' : ''}。去课程表页看看吧`);
+  } else {
+    state.countdowns.push(stamp({ id: uid(), name: p.title, date: p.due }));
+    botSay(`✅ 已添加倒计时「${esc(p.title)}」 ${esc(p.due)}`);
+  }
+  save();
+  renderCurrent();
+}
+
+$("#bot-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const input = $("#bot-text");
+  const v = input.value.trim();
+  if (!v) return;
+  input.value = "";
+  botHandle(v);
+});
 
 /* 一键配置云同步：#sync=base64({"token":"…","gist":"…"})（配置后立即从 URL 中清除） */
 (function () {
