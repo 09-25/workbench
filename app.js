@@ -511,10 +511,9 @@ const weeksLabel = spec =>
   spec.replace("单", "周·单").replace("双", "周·双").replace(/^(\d+-\d+)$/, "$1周");
 function weeksTag(spec) {
   if (!spec || spec === "all") return "";
-  if (spec === "odd") return "单";
-  if (spec === "even") return "双";
-  const s = spec.replace("单", "·单").replace("双", "·双");
-  return s.length <= 6 ? s : s.slice(0, 5) + "…";
+  if (spec === "odd") return "单周";
+  if (spec === "even") return "双周";
+  return spec;                       // 完整显示周次（如 1-3,6-9,11-12），不截断
 }
 
 function courseShown(c, week) {

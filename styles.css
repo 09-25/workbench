@@ -367,7 +367,7 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .chip:hover { filter: brightness(1.04); transform: translateY(-1px); }
 .chip .r { font-size: 10px; opacity: .8; display: block; }
 .chip.dim { opacity: .38; }
-.chip .w-tag { font-size: 9.5px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; margin-left: 3px; opacity: .85; }
+.chip .w-tag { font-size: 9.5px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; margin-left: 3px; opacity: .85; display: inline-block; word-break: break-all; }
 
 /* —— 便利贴色板（两主题共用变量，定义在各主题块里） —— */
 .chip[data-c="0"] { --c-bg: var(--n0-bg); --c-fg: var(--n0-fg); --c-bd: var(--n0-bd); }
