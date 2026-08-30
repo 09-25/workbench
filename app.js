@@ -256,11 +256,16 @@ function renderSyncStatus() {
   el.innerHTML = on
     ? `<span style="color:var(--green)">● 已连接</span>&nbsp; 推送 ${fmtClock(state.sync.lastPush)} · 拉取 ${fmtClock(state.sync.lastPull)} · 本设备「${deviceName()}」`
     : `○ 未连接。配置 Token 后，电脑和手机的数据将自动同步。`;
+  const ind = $("#sync-ind");
+  if (ind) ind.innerHTML = on ? '<span style="color:var(--green)">●</span> 已同步' : "";
 }
 
 /* ---------------- PWA（https 部署后生效，本地双击打开自动跳过） ---------------- */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => { }));
+  navigator.serviceWorker.addEventListener("message", e => {
+    if (e.data && e.data.type === "SW_UPDATED") toast("🔄 新版本已就绪，刷新页面体验最新功能", 6000);
+  });
 }
 
 /* ---------------- 多端合并（字段级 LWW + 删除墓碑） ---------------- */
@@ -599,8 +604,8 @@ RENDERERS.dashboard = function renderDashboard() {
   $("#todo-progress").style.width = total ? `${Math.round(done / total * 100)}%` : "0";
   $("#todo-progress-text").textContent = total ? `全部待办 ${done} / ${total}` : "还没有待办";
 
-  /* 倒计时 */
-  const cds = state.countdowns.filter(c => isDateStr(c.date))
+  /* 倒计时（过期超过 7 天的自动隐藏，避免页面堆僵尸卡片） */
+  const cds = state.countdowns.filter(c => isDateStr(c.date) && daysUntil(c.date) >= -7)
     .sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
   $("#countdowns").innerHTML = cds.length ? cds.map(c => {
     const n = daysUntil(c.date);
@@ -883,13 +888,13 @@ function closeCourseModal() { $("#course-modal").hidden = true; editingCourseId 
    Toast
    ============================================================ */
 let toastTimer = null;
-function toast(msg) {
+function toast(msg, ms = 1800) {
   const el = $("#toast");
   el.textContent = msg;
   el.hidden = false;
   requestAnimationFrame(() => el.classList.add("show"));
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.hidden = true, 300); }, 1800);
+  toastTimer = setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.hidden = true, 300); }, ms);
 }
 
 /* ============================================================
@@ -1130,6 +1135,35 @@ document.addEventListener("click", e => {
     case "bot-kind": {
       const p = pendingBot.get(el.dataset.id);
       if (p) { p.kind = el.dataset.k; botRefreshCard(el.dataset.id); }
+      break;
+    }
+
+    /* 课表导出日历（.ics，导入手机/电脑系统日历后每次上课系统提醒） */
+    case "export-ics": {
+      if (!state.courses.length) { toast("课表还是空的，先加课或从教务导入"); break; }
+      const escIcs = s => String(s || "").replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\n/g, "\\n");
+      const start = weekStartDate(1);
+      const evs = [];
+      state.courses.forEach(c => {
+        const set = weekSet(c.weeks);
+        const maxW = 25;
+        for (let w = 1; w <= maxW; w++) {
+          if (set && !set.has(w)) continue;
+          const d = addDays(start, (w - 1) * 7 + (c.day - 1));
+          const s = state.slots[c.slot] || state.slots[0];
+          const dt = t => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${t.replace(":", "")}00`;
+          const wkTxt = set ? `（第${w}周）` : "";
+          evs.push(`BEGIN:VEVENT\r\nUID:${c.id}-w${w}@workbench\r\nDTSTART:${dt(s.start)}\r\nDTEND:${dt(s.end)}\r\nSUMMARY:${escIcs(c.name)}${wkTxt}\r\nLOCATION:${escIcs(c.room || "")}\r\nDESCRIPTION:${escIcs((c.teacher || "") + " " + (c.sec || ""))}\r\nEND:VEVENT`);
+        }
+      });
+      const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//workbench//CN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:我的课表\r\n` + evs.join("\r\n") + `\r\nEND:VCALENDAR`;
+      const blob = new Blob([ics], { type: "text/calendar" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `课表-${state.profile.semesterStart}.ics`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast(`已导出 ${evs.length} 节课到日历文件`);
       break;
     }
 
