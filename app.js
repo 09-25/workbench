@@ -1615,6 +1615,14 @@ let botSeq = 0;
 
 function parseIntent(raw) {
   let t = ' ' + raw.trim() + ' ';
+  t = t.replace(/[０-９Ａ-Ｚａ-ｚ：]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));   // 全角→半角
+  const cnNum2 = s => {           // 汉字数字（一~三十九）
+    if (/^\d+$/.test(s)) return +s;
+    const D = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+    if (s.startsWith('十')) return 10 + (D[s[1]] || 0);
+    if (s.includes('十')) { const p = s.split('十'); return (D[p[0]] || 1) * 10 + (D[p[1]] || 0); }
+    return D[s] || 0;
+  };
   const now = new Date();
   const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const out = { kind: 'todo', title: '', due: '', time: '', priority: 2, day: 0, secA: 0, secB: 0, weeks: '', room: '', raw: raw.trim() };
@@ -1638,13 +1646,16 @@ function parseIntent(raw) {
       out.date = d; t = t.replace(m[0], ' ');
     }
   }
-  /* X月X日/X号 */
+  /* X月X日/X号（半角、全角、汉字数字都支持） */
   if (!out.date) {
-    const m = t.match(/(\d{1,2})月(\d{1,2})[日号]/);
-    if (m) {
-      let d = new Date(now.getFullYear(), +m[1] - 1, +m[2]);
-      if (d < today0) d = new Date(now.getFullYear() + 1, +m[1] - 1, +m[2]);
-      out.date = d; t = t.replace(m[0], ' ');
+    const md = t.match(/(\d{1,2}|[一二三四五六七八九十]{1,3})月\s*(\d{1,2}|[一二三四五六七八九十]{1,3})[日号]/);
+    if (md) {
+      const mo = cnNum2(md[1]), dd = cnNum2(md[2]);
+      if (mo >= 1 && mo <= 12 && dd >= 1 && dd <= 31) {
+        let d = new Date(now.getFullYear(), mo - 1, dd);
+        if (d < today0) d = new Date(now.getFullYear() + 1, mo - 1, dd);
+        out.date = d; t = t.replace(md[0], ' ');
+      }
     }
   }
   /* 时间范围：X点到Y点 */
@@ -1688,19 +1699,25 @@ function parseIntent(raw) {
   const courseNoun = /课(?!程|表|时|代表|间)/.test(t);
   const courseHint = out.secA > 0 || /补课|调课|加课|换课|蹭课|上课/.test(t) || (out.date && courseNoun);
   if (courseHint) out.kind = 'course';
-  else if (out.date && /倒计时|距离|还有几天|几号考|什么时候考/.test(raw)) out.kind = 'countdown';
+  else if (out.date && /倒计时|距离|还有几天|考|试|竞赛|截止|报名|放假|开学/.test(raw)) out.kind = 'countdown';
 
   /* 标题清洗 */
   let title = t.replace(/\s+/g, ' ').trim();
   title = title.replace(/^(帮我|麻烦你?|辛苦|记一下|记录下?|添加|加一?个?|提醒我|我要|我需要|安排一?下?)\s*/g, '');
   title = title.replace(/^(一?个?)(待办|任务|事情|事项|课程|课)[：:、，,]*/g, '').trim();
-  if (out.kind === 'countdown') title = title.replace(/^(倒计时|距离|记个?)\s*/g, '').replace(/还有.*$/, '').trim();
+  if (out.kind === 'countdown') title = title.replace(/^(倒计时|距离|记个?|考试?|测试?)[:：]?\s*/g, '').replace(/还有.*$/, '').trim();
   if (out.kind === 'todo' && out.time) title = `${out.time} ${title}`;
   out.title = title || (out.kind === 'course' ? '补课' : out.kind === 'countdown' ? '倒计时' : '待办');
   if (out.kind === 'course') {
     out.day = out.date ? (out.date.getDay() === 0 ? 7 : out.date.getDay()) : 0;
     if (out.weeks === 'odd') out.weeks = 'odd';
     else if (out.weeks === 'even') out.weeks = 'even';
+    /* 说了具体日期（如 9月5日）→ 只在日期所在的那一周显示（单次课） */
+    if (out.date && !out.weeks) {
+      const w = weekOf(dstrOf(out.date));
+      if (w >= 1 && w <= 25) out.weeks = String(w);
+      else if (w < 1) out.dateBeforeTerm = true;
+    }
   }
   if (out.kind === 'todo' && out.date) out.due = dstrOf(out.date);
   if (out.kind === 'countdown') out.due = out.date ? dstrOf(out.date) : '';
@@ -1734,7 +1751,7 @@ function botCardHTML(p, id) {
     body = `「${esc(p.title)}」<br>截止：${p.due ? esc(p.due) : '不限'}${p.time ? ' · ' + esc(p.time) : ''} · ${priName}`;
   } else if (p.kind === 'course') {
     if (!p.day) {
-      body = `「${esc(p.title)}」<br><span style="color:var(--accent)">还差星期几——在标题里带上「周几」再发一次</span>`;
+      body = `「${esc(p.title)}」<br><span style="color:var(--accent)">没听清日子——带上「周几」（如 周三1-2节）或「X月X日」（如 9月5日1-2节）再发一次</span>`;
     } else {
       const slot = Math.max(0, Math.min(4, Math.ceil((p.secA || 1) / 2) - 1));
       p.slot = slot; p.secA = p.secA || 1; p.secB = p.secB || p.secA + 1;
