@@ -812,6 +812,13 @@ RENDERERS.journal = function renderJournal() {
 /* ============================================================
    设置
    ============================================================ */
+let settingsTab = "basic";
+function setSettingsTab(t) {
+  settingsTab = t;
+  $$("#set-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  $$('#page-settings .card[data-group]').forEach(c => c.style.display = c.dataset.group === t ? "" : "none");
+}
+
 RENDERERS.settings = function renderSettings() {
   $("#s-name").value = state.profile.name || "";
   $("#s-semester").value = state.profile.semesterStart || "";
@@ -844,6 +851,7 @@ RENDERERS.settings = function renderSettings() {
   const saved = getToken();
   if (document.activeElement !== tokenEl) tokenEl.value = saved ? "••••••••（已保存）" : "";
   $("#sync-gist").value = state.sync.gistId || "";
+  setSettingsTab(settingsTab);
 };
 
 /* ============================================================
@@ -1137,6 +1145,7 @@ document.addEventListener("click", e => {
       if (p) { p.kind = el.dataset.k; botRefreshCard(el.dataset.id); }
       break;
     }
+    case "set-tab": setSettingsTab(el.dataset.tab); break;
 
     /* 课表导出日历（.ics，导入手机/电脑系统日历后每次上课系统提醒） */
     case "export-ics": {

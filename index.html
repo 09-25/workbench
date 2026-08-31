@@ -213,12 +213,18 @@
       <div class="page-head">
         <div>
           <h1 class="page-title">设置</h1>
-          <p class="page-sub">都改完记得点各栏的保存按钮</p>
+          <p class="page-sub">分组管理，点下面切换</p>
         </div>
       </div>
 
+      <div class="set-tabs" id="set-tabs">
+        <button data-action="set-tab" data-tab="basic" class="on"> 基本 </button>
+        <button data-action="set-tab" data-tab="remind">提醒与入口</button>
+        <button data-action="set-tab" data-tab="data">同步与数据</button>
+      </div>
+
       <div class="grid-2">
-        <div class="card">
+        <div class="card" data-group="basic">
           <div class="card-head"><h2>个人信息</h2></div>
           <div class="form-grid">
             <label>称呼<input id="s-name" placeholder="怎么称呼你"></label>
@@ -228,7 +234,7 @@
           <button class="btn btn-primary" data-action="save-profile">保存个人信息</button>
         </div>
 
-        <div class="card">
+        <div class="card" data-group="basic">
           <div class="card-head"><h2>外观</h2></div>
           <div class="theme-picker">
             <label class="theme-opt"><input type="radio" name="s-theme" value="paper"><span class="sw paper-swatch">纸间</span></label>
@@ -239,21 +245,21 @@
           <button class="btn btn-primary" data-action="save-slots">保存作息</button>
         </div>
 
-        <div class="card">
+        <div class="card" data-group="remind">
           <div class="card-head"><h2>倒计时</h2></div>
           <div id="s-countdowns"></div>
           <button class="btn" data-action="add-countdown">＋ 加一个</button>
           <button class="btn btn-primary" data-action="save-countdowns">保存倒计时</button>
         </div>
 
-        <div class="card">
+        <div class="card" data-group="remind">
           <div class="card-head"><h2>打卡习惯</h2></div>
           <div id="s-habits"></div>
           <button class="btn" data-action="add-habit">＋ 加一个</button>
           <button class="btn btn-primary" data-action="save-habits">保存习惯</button>
         </div>
 
-        <div class="card">
+        <div class="card" data-group="remind">
           <div class="card-head"><h2>常用入口</h2></div>
           <div id="s-links"></div>
           <button class="btn" data-action="add-link">＋ 加一个</button>
@@ -261,7 +267,7 @@
         </div>
       </div>
 
-      <div class="card sync-card">
+      <div class="card sync-card" data-group="data">
         <div class="card-head">
           <h2>云同步（电脑 ⇄ 手机）</h2>
           <div id="sync-status" class="sync-status"></div>
@@ -283,7 +289,7 @@
         <p class="hint">Token 只保存在这台设备的浏览器里。连接后改动会在几秒内自动推到云端，其他设备 30 秒内自动拉取合并；网页打不开 GitHub 时本地照常用，恢复后自动补推。手机和电脑需登录<b>同一个</b> GitHub 账号的 Token。</p>
       </div>
 
-      <div class="card data-card">
+      <div class="card data-card" data-group="data">
         <div class="card-head"><h2>数据</h2></div>
         <p class="hint">所有数据只存在这台电脑的浏览器里（localStorage）。换电脑或重装浏览器前，先导出一份 JSON 备份。</p>
         <div class="btn-row">
