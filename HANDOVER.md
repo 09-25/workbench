@@ -1,0 +1,70 @@
+# 交接文档（给下一个 AI / 开发者）
+
+> 本文档由上一个 AI 助手编写于 2026-08-31。用户是陕西理工大学通信 2403 班大三学生，非专业开发者，沟通请用中文。
+
+## 项目是什么
+
+学生的个人工作台 Web 应用：课程表（按周视图+单双周）+ 待办 + 每日日志 + 习惯打卡 + 倒计时 + 🤖自然语言速记小助手 + 语音输入 + 云同步（GitHub Gist）+ PWA 可安装。纯原生 HTML/CSS/JS，**零依赖、无构建步骤**。
+
+## 关键位置
+
+| 东西 | 位置 |
+|---|---|
+| **项目源码** | `E:\gpt杂\my-workbench\`（index.html / styles.css / app.js / sw.js / manifest.webmanifest / icons/ / 我的课表备份.json） |
+| **线上地址** | https://09-25.github.io/workbench/ （GitHub Pages，push 到 main 自动部署，构建约 1 分钟） |
+| **GitHub 仓库** | https://github.com/09-25/workbench （账号 09-25，gh CLI 已登录，命令在 `C:\Program Files\GitHub CLI\gh.exe`，Git Bash 里需 `export PATH="$PATH:/c/Program Files/GitHub CLI"`） |
+| **云同步 Gist** | id `cbe1eb7d996327db0010f7322fc0f0fa`，文件 workbench-data.json，description 含"我的工作台"（应用靠这个自动发现） |
+| **测试脚本** | `E:\gpt杂\.tools\wb-test\`（playwright-core，用本机 Chrome：`C:/Program Files/Google/Chrome/Application/chrome.exe`） |
+| **用户手机** | Android，已扫码配置同步（设备名 手机-5q1n）；电脑 Edge 已配置（电脑-hgib） |
+| **定时任务** | 每周一早 8 点提醒核对课表（ZCode automation） |
+
+## 部署流程
+
+```bash
+cd "E:\gpt杂\my-workbench"
+git add -A && git commit -m "..." && git push origin main
+# 等 1-2 分钟 GitHub Pages 自动构建；国内网络偶尔抽风，push 失败等几分钟重试
+```
+
+## 测试（改完代码必跑）
+
+```bash
+cd "E:\gpt杂\.tools\wb-test"
+node feature-test.js      # 全功能 67 项
+node adversarial-test.js  # 对抗审查 25 项（XSS/坏数据/边界）
+node import-test.js       # 教务导入 33 项
+node sync-test.js         # 双端同步 22 项（mock GitHub API）
+node bot-test.js          # 小助手解析
+```
+全部应通过、零 JS 报错。注意：测试脚本里的日期断言已动态化，但若改动预置数据（TEST_STATE）需同步检查。
+
+## ⚠️ 当前未完成状态（接手必读）
+
+**农历功能有 +1 天偏移 bug，代码在本地已改但未 commit/push（线上没有此功能）。**
+
+- 已加代码：app.js 里 `solarToLunar()` / `calendarLine()`（LUNAR_INFO 历表算法），概览 hero-date 和日志标题已接入显示
+- bug：算出的农历比实际**早一天**（如 2026-02-17 春节被算成"腊月廿九"，2026 中秋 9/25 被算成"八月十四"）
+- 测试：`node lunar-test.js`（6 个锚点目前只过 1 个）
+- 排查方向：基准日 `new Date(1900, 0, 31)` 与 offset 计算、闰月分支（2026 无闰月也偏，重点查 while 循环边界）
+- 修复后：`git add -A && git commit && git push` 部署
+
+如果不想修，可以 `git checkout -- app.js` 回滚农历改动（回滚后概览/日志显示公历+周次，无农历）。
+
+## 用户偏好与约束（改功能时注意）
+
+- 课表数据：通信 2403 班本学期真实课表（33 块，来源教务系统），**没有 EDA 技术和数字图像处理**；开学日 2026-08-31（第 1 周）；作息为八小节制每节 50 分钟（第1-2节 08:00-09:50 / 3-4节 10:10-12:00 / 5-6节 14:00-15:50 / 7-8节 16:10-18:00 / 9-10节 19:00-20:50）
+- 浏览器：电脑 Edge、手机 Android Chrome
+- 设计风格：「纸上学园手账」（米色点阵纸底、便利贴课程块、荧光笔标题），用户已认可，**不要改成通用后台风格**
+- 用户不是程序员，沟通避免术语；他喜欢的功能：按周看课表、小助手语音速记、状态条
+- GitHub 国内访问不稳定，push/部署偶尔失败属正常，重试即可
+
+## 小助手（自然语言解析）已支持的写法
+
+日期：今天/明天/后天/周X/下周X/X月X日/X号（含全角数字、汉字"九月五日"）；时间：X点半/晚上X点/X点到Y点；节次：1-2节；周次：第X周/X-Y周/单周/双周；教室：9A101 格式；"重要/紧急"升优先级。意图判定：节次或"补课/调课"等→课程；日期+考/试/竞赛/截止→倒计时；默认→待办。识别卡片上可一键切换类型纠正。
+
+## 数据模型速查
+
+state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt, courses[{id,name,teacher,room,day:1-7,slot:0-4,sec?,weeks,color,updatedAt}], todos[], logs{date:{entries[],note,entriesUpdatedAt,noteUpdatedAt}}, habits[], countdowns[], links[], tombstones[{id,at}], sync{gistId,lastPush,lastPull} }
+- weeks 规范格式："all"|"odd"|"even"|"1-17"|"1-15单"|"1,3,5"（weekSet() 统一解析，支持逗号混合）
+- 多端合并：字段级 LWW（updatedAt）+ 删除墓碑（tombstones，防复活）
+- GitHub Token 存 localStorage 单独 key（hzx-workbench-token），不进备份文件

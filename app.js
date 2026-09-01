@@ -542,7 +542,102 @@ function greetWord() {
   return "晚上好";
 }
 
-/* 今日上课状态：正在上 / 下一节 / 已结束 */
+/* ============================================================
+   农历 / 干支 / 节气 / 节日（1900-2100 标准历表算法）
+   ============================================================ */
+const LUNAR_INFO = [
+  0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+  0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+  0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+  0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+  0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+  0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,
+  0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+  0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+  0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+  0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,
+  0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+  0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+  0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+  0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+  0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+  0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+  0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+  0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+  0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+  0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252,
+  0x0d520];
+const LUNAR_MONTHS = "正二三四五六七八九十冬腊";
+const LUNAR_DAYS = ["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十",
+  "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
+  "廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
+const GAN = "甲乙丙丁戊己庚辛壬癸", ZHI = "子丑寅卯辰巳午未申酉戌亥";
+const ZODIAC = "鼠牛虎兔龙蛇马羊猴鸡狗猪";
+const TERM_NAMES = ["小寒","大寒","立春","雨水","惊蛰","春分","清明","谷雨","立夏","小满","芒种","夏至","小暑","大暑","立秋","处暑","白露","秋分","寒露","霜降","立冬","小雪","大雪","冬至"];
+const TERM_MS = 31556925974.7 / 24;   // 每个节气的平均毫秒数（近似，误差≤1天）
+const SOLAR_FEST = { "1/1": "元旦", "2/14": "情人节", "3/8": "妇女节", "3/12": "植树节", "5/1": "劳动节", "5/4": "青年节", "6/1": "儿童节", "8/1": "建军节", "9/10": "教师节", "10/1": "国庆节", "12/25": "圣诞节" };
+const LUNAR_FEST = { "1/1": "春节", "1/15": "元宵节", "2/2": "龙抬头", "5/5": "端午节", "7/7": "七夕节", "8/15": "中秋节", "9/9": "重阳节", "12/8": "腊八节", "12/23": "小年" };
+
+const lunarLeapMonth = y => LUNAR_INFO[y - 1900] & 0xf;
+const lunarLeapDays = y => lunarLeapMonth(y) ? ((LUNAR_INFO[y - 1900] & 0x10000) ? 30 : 29) : 0;
+const lunarMonthDays = (y, m) => (LUNAR_INFO[y - 1900] & (0x10000 >> m)) ? 30 : 29;
+function lunarYearDays(y) {
+  let s = 348;
+  for (let i = 0x8000; i > 0x8; i >>= 1) s += (LUNAR_INFO[y - 1900] & i) ? 1 : 0;
+  return s + lunarLeapDays(y);
+}
+function solarToLunar(date) {
+  let offset = Math.floor((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - new Date(1900, 0, 31)) / 864e5);
+  let y = 1900;
+  while (y < 2101 && offset >= lunarYearDays(y)) { offset -= lunarYearDays(y); y++; }
+  const leap = lunarLeapMonth(y);
+  let m = 1, isLeap = false, days = 0;
+  while (m < 13 && offset > 0) {
+    if (leap > 0 && m === leap + 1 && !isLeap) { --m; isLeap = true; days = lunarLeapDays(y); }
+    else days = lunarMonthDays(y, m);
+    if (isLeap && m === leap + 1) isLeap = false;
+    offset -= days; m++;
+  }
+  if (offset === 0 && leap > 0 && m === leap + 1) { if (isLeap) { isLeap = false; } else { isLeap = true; --m; } }
+  if (offset < 0) { offset += days; --m; }
+  const d = offset + 1;
+  const gz = GAN[(y - 4) % 10] + ZHI[(y - 4) % 12];
+  return {
+    year: y, month: m, day: d, isLeap,
+    monthName: (isLeap ? "闰" : "") + LUNAR_MONTHS[m - 1] + "月",
+    dayName: LUNAR_DAYS[d - 1],
+    ganzhi: gz, zodiac: ZODIAC[(y - 4) % 12],
+    fest: LUNAR_FEST[m + "/" + d] || "",
+    isChuxi: false,
+  };
+}
+function solarTermOf(d) {
+  const base = Date.UTC(1900, 0, 6, 2, 5);
+  const dayUtc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  const n0 = Math.floor((dayUtc - base) / TERM_MS);
+  for (const n of [n0 - 1, n0, n0 + 1]) {
+    const td = new Date(base + n * TERM_MS);
+    if (td.getUTCFullYear() === d.getFullYear() && td.getUTCMonth() === d.getMonth() && td.getUTCDate() === d.getDate())
+      return TERM_NAMES[((n % 24) + 24) % 24];
+  }
+  return "";
+}
+/* 组装一行日历信息：公历+周几+农历+干支生肖+节气/节日 */
+function calendarLine(date, weekTxt) {
+  const L = solarToLunar(date);
+  const tomorrow = solarToLunar(addDays(date, 1));
+  const isChuxi = tomorrow.fest === "春节";
+  const fest = L.fest || SOLAR_FEST[(date.getMonth() + 1) + "/" + date.getDate()] || (isChuxi ? "除夕" : "");
+  const term = solarTermOf(date);
+  const parts = [
+    `${date.getMonth() + 1} 月 ${date.getDate()} 日 · ${weekTxt}`,
+    `${L.monthName}${L.dayName}`,
+    `${L.ganzhi}${L.zodiac}年`,
+  ];
+  if (fest) parts.push(`🏮 ${fest}`);
+  else if (term) parts.push(`· ${term}`);
+  return parts.join(" · ").replace(" · 🏮", " 🏮").replace(" · · ", " · ");
+}
 function classStatusLine() {
   const list = todayCourses();
   const now = new Date();
@@ -570,9 +665,8 @@ RENDERERS.dashboard = function renderDashboard() {
   const w = weekOf(todayStr());
 
   $("#greet").textContent = `${greetWord()}，${state.profile.name || "同学"}`;
-  $("#hero-date").textContent =
-    `${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${DAYS[d.getDay()]}` +
-    (w >= 1 ? ` · 本学期第 ${w} 周（${weekParity(w)}）` : " · 还没开学");
+  const weekInfo = w >= 1 ? ` · 本学期第 ${w} 周（${weekParity(w)}）` : " · 还没开学";
+  $("#hero-date").textContent = calendarLine(d, DAYS[d.getDay()]) + weekInfo;
   const tc = todayCourses();
   $("#hero-sub").textContent = tc.length
     ? `今天有 ${tc.length} 节课，第一节 ${state.slots[tc[0].slot].start} 开上`
@@ -781,7 +875,8 @@ RENDERERS.todos = function renderTodos() {
 RENDERERS.journal = function renderJournal() {
   const d = parseDate(journalDate);
   const w = weekOf(journalDate);
-  $("#j-title").textContent = `${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${DAYS[d.getDay()]}`;
+  const L = solarToLunar(d);
+  $("#j-title").textContent = `${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${DAYS[d.getDay()]} · ${L.monthName}${L.dayName}`;
   $("#j-week").textContent = w >= 1 ? `第 ${w} 周（${weekParity(w)}）`
     : `距开学还有 ${-daysUntil(state.profile.semesterStart)} 天`;
   if ($("#j-date-picker").value !== journalDate) $("#j-date-picker").value = journalDate;
