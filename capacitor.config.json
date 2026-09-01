@@ -1,0 +1,9 @@
+{
+  "appId": "com.hzx.workbench",
+  "appName": "我的工作台",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}

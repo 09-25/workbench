@@ -639,6 +639,15 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .sync-card { margin-top: 18px; }
 .sync-status { font-size: 12.5px; color: var(--ink-2); }
 .sync-card .form-grid { margin-bottom: 14px; }
+.local-only-note {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  color: var(--green);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--green);
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+}
 
 /* ============================================================
    教务导入弹窗

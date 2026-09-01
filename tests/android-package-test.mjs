@@ -17,3 +17,9 @@ for (const file of ['index.html', 'styles.css', 'app.js', 'manifest.webmanifest'
   check('发布资源存在: ' + file, existsSync(resolve(root, 'dist', file)));
 }
 check('Android 工程存在', existsSync(resolve(root, 'android', 'settings.gradle')));
+const variables = readFileSync(resolve(root, 'android', 'variables.gradle'), 'utf8');
+check('最低 Android 版本为 8.0', /minSdkVersion\s*=\s*26/.test(variables));
+const manifest = readFileSync(resolve(root, 'android', 'app/src/main/AndroidManifest.xml'), 'utf8');
+check('Android 应用名称正确', manifest.includes('android:label="@string/app_name"'));
+check('返回键桥接存在', readFileSync(resolve(root, 'app.js'), 'utf8').includes('backButton'));
+check('主 Activity 存在', existsSync(resolve(root, 'android/app/src/main/java/com/hzx/workbench/MainActivity.java')));

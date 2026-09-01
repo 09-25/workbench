@@ -8,6 +8,7 @@
 /* ---------------- 工具 ---------------- */
 const $  = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const IS_NATIVE_APP = Boolean(window.Capacitor?.isNativePlatform?.());
 const pad = n => String(n).padStart(2, "0");
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,
@@ -138,7 +139,7 @@ async function ghApi(path, opts = {}) {
 }
 
 async function pushSync() {
-  if (syncing || !getToken() || !state.sync.gistId) return;
+  if (IS_NATIVE_APP || syncing || !getToken() || !state.sync.gistId) return;
   syncing = true;
   try {
     const payload = JSON.stringify({ ...state, syncedAt: now_ts(), device: deviceName() });
@@ -156,13 +157,13 @@ async function pushSync() {
 }
 let pushTimer = null;
 function pushSyncSoon(delay = 3000) {
-  if (!getToken() || !state.sync.gistId) return;
+  if (IS_NATIVE_APP || !getToken() || !state.sync.gistId) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(pushSync, delay);
 }
 
 async function pullSync(manual = false) {
-  if (syncing || !getToken() || !state.sync.gistId) return;
+  if (IS_NATIVE_APP || syncing || !getToken() || !state.sync.gistId) return;
   syncing = true;
   try {
     const gist = await ghApi(`/gists/${state.sync.gistId}`);
@@ -205,6 +206,7 @@ function isPristineDemo(s) {
 async function fullSync() { await pullSync(true); await pushSync(); }
 
 async function testAndSaveSync() {
+  if (IS_NATIVE_APP) return;
   let token = $("#sync-token").value.trim();
   if (token.startsWith("••••")) token = getToken();          // 占位未改，沿用已存 token
   let gistId = $("#sync-gist").value.trim();
@@ -959,6 +961,10 @@ RENDERERS.settings = function renderSettings() {
     : `<p class="hint" style="margin:0 0 10px">还没有打卡习惯，加一条试试。</p>`;
 
   renderSyncStatus();
+  const syncCard = $(".sync-card");
+  const localNote = $("#local-only-note");
+  if (syncCard) syncCard.hidden = IS_NATIVE_APP;
+  if (localNote) localNote.hidden = !IS_NATIVE_APP;
   const tokenEl = $("#sync-token");
   const saved = getToken();
   if (document.activeElement !== tokenEl) tokenEl.value = saved ? "••••••••（已保存）" : "";
@@ -2029,6 +2035,7 @@ $("#bot-mic").addEventListener("click", () => {
 
 /* 一键配置云同步：#sync=base64({"token":"…","gist":"…"})（配置后立即从 URL 中清除） */
 (function () {
+  if (IS_NATIVE_APP) return;
   const m = location.hash.match(/#sync=([A-Za-z0-9+/=_-]+)/);
   if (!m) return;
   try {
@@ -2066,10 +2073,21 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowRight") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); }
 });
 
-if (getToken() && state.sync.gistId) {
+if (!IS_NATIVE_APP && getToken() && state.sync.gistId) {
   pullSync(false);
   setInterval(() => { if (!document.hidden) pullSync(false); }, 30000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && getToken() && state.sync.gistId) pullSync(false);
+  });
+}
+
+/* Android 返回键：先关闭当前浮层，再回概览，最后交给系统退出 */
+if (IS_NATIVE_APP && window.Capacitor?.Plugins?.App) {
+  window.Capacitor.Plugins.App.addListener("backButton", () => {
+    if (!$("#course-modal").hidden) { closeCourseModal(); return; }
+    if (!$("#import-modal").hidden) { $("#import-modal").hidden = true; return; }
+    if (!$("#bot-panel").hidden) { $("#bot-panel").hidden = true; return; }
+    if (currentPage !== "dashboard") { switchPage("dashboard"); return; }
+    window.Capacitor.Plugins.App.exitApp();
   });
 }
