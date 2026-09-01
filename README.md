@@ -1,4 +1,4 @@
-# 我的工作台
+# work desktop
 
 一个给大学生的本地个人工作台：**课程表 + 待办清单 + 每日记录**，纯原生 HTML/CSS/JS，零依赖、零安装。
 
@@ -64,4 +64,3 @@ my-workbench/
 - [拾光课程表](https://github.com/XingHeYuZhuan/shiguangschedule)、[WakeUp 课程表 BUPT 版](https://github.com/xianfei/WakeupSchedule_BUPT)：节次制课表、周次/单双周逻辑、「从教务导入」的思路
 - [gethomepage/homepage](https://github.com/gethomepage/homepage)、[Dashy](https://github.com/lissy93/dashy)：Widget 卡片式概览、问候语时钟、书签入口区
 - [Super Productivity](https://github.com/johannesjo/super-productivity)：待办 + 习惯打卡 + 记录一体化的思路
-

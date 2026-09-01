@@ -1,6 +1,6 @@
 {
   "appId": "com.hzx.workbench",
-  "appName": "我的工作台",
+  "appName": "work desktop",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "android": {

@@ -1,6 +1,6 @@
 {
-  "name": "我的工作台",
-  "short_name": "工作台",
+  "name": "work desktop",
+  "short_name": "work desktop",
   "description": "大学生的课程表 · 待办 · 每日记录",
   "start_url": "./index.html",
   "scope": "./",
