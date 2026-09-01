@@ -84,13 +84,33 @@ function defaultState() {
   };
 }
 
+// 课程表时间格使用 0-4 下标：第 1-2 节对应第 0 格，第 9-10 节对应第 4 格。
+function slotOf(secA) {
+  return Math.max(0, Math.min(4, Math.floor((secA - 1) / 2)));
+}
+
+// 旧版本曾将教务导入课程整体下移一格。只修复仍保留导入节次、且位置恰好符合旧算法的记录。
+function repairLegacyImportedCourseSlot(course) {
+  const fixed = { ...course };
+  const m = String(fixed.sec || "").match(/^第\s*(\d{1,2})(?:\s*[-–~]\s*\d{1,2})?\s*节/);
+  if (!m) return fixed;
+  const secA = +m[1];
+  const legacySlot = Math.max(1, Math.min(5, Math.ceil(secA / 2)));
+  const expectedSlot = slotOf(secA);
+  if (Number(fixed.slot) === legacySlot && expectedSlot !== legacySlot) {
+    fixed.slot = expectedSlot;
+    fixed.updatedAt = now_ts();
+  }
+  return fixed;
+}
+
 function normalize(d) {
   const def = defaultState();
   return {
     profile: { ...def.profile, ...(d && d.profile || {}) },
     slotsUpdatedAt: d?.slotsUpdatedAt || 0,
     slots: (Array.isArray(d?.slots) && d.slots.length === 5) ? d.slots : def.slots,
-    courses: Array.isArray(d?.courses) ? d.courses : [],
+    courses: Array.isArray(d?.courses) ? d.courses.map(repairLegacyImportedCourseSlot) : [],
     todos: Array.isArray(d?.todos) ? d.todos : [],
     logs: (d?.logs && typeof d?.logs === "object") ? d.logs : {},
     habits: Array.isArray(d?.habits) ? d.habits : [],
@@ -1554,7 +1574,6 @@ function parseBlock(lines) {
   return { name, weeks, teacher, room };
 }
 
-const slotOf = secA => Math.max(1, Math.min(5, Math.ceil(secA / 2)));
 const secLabel = (a, b) => a === b ? `第${a}节` : `第${a}-${b}节`;
 function importColor(name) {
   let h = 0;
