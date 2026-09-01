@@ -249,7 +249,21 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
   background: var(--card-2);
   white-space: nowrap;
 }
-.hero-right { justify-self: end; }
+.hero-right { justify-self: end; min-width: 0; }
+#hero-calendar {
+  width: max-content;
+  padding: 10px;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--accent) 12%, transparent);
+  transform: rotate(1deg);
+}
+.hero-calendar-title { color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.hero-calendar-week, .hero-calendar-days { display: grid; grid-template-columns: repeat(7, 18px); gap: 3px; text-align: center; }
+.hero-calendar-week { color: var(--ink-3); font-size: 9px; margin-bottom: 3px; }
+.hero-calendar-days i, .hero-calendar-week i { font-style: normal; line-height: 18px; font-size: 10px; }
+.hero-calendar-days .is-today { background: var(--accent); border-radius: 50%; color: var(--accent-ink); font-weight: 700; }
+.hero-calendar-empty { visibility: hidden; }
 
 /* —— 今日课程时间线 —— */
 .timeline { display: flex; flex-direction: column; gap: 10px; }
@@ -792,6 +806,9 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   .hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 22px; }
   .hero-left { width: 100%; }
   .hero-clock { font-size: 42px; padding: 10px 20px; }
+  #hero-calendar { padding: 7px; }
+  .hero-calendar-week, .hero-calendar-days { grid-template-columns: repeat(7, 15px); gap: 2px; }
+  .hero-calendar-days i, .hero-calendar-week i { line-height: 15px; font-size: 9px; }
   .form-grid { grid-template-columns: 1fr; }
   .page-title { font-size: 20px; }
   .todo-form .btn { flex: 1; }

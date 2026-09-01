@@ -631,12 +631,28 @@ function calendarLine(date, weekTxt) {
   const term = solarTermOf(date);
   const parts = [
     `${date.getMonth() + 1} 月 ${date.getDate()} 日 · ${weekTxt}`,
-    `${L.monthName}${L.dayName}`,
+    `农历${L.monthName}${L.dayName}`,
     `${L.ganzhi}${L.zodiac}年`,
   ];
   if (fest) parts.push(`🏮 ${fest}`);
   else if (term) parts.push(`· ${term}`);
   return parts.join(" · ").replace(" · 🏮", " 🏮").replace(" · · ", " · ");
+}
+function monthCalendarHTML(date) {
+  const year = date.getFullYear(), month = date.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const start = (firstDay + 6) % 7; // Date API 周日开头，月历按周一开头
+  const days = new Date(year, month + 1, 0).getDate();
+  const today = todayStr(date);
+  const cells = Array.from({ length: 42 }, (_, i) => {
+    const day = i - start + 1;
+    if (day < 1 || day > days) return '<i class="hero-calendar-empty" aria-hidden="true"></i>';
+    const dateStr = year + '-' + pad(month + 1) + '-' + pad(day);
+    return '<i class="' + (dateStr === today ? 'is-today' : '') + '">' + day + '</i>';
+  }).join('');
+  return '<div class="hero-calendar-title">' + year + ' 年 ' + (month + 1) + ' 月</div>' +
+    '<div class="hero-calendar-week"><i>一</i><i>二</i><i>三</i><i>四</i><i>五</i><i>六</i><i>日</i></div>' +
+    '<div class="hero-calendar-days">' + cells + '</div>';
 }
 function classStatusLine() {
   const list = todayCourses();
@@ -667,6 +683,7 @@ RENDERERS.dashboard = function renderDashboard() {
   $("#greet").textContent = `${greetWord()}，${state.profile.name || "同学"}`;
   const weekInfo = w >= 1 ? ` · 本学期第 ${w} 周（${weekParity(w)}）` : " · 还没开学";
   $("#hero-date").textContent = calendarLine(d, DAYS[d.getDay()]) + weekInfo;
+  $("#hero-calendar").innerHTML = monthCalendarHTML(d);
   const tc = todayCourses();
   $("#hero-sub").textContent = tc.length
     ? `今天有 ${tc.length} 节课，第一节 ${state.slots[tc[0].slot].start} 开上`
