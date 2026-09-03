@@ -89,10 +89,11 @@ function slotOf(secA) {
   return Math.max(0, Math.min(4, Math.floor((secA - 1) / 2)));
 }
 
-// 旧版本曾将教务导入课程整体下移一格。只修复仍保留导入节次、且位置恰好符合旧算法的记录。
+// 旧版本曾将教务导入课程整体下移一格。旧数据的节次可能在 sec、课程名或备注中。
 function repairLegacyImportedCourseSlot(course) {
   const fixed = { ...course };
-  const m = String(fixed.sec || "").match(/^第\s*(\d{1,2})(?:\s*[-–~]\s*\d{1,2})?\s*节/);
+  const secText = [fixed.sec, fixed.name, fixed.room].filter(Boolean).join(" ");
+  const m = secText.match(/(?:第|\[)?\s*(\d{1,2})(?:\s*[-–~]\s*\d{1,2})?\s*节/);
   if (!m) return fixed;
   const secA = +m[1];
   const legacySlot = Math.max(1, Math.min(5, Math.ceil(secA / 2)));

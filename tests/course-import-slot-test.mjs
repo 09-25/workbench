@@ -22,6 +22,9 @@ const repairLegacyImportedCourseSlot = Function(
 if (repairLegacyImportedCourseSlot({ slot: 1, sec: '第1-2节' }).slot !== 0) {
   throw new Error('已导入的第 1-2 节课程没有自动回到第一个时间格');
 }
+if (repairLegacyImportedCourseSlot({ slot: 1, name: '通信原理 (22093601.01) [1-2节]' }).slot !== 0) {
+  throw new Error('节次写在旧课程名称中的第 1-2 节课程没有自动回到第一个时间格');
+}
 if (repairLegacyImportedCourseSlot({ slot: 0, sec: '第1-2节' }).slot !== 0) {
   throw new Error('正确位置的课程不应被二次移动');
 }
