@@ -507,25 +507,35 @@ function canonicalWeeks(set) {
   }
   const step1 = arr.every((n, i) => i === 0 || n === arr[i - 1] + 1);
   if (step1) return arr[0] === 1 && arr[arr.length - 1] >= 23 ? "all" : `${arr[0]}-${arr[arr.length - 1]}`;
-  return arr.join(",");
+  // 断开的连续区间保留为教务系统常见格式，如 2-5,7-9 或 1-9,11-16。
+  const parts = [];
+  for (let i = 0; i < arr.length;) {
+    const start = arr[i];
+    let end = start;
+    while (arr[i + 1] === end + 1) end = arr[++i];
+    parts.push(start === end ? String(start) : `${start}-${end}`);
+    i++;
+  }
+  return parts.join(",");
 }
 /* 从教务文本（"1-17周"、"1-15周(单)"、"第3周"、"单周"…）解析成规范格式 */
 function specFromEduText(raw) {
   if (!raw) return null;
   let t = String(raw).replace(/周次|星期|第/g, "").replace(/[（(]\s*([单双])\s*[)）]/g, "$1")
-    .replace(/单周/g, "单").replace(/双周/g, "双").replace(/[–~]/g, "-").replace(/\s+/g, "");
+    .replace(/单周/g, "单").replace(/双周/g, "双").replace(/[–~]/g, "-").trim();
   const parity = /单/.test(t) ? "单" : /双/.test(t) ? "双" : "";
-  const range = t.match(/(\d+)-(\d+)/);
-  if (range) {
+  // 教务单元格常见："(2-5,7-9 9A610)"。只取括号/文本开头的周次段，教室号不能参与解析。
+  const weekPart = t.match(/(?:^|[（(])\s*(\d{1,2}(?:\s*-\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*-\s*\d{1,2})?)*)/);
+  if (weekPart) {
     const s = new Set();
-    for (let w = +range[1]; w <= Math.min(+range[2], 30); w++)
-      if (!parity || (parity === "单" ? w % 2 === 1 : w % 2 === 0)) s.add(w);
-    return canonicalWeeks(s);
-  }
-  const nums = (t.match(/\d+/g) || []).map(Number).filter(n => n >= 1 && n <= 30);
-  if (nums.length) {
-    const s = new Set(nums.filter(n => !parity || (parity === "单" ? n % 2 === 1 : n % 2 === 0)));
-    return canonicalWeeks(s.size ? s : new Set([999]));
+    for (const token of weekPart[1].split(/\s*[,，、]\s*/)) {
+      const m = token.match(/^(\d{1,2})(?:\s*-\s*(\d{1,2}))?$/);
+      if (!m) continue;
+      const a = +m[1], b = +(m[2] || m[1]);
+      for (let w = Math.min(a, b); w <= Math.min(Math.max(a, b), 30); w++)
+        if (w >= 1 && (!parity || (parity === "单" ? w % 2 === 1 : w % 2 === 0))) s.add(w);
+    }
+    if (s.size) return canonicalWeeks(s);
   }
   if (parity) return parity === "单" ? "odd" : "even";
   return null;
