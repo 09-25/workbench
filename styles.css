@@ -891,7 +891,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 @media print {
   body { background: #fff !important; }
   [data-theme] { --bg: #fff; --card: #fff; --card-2: #fafafa; --ink: #111; --ink-2: #444; --ink-3: #777; --line: #ddd; --line-strong: #bbb; --shadow: none; --dot: transparent; }
-  .sidebar, .tabbar, .page-actions, .week-switch, .hint, .toast,
+  .sidebar, .tabbar, .page-actions, .week-switch, .hint, .toast, .bot-fab, .bot-panel,
   #import-modal, #course-modal, .hero-status, .theme-dot, .sidebar-foot { display: none !important; }
   .app { display: block; }
   .main { padding: 0; max-width: none; }

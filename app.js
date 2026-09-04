@@ -1365,6 +1365,10 @@ document.addEventListener("click", e => {
     case "sync-disconnect": disconnectSync(); break;
 
     /* 小助手 */
+    case "bot-clear":
+      $("#bot-msgs").innerHTML = "";
+      botGreet();
+      break;
     case "bot-toggle": {
       const panel = $("#bot-panel");
       if (!panel.hidden && botRecording && botRec) {   // 关面板时停止语音
@@ -2162,7 +2166,6 @@ async function parsePdfBuffer(u8) {
       }
       secBand = { left: 0, right: dayBands[0].left };
       headRow = r;
-      if (window.__PDF_DEBUG__) console.log("[pdf表头]", "dayBands=", JSON.stringify(dayBands.map(b => [b.day, Math.round(b.left), Number.isFinite(b.right) ? Math.round(b.right) : "∞"])));
       break;
     }
     if (!headRow || !dayBands.length)
@@ -2689,7 +2692,7 @@ setInterval(() => {                    // 上课状态条每 30 秒刷新
   }
 }, 30000);
 
-/* 课表页：键盘 ←/→ 翻周 */
+/* 课表页：键盘 ←/→ 翻周 + 手机左右滑动翻周 */
 document.addEventListener("keydown", e => {
   if (currentPage !== "timetable") return;
   if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
@@ -2698,6 +2701,25 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) - 1; renderCurrent(); }
   if (e.key === "ArrowRight") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); }
 });
+/* 手机手势：课表网格上横向滑动 60px 以上翻周（纵向滚动不受影响） */
+(() => {
+  let sx = 0, sy = 0, on = false;
+  document.addEventListener("touchstart", e => {
+    if (currentPage !== "timetable" || e.touches.length !== 1) return;
+    if (!document.querySelector("#tt-grid")?.contains(e.target)) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true;
+  }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if (!on) return;
+    on = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // 只认横向滑动意图
+    if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
+    viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + (dx < 0 ? 1 : -1);
+    renderCurrent();
+  }, { passive: true });
+})();
 
 if (!IS_NATIVE_APP && getToken() && state.sync.gistId) {
   pullSync(false);
