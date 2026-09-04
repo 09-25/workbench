@@ -5,7 +5,7 @@
     "build:web": "node scripts/build-web.mjs",
     "android:sync": "npm run build:web && npx cap sync android",
     "android:open": "npm run android:sync && npx cap open android",
-    "android:build": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:build": "npm run android:sync && cd android && gradlew.bat assembleRelease",
     "android:release": "npm run android:sync && npx cap build android"
   },
   "dependencies": {

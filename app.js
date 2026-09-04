@@ -48,7 +48,7 @@ const weekParity = w => (w % 2 === 1 ? "单周" : "双周");
 
 /* ---------------- 数据 ---------------- */
 const KEY = "hzx-workbench-v1";
-const TOKEN_KEY = "hzx-workbench-token";     // GitHub token 单独存，不进备份文件
+const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
 function stampAll(s) {                        // 整体替换类操作后，把所有条目标为"刚变更"
@@ -167,8 +167,11 @@ function save(scheduleSync = true) {
 }
 
 /* ---------------- GitHub Gist 云同步 ---------------- */
-const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
-const setToken = t => t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY);
+// 同步 Token 只留在当前网页会话内；旧版持久 Token 会在升级后主动清除。
+let syncToken = "";
+const getToken = () => syncToken;
+const setToken = t => { syncToken = String(t || "").trim(); };
+try { localStorage.removeItem(LEGACY_TOKEN_KEY); } catch (e) { console.warn(e); }
 function deviceName() {
   let d = localStorage.getItem("hzx-workbench-device");
   if (!d) {
@@ -267,9 +270,11 @@ async function fullSync() { await pullSync(true); await pushSync(); }
 async function testAndSaveSync() {
   if (IS_NATIVE_APP) return;
   let token = $("#sync-token").value.trim();
-  if (token.startsWith("••••")) token = getToken();          // 占位未改，沿用已存 token
+  if (token.startsWith("••••")) token = getToken();          // 会话内未改，沿用当前 Token
   let gistId = $("#sync-gist").value.trim();
   if (!token) { toast("请先粘贴 GitHub Token（下面有申请链接）"); return; }
+  const previousToken = getToken();
+  setToken(token);                                              // API 校验必须使用本次手动输入的 Token
   try {
     if (gistId) {
       await ghApi(`/gists/${gistId}`);
@@ -301,6 +306,7 @@ async function testAndSaveSync() {
     toast("✅ 云同步已连接");
     fullSync();
   } catch (e) {
+    setToken(previousToken);
     toast("连接失败：" + e.message);
   }
 }
@@ -314,11 +320,11 @@ const fmtClock = ts => ts ? new Date(ts).toLocaleTimeString("zh-CN", { hour: "2-
 function renderSyncStatus() {
   const el = $("#sync-status"); if (!el) return;
   const on = !!getToken() && !!state.sync.gistId;
-  el.innerHTML = on
-    ? `<span style="color:var(--green)">● 已连接</span>&nbsp; 推送 ${fmtClock(state.sync.lastPush)} · 拉取 ${fmtClock(state.sync.lastPull)} · 本设备「${deviceName()}」`
-    : `○ 未连接。配置 Token 后，电脑和手机的数据将自动同步。`;
+  el.textContent = on
+    ? `● 已连接 · 推送 ${fmtClock(state.sync.lastPush)} · 拉取 ${fmtClock(state.sync.lastPull)} · 本设备「${deviceName()}」`
+    : "○ 未连接。本次网页会话内手动配置 Token 后才会同步。";
   const ind = $("#sync-ind");
-  if (ind) ind.innerHTML = on ? '<span style="color:var(--green)">●</span> 已同步' : "";
+  if (ind) ind.textContent = on ? "● 已同步" : "";
 }
 
 /* ---------------- PWA（https 部署后生效，本地双击打开自动跳过） ---------------- */
@@ -811,7 +817,7 @@ RENDERERS.dashboard = function renderDashboard() {
   $("#today-todos").innerHTML = shown.length ? shown.map(todoItemHTML).join("")
     : `<div class="empty"><span class="e-ico">🍃</span>今天没有待办，轻松～</div>`;
   const total = state.todos.length, done = state.todos.filter(t => t.done).length;
-  $("#todo-progress").style.width = total ? `${Math.round(done / total * 100)}%` : "0";
+  $("#todo-progress").value = total ? Math.round(done / total * 100) : 0;
   $("#todo-progress-text").textContent = total ? `全部待办 ${done} / ${total}` : "还没有待办";
 
   /* 倒计时（过期超过 7 天的自动隐藏，避免页面堆僵尸卡片） */
@@ -834,7 +840,7 @@ RENDERERS.dashboard = function renderDashboard() {
     }
     const st = habitStreak(h);
     return `<div class="hab-row"><span class="hab-name">${esc(h.name)}</span>
-      <span style="display:flex;align-items:center;gap:8px">
+      <span class="habit-row-meta">
         ${st ? `<span class="hab-streak">🔥${st}天</span>` : ""}
         <span class="hab-week">${dots}</span>
       </span></div>`;
@@ -932,9 +938,9 @@ RENDERERS.timetable = function renderTimetable() {
   });
 
   const emptyWeek = weekMode === "week" && shownCount === 0;
-  if (emptyWeek) html = `<div class="empty" style="grid-column:1/-1"><span class="e-ico">🏖️</span>第 ${week} 周没有课，好好休息</div>`;
+  if (emptyWeek) html = `<div class="empty empty-wide"><span class="e-ico">🏖️</span>第 ${week} 周没有课，好好休息</div>`;
   $("#tt-grid").innerHTML = html;
-  $("#tt-grid").style.display = emptyWeek ? "block" : "";
+  $("#tt-grid").classList.toggle("tt-empty", emptyWeek);
 };
 
 /* ============================================================
@@ -1005,8 +1011,8 @@ RENDERERS.journal = function renderJournal() {
   const entries = (log?.entries || []).slice().reverse();
   $("#entry-list").innerHTML = entries.length ? entries.map(e =>
     `<div class="tl-item"><div class="tl-time entry-time">${esc(e.time)}</div>
-      <div class="tl-body"><div class="tl-title" style="font-weight:400;font-size:14px">${esc(e.text)}</div></div>
-      <button class="todo-del" style="opacity:.6" data-action="del-entry" data-id="${e.id}" title="删除">✕</button></div>`).join("")
+      <div class="tl-body"><div class="tl-title entry-text">${esc(e.text)}</div></div>
+      <button class="todo-del subtle-delete" data-action="del-entry" data-id="${e.id}" title="删除">✕</button></div>`).join("")
     : `<div class="empty"><span class="e-ico">🗒️</span>这一天还没记录</div>`;
 
   $("#habit-list").innerHTML = state.habits.length ? state.habits.map(h => {
@@ -1031,7 +1037,7 @@ let settingsTab = "basic";
 function setSettingsTab(t) {
   settingsTab = t;
   $$("#set-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
-  $$('#page-settings .card[data-group]').forEach(c => c.style.display = c.dataset.group === t ? "" : "none");
+  $$('#page-settings .card[data-group]').forEach(c => { c.hidden = c.dataset.group !== t; });
 }
 
 RENDERERS.settings = function renderSettings() {
@@ -1048,18 +1054,18 @@ RENDERERS.settings = function renderSettings() {
     `<div class="edit-row"><input data-cd-name="${i}" placeholder="名称" value="${esc(c.name)}">
       <input type="date" data-cd-date="${i}" value="${esc(c.date)}">
       <button class="del-mini" data-action="cd-del" data-i="${i}">✕</button></div>`).join("")
-    : `<p class="hint" style="margin:0 0 10px">还没有倒计时，比如「六级笔试」「期末考试周」。</p>`;
+    : `<p class="hint settings-empty-hint">还没有倒计时，比如「六级笔试」「期末考试周」。</p>`;
 
   $("#s-links").innerHTML = state.links.length ? state.links.map((l, i) =>
     `<div class="edit-row"><input data-link-name="${i}" placeholder="名称" value="${esc(l.name)}">
       <input data-link-url="${i}" placeholder="网址 https://…" value="${esc(l.url)}">
       <button class="del-mini" data-action="link-del" data-i="${i}">✕</button></div>`).join("")
-    : `<p class="hint" style="margin:0 0 10px">还没有常用入口，加上教务系统、慕课等网址。</p>`;
+    : `<p class="hint settings-empty-hint">还没有常用入口，加上教务系统、慕课等网址。</p>`;
 
   $("#s-habits").innerHTML = state.habits.length ? state.habits.map((h, i) =>
     `<div class="edit-row single"><input data-habit-name="${i}" placeholder="习惯名称，如：背 50 个单词" value="${esc(h.name)}">
       <button class="del-mini" data-action="habit-del" data-i="${i}">✕</button></div>`).join("")
-    : `<p class="hint" style="margin:0 0 10px">还没有打卡习惯，加一条试试。</p>`;
+    : `<p class="hint settings-empty-hint">还没有打卡习惯，加一条试试。</p>`;
 
   renderSyncStatus();
   const syncCard = $(".sync-card");
@@ -1068,7 +1074,7 @@ RENDERERS.settings = function renderSettings() {
   if (localNote) localNote.hidden = !IS_NATIVE_APP;
   const tokenEl = $("#sync-token");
   const saved = getToken();
-  if (document.activeElement !== tokenEl) tokenEl.value = saved ? "••••••••（已保存）" : "";
+  if (document.activeElement !== tokenEl) tokenEl.value = saved ? "••••••••（本次会话）" : "";
   $("#sync-gist").value = state.sync.gistId || "";
   setSettingsTab(settingsTab);
 };
@@ -1097,7 +1103,7 @@ function openCourseModal(course, day, slot) {
   const w = course?.weeks || "all";
   $("#f-weeks").value = ["all", "odd", "even"].includes(w) ? w : "custom";
   const customInput = $("#f-weeks-custom");
-  customInput.style.display = $("#f-weeks").value === "custom" ? "" : "none";
+  customInput.hidden = $("#f-weeks").value !== "custom";
   customInput.value = $("#f-weeks").value === "custom" ? (course?.weeks || "") : "";
 
   const defColor = course ? course.color % COLOR_N : state.courses.length % COLOR_N;
@@ -1503,7 +1509,7 @@ $("#course-form").addEventListener("submit", e => {
 /* —— 其他 change / input —— */
 document.addEventListener("change", e => {
   if (e.target.id === "f-weeks") {
-    $("#f-weeks-custom").style.display = e.target.value === "custom" ? "" : "none";
+    $("#f-weeks-custom").hidden = e.target.value !== "custom";
   }
   if (e.target.id === "j-date-picker" && e.target.value) {
     journalDate = e.target.value; renderCurrent();
@@ -1572,7 +1578,7 @@ function impStatus(ok, msg) {
   const el = $("#imp-status");
   el.hidden = false;
   el.className = "imp-status " + (ok ? "ok" : "bad");
-  el.innerHTML = msg;
+  el.textContent = msg;
 }
 
 /* 单元格 → 纯文本（<br> 与块级标签转行，保留换行结构） */
@@ -1826,7 +1832,7 @@ function parseImportTSV(text) {
 
 function handleImportRaw(raw, label) {
   if (raw.startsWith("PK")) {
-    impStatus(false, "这是真正的 Excel(.xlsx) 二进制文件。<b>请用 Excel 打开 → 全选 → 复制 → 粘贴到上面</b>，或从教务课表网页直接全选复制。");
+    impStatus(false, "这是真正的 Excel(.xlsx) 二进制文件。请用 Excel 打开 → 全选 → 复制 → 粘贴到上面，或从教务课表网页直接全选复制。");
     return;
   }
   if (raw.slice(0, 2) === "\u00d0\u00cf") {
@@ -1839,7 +1845,7 @@ function handleImportRaw(raw, label) {
   if (!res) { impStatus(false, "内容没认出来：需要包含表格的 HTML，或带制表符（Excel）的表格文本。"); return; }
   if (!res.ok) { impStatus(false, res.msg); return; }
   pendingImport = res.courses;
-  impStatus(true, `✅ 从${label}解析出 <b>${res.courses.length} 门课程</b>。检查预览没问题后点「合并导入」或「替换整个课表」。`);
+  impStatus(true, `✅ 从${label}解析出 ${res.courses.length} 门课程。检查预览没问题后点「合并导入」或「替换整个课表」。`);
   renderImportPreview();
 }
 
@@ -1849,10 +1855,10 @@ function renderImportPreview() {
   $("#imp-count").textContent = `共 ${pendingImport.length} 门`;
   $("#imp-preview").innerHTML = pendingImport.map(c =>
     `<div class="imp-row">
-      <i class="imp-dot" style="background:var(--n${c.color}-bg)"></i>
+      <i class="imp-dot" data-c="${c.color}"></i>
       <b>${esc(c.name)}</b>
       <span class="muted">周${"一二三四五六日"[c.day - 1]} · ${esc(c.sec)} · ${esc(weeksLabel(c.weeks))}${c.teacher ? " · " + esc(c.teacher) : ""}${c.room ? " · " + esc(c.room) : ""}</span>
-      <button class="todo-del" style="opacity:.7" data-action="imp-remove" data-id="${c.id}">✕</button>
+      <button class="todo-del faded-delete" data-action="imp-remove" data-id="${c.id}">✕</button>
     </div>`).join("");
 }
 
@@ -1879,7 +1885,7 @@ $("#imp-paste").addEventListener("paste", e => {
   $("#imp-paste").textContent = text ? "已收到粘贴内容…" : "";
   if (/<table|<td|<tr/i.test(html || "")) handleImportRaw(html, "粘贴的网页表格");
   else if (text && (text.includes("\t") || WEEK_LINE.test(text))) handleImportRaw(text, "粘贴的表格文本");
-  else impStatus(false, "粘贴内容里没有表格。请在教务系统<b>课表页面</b> Ctrl+A 全选后再复制，或从 Excel 全选复制。");
+  else impStatus(false, "粘贴内容里没有表格。请在教务系统课表页面 Ctrl+A 全选后再复制，或从 Excel 全选复制。");
 });
 
 $("#imp-file").addEventListener("change", e => {
@@ -2162,7 +2168,7 @@ function botCardHTML(p, id) {
     body = `「${esc(p.title)}」<br>截止：${p.due ? esc(p.due) : '不限'}${p.time ? ' · ' + esc(p.time) : ''} · ${priName}`;
   } else if (p.kind === 'course') {
     if (!p.day) {
-      body = `「${esc(p.title)}」<br><span style="color:var(--accent)">没听清日子——带上「周几」（如 周三1-2节）或「X月X日」（如 9月5日1-2节）再发一次</span>`;
+      body = `「${esc(p.title)}」<br><span class="bot-warning">没听清日子——带上「周几」（如 周三1-2节）或「X月X日」（如 9月5日1-2节）再发一次</span>`;
     } else {
       const slot = Math.max(0, Math.min(4, Math.ceil((p.secA || 1) / 2) - 1));
       p.slot = slot; p.secA = p.secA || 1; p.secB = p.secB || p.secA + 1;
@@ -2170,7 +2176,7 @@ function botCardHTML(p, id) {
       body = `「${esc(p.title)}」<br>周${'一二三四五六日'[p.day - 1]} · ${esc(state.slots[p.slot].label)}（${state.slots[p.slot].start}）· ${p.weeksNorm === 'all' ? '每周' : esc(weeksLabel(p.weeksNorm))}${p.room ? ' · ' + esc(p.room) : ''}`;
     }
   } else {
-    body = `「${esc(p.title)}」· ${p.due ? esc(p.due) : '<span style="color:var(--accent)">还差日期，带上「X月X日」再发一次</span>'}`;
+    body = `「${esc(p.title)}」· ${p.due ? esc(p.due) : '<span class="bot-warning">还差日期，带上「X月X日」再发一次</span>'}`;
   }
   const canApply = !(p.kind === 'course' && !p.day);
   return `<div class="bot-kinds">${kindTabs}</div>识别到 → <b>${{ todo: '待办', course: '课程', countdown: '倒计时' }[p.kind]}</b><br>${body}
@@ -2219,7 +2225,7 @@ function botApply(id) {
   save();
   renderCurrent();
   $$(`#bot-msgs [data-card-id="${id}"]`).forEach(d => {
-    d.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = .5; });
+    d.querySelectorAll('button').forEach(b => { b.disabled = true; b.classList.add("is-applied"); });
   });
   botSay(doneMsg);
   if (window.matchMedia('(min-width: 921px)').matches) $("#bot-text").focus();
@@ -2282,25 +2288,6 @@ $("#bot-mic").addEventListener("click", () => {
   };
   try { botRec.start(); } catch (e) { console.warn(e); }
 });
-
-/* 一键配置云同步：#sync=base64({"token":"…","gist":"…"})（配置后立即从 URL 中清除） */
-(function () {
-  if (IS_NATIVE_APP) return;
-  const m = location.hash.match(/#sync=([A-Za-z0-9+/=_-]+)/);
-  if (!m) return;
-  try {
-    const cfg = JSON.parse(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")));
-    if (cfg.token && cfg.gist) {
-      localStorage.setItem(TOKEN_KEY, cfg.token);
-      state.sync.gistId = cfg.gist;
-      state.sync.lastPush = 0;
-      state.sync.lastPull = 0;
-      save(false);
-      history.replaceState(null, "", location.pathname + location.search);
-      setTimeout(() => { pullSync(true); switchPage("timetable"); }, 600);
-    }
-  } catch (e) { console.warn("sync config parse failed", e); }
-})();
 
 applyTheme();
 switchPage("dashboard");

@@ -88,6 +88,13 @@ body {
 h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .muted { color: var(--ink-3); font-size: 13px; }
 .hint { color: var(--ink-3); font-size: 12.5px; margin-top: 10px; line-height: 1.6; }
+.inline-action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-link { text-decoration: none; }
+.week-field-row { display: flex; gap: 8px; }
+.week-field-row select { flex: 1; }
+.week-field-row input { flex: 1.4; }
+.import-preview-head { margin-top: 14px; }
+.import-preview-hint { margin: 0; flex: 1; }
 
 /* —— 荧光笔划重点 —— */
 .hl {
@@ -300,7 +307,10 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 /* —— 今日待办 —— */
 .progress-wrap { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .progress { flex: 1; height: 8px; background: var(--card-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
-.progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #e8a23c)); border-radius: 99px; transition: width .4s ease; }
+.progress progress { display: block; width: 100%; height: 100%; appearance: none; border: 0; background: transparent; }
+.progress progress::-webkit-progress-bar { background: transparent; }
+.progress progress::-webkit-progress-value { background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #e8a23c)); border-radius: 99px; transition: width .4s ease; }
+.progress progress::-moz-progress-bar { background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #e8a23c)); border-radius: 99px; }
 
 /* —— 倒计时 —— */
 .count-list { display: flex; flex-direction: column; gap: 10px; }
@@ -313,6 +323,7 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 .habit-summary { display: flex; flex-direction: column; gap: 9px; }
 .hab-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .hab-name { font-size: 13.5px; }
+.habit-row-meta { display: flex; align-items: center; gap: 8px; }
 .hab-week { display: flex; gap: 4px; }
 .hab-dot { width: 13px; height: 13px; border-radius: 4px; border: 1.5px solid var(--line-strong); background: transparent; }
 .hab-dot.on { background: var(--green); border-color: var(--green); }
@@ -365,6 +376,8 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 
 .tt-wrap { overflow-x: auto; padding: 16px; }
 .tt { display: grid; grid-template-columns: 74px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 780px; }
+.tt.tt-empty { display: block; min-width: 0; }
+.empty-wide { grid-column: 1 / -1; }
 
 .tt-head {
   text-align: center; padding: 8px 0 10px;
@@ -498,6 +511,8 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 }
 .todo-item:hover .todo-del { opacity: 1; }
 .todo-del:hover { color: var(--accent); background: var(--accent-soft); }
+.subtle-delete { opacity: .6; }
+.faded-delete { opacity: .7; }
 
 /* ============================================================
    日志
@@ -522,6 +537,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .entry-form { display: flex; gap: 9px; margin-bottom: 14px; }
 .entry-form input { flex: 1; min-width: 0; }
 .entry-time { font-variant-numeric: tabular-nums; }
+.entry-text { font-weight: 400; font-size: 14px; }
 
 .habit-list { display: flex; flex-direction: column; gap: 9px; }
 .habit-pill {
@@ -551,6 +567,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .form-grid label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--ink-2); min-width: 0; }
 .field input, .field select { font-size: 14px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.settings-empty-hint { margin: 0 0 10px; }
 #course-form { display: flex; flex-direction: column; gap: 13px; }
 
 .slot-row { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 9px; margin-bottom: 9px; align-items: center; }
@@ -722,6 +739,14 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .imp-row b { flex: none; max-width: 32%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-row .muted { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.imp-dot[data-c="0"] { background: var(--n0-bg); }
+.imp-dot[data-c="1"] { background: var(--n1-bg); }
+.imp-dot[data-c="2"] { background: var(--n2-bg); }
+.imp-dot[data-c="3"] { background: var(--n3-bg); }
+.imp-dot[data-c="4"] { background: var(--n4-bg); }
+.imp-dot[data-c="5"] { background: var(--n5-bg); }
+.imp-dot[data-c="6"] { background: var(--n6-bg); }
+.imp-dot[data-c="7"] { background: var(--n7-bg); }
 
 /* ============================================================
    空状态 / Toast
@@ -786,6 +811,8 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .bot-card b { color: var(--accent); }
 .bot-card .btn { margin-top: 8px; }
 .bot-card .btn:disabled { opacity: .55; cursor: default; transform: none; }
+.bot-warning { color: var(--accent); }
+.is-applied { opacity: .5; }
 .bot-kinds { display: flex; gap: 6px; margin-bottom: 8px; }
 .bot-kind {
   font-size: 12px; padding: 3px 13px; border-radius: 99px;

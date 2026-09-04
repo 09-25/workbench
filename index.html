@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#c2452c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -85,7 +86,7 @@
           </div>
           <div id="today-todos"></div>
           <div class="progress-wrap">
-            <div class="progress"><i id="todo-progress"></i></div>
+            <div class="progress"><progress id="todo-progress" max="100" value="0"></progress></div>
             <span class="muted" id="todo-progress-text"></span>
           </div>
         </div>
@@ -127,7 +128,7 @@
           </div>
           <p class="page-sub" id="tt-sub"></p>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="inline-action-row">
           <button class="btn" data-action="export-ics">📅 导出到日历</button>
           <button class="btn" data-action="open-import">📥 从教务导入</button>
           <button class="btn btn-primary" data-action="add-course-any">＋ 添加课程</button>
@@ -273,7 +274,7 @@
           <div id="sync-status" class="sync-status"></div>
         </div>
         <div class="form-grid">
-          <label>GitHub Token（私密，只存本机）
+          <label>GitHub Token（仅本次网页会话）
             <input id="sync-token" type="password" placeholder="粘贴 GitHub Token" autocomplete="off">
           </label>
           <label>Gist ID（第一次不用填，自动创建）
@@ -284,9 +285,9 @@
           <button class="btn btn-primary" data-action="sync-connect">连接并开始同步</button>
           <button class="btn" data-action="sync-now">立即同步</button>
           <button class="btn btn-danger" data-action="sync-disconnect">断开</button>
-          <a class="btn" style="text-decoration:none" href="https://github.com/settings/tokens/new?scopes=gist&description=workbench-sync" target="_blank" rel="noopener">去生成 Token →</a>
+          <a class="btn btn-link" href="https://github.com/settings/tokens/new?scopes=gist&description=workbench-sync" target="_blank" rel="noopener">去生成 Token →</a>
         </div>
-        <p class="hint">Token 只保存在这台设备的浏览器里。连接后改动会在几秒内自动推到云端，其他设备 30 秒内自动拉取合并；网页打不开 GitHub 时本地照常用，恢复后自动补推。手机和电脑需登录<b>同一个</b> GitHub 账号的 Token。</p>
+        <p class="hint">Token 只在本次网页会话内保存；关闭或刷新网页后需重新粘贴。连接后改动会在几秒内自动推到云端，其他设备 30 秒内自动拉取合并；网页打不开 GitHub 时本地照常用，恢复后自动补推。手机和电脑需登录<b>同一个</b> GitHub 账号的 Token。</p>
       </div>
 
       <div class="card data-card" data-group="data">
@@ -350,14 +351,14 @@
         <label class="field">节次<select id="f-slot"></select></label>
       </div>
       <label class="field">周次
-        <div style="display:flex;gap:8px">
-          <select id="f-weeks" style="flex:1">
+        <div class="week-field-row">
+          <select id="f-weeks">
             <option value="all">每周都上</option>
             <option value="odd">单周上</option>
             <option value="even">双周上</option>
             <option value="custom">自定义…</option>
           </select>
-          <input id="f-weeks-custom" placeholder="如 1-16周 / 1-15单周 / 1,3,5" style="flex:1.4;display:none">
+          <input id="f-weeks-custom" placeholder="如 1-16周 / 1-15单周 / 1,3,5" hidden>
         </div>
       </label>
       <label class="field">便利贴颜色<div class="swatches" id="f-colors"></div></label>
@@ -435,13 +436,13 @@
     <div id="imp-status" class="imp-status" hidden></div>
 
     <div id="imp-preview-wrap" hidden>
-      <div class="card-head" style="margin-top:14px">
+      <div class="card-head import-preview-head">
         <h2>解析结果预览 <span class="muted" id="imp-count"></span></h2>
         <button class="btn btn-sm" data-action="imp-clear">清空预览</button>
       </div>
       <div id="imp-preview" class="imp-preview"></div>
       <div class="modal-foot">
-        <span class="hint" style="margin:0;flex:1">点每行 ✕ 可剔除识别错的内容，同一门课会自动用同一种颜色。</span>
+        <span class="hint import-preview-hint">点每行 ✕ 可剔除识别错的内容，同一门课会自动用同一种颜色。</span>
         <button class="btn" data-action="imp-merge">合并导入</button>
         <button class="btn btn-primary" data-action="imp-replace">替换整个课表</button>
       </div>
