@@ -16,6 +16,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g,
 
 const DAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 const COLOR_N = 8;
+const CURRENT_SEMESTER_START = "2026-08-31";
+const LEGACY_DEFAULT_SEMESTER_START = "2026-08-24";
 
 const DEFAULT_SLOTS = [
   { label: "第1-2节",  start: "08:00", end: "09:50" },
@@ -68,9 +70,8 @@ function addTombstone(ids, t = now_ts()) {
 }
 
 function defaultState() {
-  const thisMonday = mondayOf(new Date());
   return {
-    profile: { name: "同学", semesterStart: todayStr(thisMonday), theme: "paper", namePrompted: false, updatedAt: 0 },
+    profile: { name: "同学", semesterStart: CURRENT_SEMESTER_START, theme: "paper", namePrompted: false, welcomePromptVersion: 1, updatedAt: 0 },
     slotsUpdatedAt: 0,
     slots: DEFAULT_SLOTS.map(s => ({ ...s })),
     courses: [],   // {id,name,teacher,room,day,slot,sec?,weeks,color,updatedAt}
@@ -81,6 +82,24 @@ function defaultState() {
     links: [],     // {id,name,url,updatedAt}
     tombstones: [],// {id, at}
     sync: { gistId: "", lastPush: 0, lastPull: 0 },
+  };
+}
+
+// 2026 秋季学期原先误设为 8 月 24 日；仅迁移该旧默认值，不覆盖用户自己选的日期。
+function migrateDefaultSemesterStart(profile) {
+  if (profile?.semesterStart === LEGACY_DEFAULT_SEMESTER_START) {
+    return { ...profile, semesterStart: CURRENT_SEMESTER_START };
+  }
+  return profile;
+}
+
+// 旧版把演示数据当成“老用户”，导致首次称呼弹窗被静默跳过。
+function migrateWelcomePrompt(profile) {
+  if ((profile?.welcomePromptVersion || 0) >= 1) return profile;
+  return {
+    ...profile,
+    namePrompted: profile?.name === "Hzx" ? false : Boolean(profile?.namePrompted),
+    welcomePromptVersion: 1,
   };
 }
 
@@ -125,8 +144,9 @@ function normalizeCourseStyle(course) {
 
 function normalize(d) {
   const def = defaultState();
+  const profile = migrateWelcomePrompt(migrateDefaultSemesterStart({ ...def.profile, ...(d && d.profile || {}) }));
   return {
-    profile: { ...def.profile, ...(d && d.profile || {}) },
+    profile,
     slotsUpdatedAt: d?.slotsUpdatedAt || 0,
     slots: (Array.isArray(d?.slots) && d.slots.length === 5) ? d.slots : def.slots,
     courses: Array.isArray(d?.courses) ? d.courses.map(repairLegacyImportedCourseSlot).map(repairLegacyImportedCourseWeeks).map(normalizeCourseStyle) : [],
@@ -400,7 +420,7 @@ function habitStreak(h) {
 /* ---------------- 示例数据（固定 id：两端各自的示例在同步时会自动去重） ---------------- */
 function seedDemo(s) {
   s.profile.name = "Hzx";
-  s.profile.semesterStart = "2026-08-24";
+  s.profile.semesterStart = CURRENT_SEMESTER_START;
   const C = (i, name, teacher, room, day, slot, weeks, color) =>
     ({ id: "demo-c" + i, name, teacher, room, day, slot, weeks, color });
   s.courses = [
@@ -480,17 +500,9 @@ function renderCurrent() { RENDERERS[currentPage]?.(); }
 /* ---------------- 主题 ---------------- */
 function applyTheme() { document.documentElement.dataset.theme = state.profile.theme || "paper"; }
 
-/* ---------------- 首次称呼设置（仅真正的新用户弹窗；已有数据的老用户不打扰） ---------------- */
+/* ---------------- 首次称呼设置 ---------------- */
 function shouldPromptForName(profile) {
-  if (profile?.namePrompted) return false;
-  // 有任何真实数据（非初始示例）说明是老用户，静默跳过
-  const hasRealData =
-    state.courses.some(c => !String(c.id).startsWith("demo-")) ||
-    state.todos.some(t => !String(t.id).startsWith("demo-")) ||
-    Object.keys(state.logs || {}).length > 0 ||
-    state.habits.length > 0;
-  if (hasRealData) { state.profile.namePrompted = true; return false; }
-  return true;
+  return !profile?.namePrompted;
 }
 function dismissWelcomeNameModal() {
   if ($("#welcome-modal").hidden) return;
