@@ -616,13 +616,13 @@ function specFromEduText(raw) {
 const weeksLabel = spec =>
   !spec || spec === "all" ? "每周" :
   spec === "odd" ? "单周" : spec === "even" ? "双周" :
-  /^[\d,]+$/.test(spec) && !spec.includes("-") ?
-    (spec.includes(",") ? `第${spec.replace(/,/g, ",")}周` : `第${spec}周`) :
-  spec.replace("单", "周·单").replace("双", "周·双").replace(/^(\d+-\d+)$/, "$1周");
+  /^[\d,，-]+$/.test(spec) ? `第${spec}周` :
+  spec.replace("单", "周·单").replace("双", "周·双");
 function weeksTag(spec) {
   if (!spec || spec === "all") return "";
   if (spec === "odd") return "单周";
   if (spec === "even") return "双周";
+  if (/^[\d,，-]+$/.test(spec)) return spec + "周";
   return spec;                       // 完整显示周次（如 1-3,6-9,11-12），不截断
 }
 
@@ -1862,17 +1862,239 @@ function renderImportPreview() {
     </div>`).join("");
 }
 
-function readImportFile(f) {
-  const r = new FileReader();
-  r.onload = () => {
-    const s = String(r.result);
-    if (s.includes("\uFFFD")) {           // utf-8 读出乱码 → 尝试 GBK（国内教务常见编码）
-      const r2 = new FileReader();
-      r2.onload = () => handleImportRaw(String(r2.result), `文件「${f.name}」`);
-      r2.readAsText(f, "gbk");
-    } else handleImportRaw(s, `文件「${f.name}」`);
-  };
-  r.readAsText(f, "utf-8");
+/* ============================================================
+   .xlsx 课表解析（零依赖）：手写 ZIP 解包 + DecompressionStream
+   解压 + DOMParser 读 XML，支持教务系统导出的网格课表
+   ============================================================ */
+async function xlsxInflate(u8) {
+  const ds = new DecompressionStream("deflate-raw");
+  const stream = new Blob([u8]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function unzipRead(u8, wanted) {
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  /* 反向找 EOCD；文件数据里可能出现假签名，必须验证中央目录起始处 */
+  let eocd = -1, cdStart = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 22 - 65536); i--) {
+    if (dv.getUint32(i, true) !== 0x06054b50) continue;
+    const off = dv.getUint32(i + 16, true);
+    if (off < u8.length && dv.getUint32(off, true) === 0x02014b50) { eocd = i; cdStart = off; break; }
+  }
+  if (eocd < 0) throw new Error("not a zip");
+  const total = dv.getUint16(eocd + 10, true);
+  let p = cdStart;
+  const out = new Map();
+  const dec = new TextDecoder();
+  for (let i = 0; i < total && p + 46 <= u8.length; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true);
+    const compSize = dv.getUint32(p + 20, true);
+    const nameLen = dv.getUint16(p + 28, true);
+    const extraLen = dv.getUint16(p + 30, true);
+    const cmtLen = dv.getUint16(p + 32, true);
+    const lho = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nameLen));
+    p += 46 + nameLen + extraLen + cmtLen;
+    if (!wanted.has(name)) continue;
+    const lnLen = dv.getUint16(lho + 26, true);
+    const leLen = dv.getUint16(lho + 28, true);
+    const dataStart = lho + 30 + lnLen + leLen;
+    const raw = u8.subarray(dataStart, dataStart + compSize);
+    out.set(name, method === 0 ? raw : await xlsxInflate(raw));
+    if (out.size === wanted.size) break;
+  }
+  return out;
+}
+function xlsxXmlDom(u8) {
+  return new DOMParser().parseFromString(new TextDecoder().decode(u8), "text/xml");
+}
+function xlsxCellText(c, shared) {
+  const t = c.getAttribute("t");
+  if (t === "inlineStr") {
+    return [...c.querySelectorAll("is > t")].map(x => x.textContent).join("");
+  }
+  const v = c.querySelector("v");
+  if (!v) return "";
+  if (t === "s") return shared[+v.textContent] ?? "";
+  return v.textContent;
+}
+const xlsxColIdx = ref => {
+  let n = 0;
+  for (const ch of ref) {
+    if (ch >= "A" && ch <= "Z") n = n * 26 + (ch.charCodeAt(0) - 64);
+    else break;
+  }
+  return n - 1;   // 0-based
+};
+/* 从课程格文本中挑出课程名：优先取到 ★ 结尾的行（可能跨行折行），跳过字段行 */
+function xlsxPickName(text) {
+  const lines = String(text).split(/\n/).map(l => l.trim()).filter(Boolean);
+  const isField = l => /场地[:：]|教师[:：]|教学班|考核方式|学时|学分|选课备?注|课程学时|周学时|上课时间|^\/|^[(（]\s*\d{1,2}/.test(l);
+  const buf = [];
+  for (const l of lines) {
+    if (isField(l)) { if (buf.length) break; else continue; }
+    buf.push(l);
+    if (/[★☆＊*]$/.test(l) || buf.length >= 4) break;
+  }
+  const name = buf.join("").replace(/[★☆＊*]+\s*$/, "").trim();
+  return name.length >= 2 && name.length <= 30 ? name : "";
+}
+
+async function parseXlsxBuffer(u8) {
+  if (typeof DecompressionStream === "undefined")
+    return { ok: false, msg: "这个浏览器版本太旧，不支持解压 .xlsx。请把 Excel 打开后全选复制，粘贴到上面。" };
+  const files = await unzipRead(u8, new Set(["xl/workbook.xml", "xl/_rels/workbook.xml.rels", "xl/sharedStrings.xml"]));
+  if (!files.has("xl/workbook.xml")) return { ok: false, msg: "不是有效的 .xlsx 课表文件。" };
+
+  /* 找第一个工作表的路径（rels 里解析 r:id → target） */
+  const wb = xlsxXmlDom(files.get("xl/workbook.xml"));
+  const firstSheet = wb.querySelector("sheets > sheet");
+  let sheetPath = "xl/worksheets/sheet1.xml";
+  if (firstSheet && files.has("xl/_rels/workbook.xml.rels")) {
+    const rid = firstSheet.getAttribute("r:id");
+    const rels = xlsxXmlDom(files.get("xl/_rels/workbook.xml.rels"));
+    for (const rel of rels.querySelectorAll("Relationship")) {
+      if (rel.getAttribute("Id") === rid) {
+        const tgt = rel.getAttribute("Target").replace(/^\//, "");
+        sheetPath = tgt.startsWith("xl/") ? tgt : "xl/" + tgt;
+        break;
+      }
+    }
+  }
+  const sheetRaw = await unzipRead(u8, new Set([sheetPath]));
+  if (!sheetRaw.has(sheetPath)) return { ok: false, msg: "工作表读取失败。" };
+
+  const shared = [...xlsxXmlDom(files.get("xl/sharedStrings.xml") || new TextEncoder().encode("<r/>")).querySelectorAll("si")]
+    .map(si => [...si.querySelectorAll("t")].map(t => t.textContent).join(""));
+  const sh = xlsxXmlDom(sheetRaw.get(sheetPath));
+
+  /* 原始单元格表 + 合并格展开 */
+  const cellMap = new Map();       // "r,c" -> {text, spanR, origin}
+  for (const c of sh.querySelectorAll("c")) {
+    const ref = c.getAttribute("r") || "";
+    const row = (+ref.match(/\d+/)?.[0] || 1) - 1;
+    const col = xlsxColIdx(ref);
+    const txt = xlsxCellText(c, shared).replace(/\r/g, "");
+    if (txt.trim()) cellMap.set(row + "," + col, { text: txt, spanR: 1, origin: true });
+  }
+  for (const mc of sh.querySelectorAll("mergeCell")) {
+    const [a, b] = (mc.getAttribute("ref") || "").split(":");
+    if (!a || !b) continue;
+    const r1 = (+a.match(/\d+/)[0]) - 1, c1 = xlsxColIdx(a);
+    const r2 = (+b.match(/\d+/)[0]) - 1, c2 = xlsxColIdx(b);
+    const o = cellMap.get(r1 + "," + c1) || { text: "", spanR: 1, origin: true };
+    o.spanR = Math.max(o.spanR, r2 - r1 + 1);
+    cellMap.set(r1 + "," + c1, o);
+    for (let r = r1; r <= r2; r++)
+      for (let c = c1; c <= c2; c++)
+        if (!(r === r1 && c === c1)) cellMap.set(r + "," + c, { text: o.text, spanR: 1, origin: false });
+  }
+  const cellAt = (r, c) => cellMap.get(r + "," + c);
+  const maxRow = Math.max(0, ...[...cellMap.keys()].map(k => +k.split(",")[0]));
+  const maxCol = Math.max(0, ...[...cellMap.keys()].map(k => +k.split(",")[1]));
+
+  /* 表头行：≥5 个“星期X”格；同时找“节次”列 */
+  let headRow = -1, secCol = -1;
+  const colDay = new Map();
+  for (let r = 0; r <= maxRow && headRow < 0; r++) {
+    let hits = 0;
+    for (let c = 0; c <= maxCol; c++) {
+      const t = (cellAt(r, c)?.text || "").trim();
+      const d = dayFromText(t);
+      if (d) { colDay.set(c, d); hits++; }
+      if (/节次|节\/次/.test(t)) secCol = c;
+    }
+    if (hits >= 5) headRow = r;
+  }
+  if (headRow < 0 || !colDay.size)
+    return { ok: false, msg: "表里没找到「星期一~星期日」表头，无法对齐到周几。请确认是课表格式的 xlsx。" };
+
+  /* 逐格解析课程（origin 格才有正文） */
+  const entries = [];
+  const DAY_CN = "一二三四五六日";
+  for (let r = headRow + 1; r <= maxRow; r++) {
+    const secCell = secCol >= 0 ? (cellAt(r, secCol)?.text || "") : "";
+    const secNum = parseFloat(secCell);
+    for (const [c, day] of colDay) {
+      const cell = cellAt(r, c);
+      if (!cell || !cell.origin || !cell.text.trim()) continue;
+      const joined = cell.text.replace(/\n+/g, "");
+      /* 专用解析：课程名★ / (X-Y节) / 周次列表 / 场地: / 教师: */
+      let secA = 0, secB = 0;
+      const secM = joined.match(/[(（]\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节[)）]/) || joined.match(/第?\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节/);
+      if (secM) { secA = +secM[1]; secB = +secM[2]; }
+      else if (!isNaN(secNum)) { secA = Math.round(secNum); secB = secA + cell.spanR - 1; }
+      else continue;
+      const weeksM = joined.match(/第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*(?:[，,、]\s*第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*)*周/);
+      let weeks = "";
+      if (weeksM) {
+        const toks = weeksM[0].match(/\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2}/g) || [];
+        weeks = toks.join(",").replace(/\s+/g, "");
+      }
+      else if (/单周/.test(joined)) weeks = "odd";
+      else if (/双周/.test(joined)) weeks = "even";
+      const room = (joined.match(/(?:场地|地点|教室)[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
+      const teacher = (joined.match(/教师[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
+      const name = xlsxPickName(cell.text);
+      if (!name) continue;
+      if (!weeks) continue;                    // 没周次的当无效格，防止整片噪音
+      entries.push({ day, secA, secB, name, weeks, teacher, room });
+    }
+  }
+  /* 相邻同字段合并（跨大节连排）+ 去重，直接构建课程（不经通用文本管线，保真多段周次） */
+  entries.sort((x, y) => x.day - y.day || x.secA - y.secA);
+  const list = [];
+  const seenKey = new Set();
+  for (const c of entries) {
+    const key = [c.name, c.day, c.weeks, c.teacher, c.room].join("|");
+    if (seenKey.has(key)) continue;
+    seenKey.add(key);
+    const prev = list[list.length - 1];
+    if (prev && prev.name === c.name && prev.day === c.day && prev.weeks === c.weeks
+      && prev.teacher === c.teacher && prev.room === c.room && c.secA <= prev.secB + 1) {
+      prev.secB = Math.max(prev.secB, c.secB);
+      continue;
+    }
+    list.push({ ...c });
+  }
+  const courses = list.map(c => ({
+    id: uid(), name: c.name, teacher: c.teacher, room: c.room,
+    day: c.day, slot: slotOf(c.secA), sec: secLabel(c.secA, c.secB),
+    weeks: c.weeks, color: importColor(c.name),
+  }));
+  if (!courses.length)
+    return { ok: false, msg: "找到表头但没解析出课程。可用 Excel 打开后全选复制，粘贴到上面试试。" };
+  return { ok: true, courses };
+}
+
+async function readImportFile(f) {
+  const buf = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsArrayBuffer(f);
+  });
+  const u8 = new Uint8Array(buf);
+  if (u8.length > 4 && u8[0] === 0x50 && u8[1] === 0x4b) {            // PK → zip（xlsx）
+    try {
+      const res = await parseXlsxBuffer(u8);
+      if (!res.ok) { impStatus(false, res.msg); return; }
+      pendingImport = res.courses;
+      impStatus(true, `✅ 从「${f.name}」解析出 <b>${res.courses.length} 门课程</b>。检查预览没问题后点「合并导入」或「替换整个课表」。`);
+      renderImportPreview();
+    } catch (e) {
+      console.warn("xlsx parse failed:", e);
+      impStatus(false, "这个 .xlsx 解析失败：文件可能损坏或加密。可用 Excel 打开 → 全选 → 复制 → 粘贴到上面。");
+    }
+    return;
+  }
+  if (u8.length > 4 && u8[0] === 0xD0 && u8[1] === 0xCF) {            // 老版 .xls 二进制
+    impStatus(false, "这是老版 Excel(.xls) 格式。请用 Excel/WPS 打开后「另存为 .xlsx」，或全选复制粘贴到上面。");
+    return;
+  }
+  let s = new TextDecoder("utf-8").decode(u8);
+  if (s.includes("\uFFFD")) s = new TextDecoder("gbk").decode(u8);    // utf-8 乱码 → GBK（国内教务常见）
+  handleImportRaw(s, `文件「${f.name}」`);
 }
 
 /* —— 导入弹窗交互 —— */
