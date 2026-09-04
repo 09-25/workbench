@@ -383,9 +383,23 @@
 <div class="bot-panel card" id="bot-panel" hidden>
   <div class="bot-head">
     <span class="bot-ava">🤖</span>
-    <div class="bot-title"><b>小助手</b><span>说什么我记什么</span></div>
+    <div class="bot-title"><b>指令中枢</b><span>点一下，马上执行</span></div>
+    <span class="bot-status" id="bot-status">空闲</span>
     <button class="icon-btn" data-action="bot-toggle">✕</button>
   </div>
+  <div class="bot-commands" aria-label="快捷指令">
+    <button class="bot-command" data-action="bot-today">
+      <span class="bot-command-icon">▦</span><b>看今天</b><small>课表与教室</small>
+    </button>
+    <button class="bot-command" data-action="bot-quick-todo">
+      <span class="bot-command-icon">＋</span><b>记待办</b><small>马上记一笔</small>
+    </button>
+    <button class="bot-command" data-action="bot-focus" id="bot-focus">
+      <span class="bot-command-icon">◷</span><b>开始专注</b><small>25 分钟</small>
+    </button>
+  </div>
+  <div class="bot-focus-state" id="bot-focus-state" hidden></div>
+  <button class="bot-focus-stop" id="bot-focus-stop" data-action="bot-focus-stop" hidden>结束本轮专注</button>
   <div class="bot-msgs" id="bot-msgs"></div>
   <form class="bot-input" id="bot-form">
     <input id="bot-text" placeholder="如：明天下午3点交实验报告" autocomplete="off" maxlength="80">

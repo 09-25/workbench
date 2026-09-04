@@ -1349,9 +1349,13 @@ document.addEventListener("click", e => {
         botRec.stop();
       }
       panel.hidden = !panel.hidden;
-      if (!panel.hidden) { botGreet(); setTimeout(() => $("#bot-text").focus(), 50); }
+      if (!panel.hidden) { botGreet(); botStatus("空闲"); updateBotFocusUI(); setTimeout(() => $("#bot-text").focus(), 50); }
       break;
     }
+    case "bot-today": botToday(); break;
+    case "bot-quick-todo": botQuickTodo(); break;
+    case "bot-focus": botFocus(); break;
+    case "bot-focus-stop": stopBotFocus(); break;
     case "bot-apply": botApply(el.dataset.id); break;
     case "bot-kind": {
       const p = pendingBot.get(el.dataset.id);
@@ -1884,6 +1888,123 @@ impDrop.addEventListener("drop", e => {
 const dstrOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const pendingBot = new Map();   // 待确认卡片
 let botSeq = 0;
+let botFocusState = "idle";
+let botFocusRemaining = 25 * 60;
+let botFocusTimer = null;
+
+function botStatus(text) {
+  const el = $("#bot-status");
+  if (el) el.textContent = text;
+}
+
+function focusClockText(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${pad(mins)}:${pad(secs)}`;
+}
+
+function updateBotFocusUI() {
+  const stateEl = $("#bot-focus-state");
+  const button = $("#bot-focus");
+  if (!stateEl || !button) return;
+  const label = $("b", button);
+  const hint = $("small", button);
+  const stop = $("#bot-focus-stop");
+  if (botFocusState === "idle") {
+    stateEl.hidden = true;
+    if (label) label.textContent = "开始专注";
+    if (hint) hint.textContent = "25 分钟";
+    if (stop) stop.hidden = true;
+    return;
+  }
+  stateEl.hidden = false;
+  stateEl.textContent = botFocusState === "done"
+    ? "专注完成 · 做得很好"
+    : `${botFocusState === "paused" ? "已暂停" : "专注中"} ${focusClockText(botFocusRemaining)}`;
+  if (label) label.textContent = botFocusState === "running" ? "暂停专注" : botFocusState === "paused" ? "继续专注" : "再来一轮";
+  if (hint) hint.textContent = botFocusState === "done" ? "25 分钟" : "点击切换";
+  if (stop) stop.hidden = botFocusState === "done";
+}
+
+function clearBotFocusTimer() {
+  if (botFocusTimer) { clearInterval(botFocusTimer); botFocusTimer = null; }
+}
+
+function finishBotFocus() {
+  clearBotFocusTimer();
+  botFocusRemaining = 0;
+  botFocusState = "done";
+  botStatus("空闲");
+  updateBotFocusUI();
+  botSay("🎉 25 分钟专注完成，起来喝口水吧！");
+}
+
+function startBotFocusTimer() {
+  clearBotFocusTimer();
+  botFocusTimer = setInterval(() => {
+    if (botFocusState !== "running") return;
+    botFocusRemaining -= 1;
+    if (botFocusRemaining <= 0) finishBotFocus();
+    else updateBotFocusUI();
+  }, 1000);
+}
+
+function botFocus() {
+  if (botFocusState === "idle" || botFocusState === "done") {
+    botFocusRemaining = 25 * 60;
+    botFocusState = "running";
+    botStatus("专注中");
+    startBotFocusTimer();
+    botSay("⏱️ 专注开始，接下来 25 分钟只做这一件事。");
+  } else if (botFocusState === "running") {
+    botFocusState = "paused";
+    clearBotFocusTimer();
+    botStatus("空闲");
+    botSay("⏸️ 已暂停，准备好后再点“继续专注”。");
+  } else if (botFocusState === "paused") {
+    botFocusState = "running";
+    botStatus("专注中");
+    startBotFocusTimer();
+    botSay("▶️ 继续专注，加油！");
+  }
+  updateBotFocusUI();
+}
+
+function stopBotFocus() {
+  if (botFocusState === "idle") return;
+  clearBotFocusTimer();
+  botFocusState = "idle";
+  botFocusRemaining = 25 * 60;
+  botStatus("空闲");
+  updateBotFocusUI();
+  botSay("已结束本轮专注，下次准备好再开始。");
+}
+
+function botToday() {
+  const list = todayCourses();
+  botStatus("执行中");
+  if (!list.length) {
+    botSay("🌤️ 今天没有排课，适合安排一点自己的事。");
+    botStatus("空闲");
+    return;
+  }
+  const rows = list.map(c => {
+    const s = state.slots[c.slot];
+    return `<div class="bot-schedule-row"><b>${esc(c.name)}</b><span>${s.start}–${s.end} · ${esc(c.room ? "教室：" + c.room : "教室待定")}</span></div>`;
+  }).join("");
+  botSay(`<b>今天的 ${list.length} 节课</b>${rows}`);
+  botStatus("空闲");
+}
+
+function botQuickTodo() {
+  const input = $("#bot-text");
+  if (!input) return;
+  input.placeholder = "快速记一条待办…";
+  input.focus();
+  botStatus("执行中");
+  botSay("📝 写下要做的事，按发送后我会先帮你确认内容。");
+  botStatus("空闲");
+}
 
 function parseIntent(raw) {
   let t = ' ' + raw.trim() + ' ';
@@ -2007,7 +2128,7 @@ function botSay(html, isUser = false) {
 
 function botGreet() {
   if ($("#bot-msgs").children.length) return;
-  botSay('你好呀！跟我说一句话，我帮你记下来。比如：<br>' +
+  botSay('你好呀！先点上面的快捷指令，或者跟我说一句话，我帮你记下来。比如：<br>' +
     '· <b>明天下午3点交实验报告</b><br>' +
     '· <b>周三1-2节补课 高数 9A101</b>（加进课表）<br>' +
     '· <b>倒计时 12月19日 四六级</b><br>' +

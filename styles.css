@@ -803,6 +803,61 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   50% { box-shadow: 0 0 0 8px rgba(194, 69, 44, 0); }
 }
 
+.bot-panel {
+  background: #242322; color: #f8e8c8; border-color: #635442;
+  box-shadow: 0 18px 42px rgba(34, 25, 17, .34);
+}
+.bot-head { background: #302c27; border-bottom-color: #55483a; }
+.bot-head .icon-btn { color: #e8d0aa; }
+.bot-title b { color: #fff2d1; }
+.bot-title span { color: #bca98c; }
+.bot-status {
+  padding: 4px 8px; border: 1px solid #776348; border-radius: 999px;
+  color: #f3c86e; font-size: 10.5px; white-space: nowrap;
+}
+.bot-commands {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px; padding: 12px; background: #292724;
+  border-bottom: 1px solid #55483a;
+}
+.bot-command {
+  min-width: 0; padding: 10px 8px; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; gap: 3px;
+  color: #f9e8c6; background: #36312b; border: 1px solid #665844;
+  border-radius: 11px; transition: transform .14s ease, border-color .14s ease, background .14s ease;
+}
+.bot-command:hover { transform: translateY(-2px); border-color: #e1b85e; background: #40382d; }
+.bot-command:active { transform: translateY(0); }
+.bot-command-icon { color: #f0bf58; font-size: 20px; line-height: 1; }
+.bot-command b { font-size: 12.5px; }
+.bot-command small { color: #bca98c; font-size: 10px; }
+.bot-focus-state {
+  margin: 10px 12px 0; padding: 8px 10px; border-radius: 9px;
+  background: #463924; color: #f4ca70; font-size: 12px; font-weight: 700; text-align: center;
+}
+.bot-focus-stop {
+  align-self: flex-end; margin: 8px 12px 0; padding: 4px 8px; border-radius: 7px;
+  color: #d9b989; background: transparent; border: 1px solid #665844; font-size: 10.5px; cursor: pointer;
+}
+.bot-focus-stop:hover { color: #fff1d0; border-color: #b79255; }
+.bot-panel .bot-msgs { background: #242322; }
+.bot-panel .bot-msg.bot { background: #302d29; border-color: #55483a; color: #f5e6c7; }
+.bot-panel .bot-msg.user { background: #49392c; border-color: #765538; color: #ffebc4; }
+.bot-panel .bot-card { background: #292724; border-color: #776348; }
+.bot-panel .bot-input { background: #2f2b27; border-top-color: #55483a; }
+.bot-panel .bot-input input { color: #fff2d1; background: #403a33; border-color: #6c5b46; }
+.bot-panel .bot-input input::placeholder { color: #ae9b80; }
+.bot-schedule-row { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #55483a; }
+.bot-schedule-row span { color: #d6c3a3; font-size: 12px; }
+
+@media (max-width: 920px) {
+  .bot-panel { right: 10px; left: 10px; bottom: 150px; width: auto; max-height: min(600px, 70vh); }
+}
+@media (max-width: 360px) {
+  .bot-commands { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bot-command:last-child { grid-column: 1 / -1; }
+}
+
 /* ============================================================
    打印（Ctrl+P 打印当前页，如课程表）
    ============================================================ */
