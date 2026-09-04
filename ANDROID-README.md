@@ -8,7 +8,10 @@
 
 ## 重新打包
 
-电脑需安装 Node.js、Android SDK 和 Java 21。随后在项目目录运行：
+电脑需安装 Node.js、Android SDK 和 Java 21。
+
+> 注意：若 `JAVA_HOME` 指向旧版 JDK（如 17），构建会报“无效的源发行版：21”。请先执行
+> `set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`（或系统里对应的 JDK 21 路径）再运行 gradlew。随后在项目目录运行：
 
 ```powershell
 npm install
