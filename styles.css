@@ -225,7 +225,12 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
   border-right: 1px dashed rgba(255,255,255,.5);
 }
 .hero-greet { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
-.hero-date { margin-top: 8px; color: var(--ink-2); font-size: 14px; }
+.hero-date {
+  margin-top: 8px; color: var(--ink-2); font-size: 14px;
+  white-space: nowrap; overflow-x: auto; max-width: 100%;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.hero-date::-webkit-scrollbar { display: none; }
 .hero-sub { margin-top: 4px; color: var(--ink-3); font-size: 13px; }
 .hero-status {
   margin-top: 10px;
@@ -400,6 +405,11 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 }
 .chip:hover { filter: brightness(1.04); transform: translateY(-1px); }
 .chip .r { font-size: 10px; opacity: .8; display: block; }
+.chip.style-soft { border-radius: 8px; }
+.chip.style-solid { filter: saturate(1.08); }
+.chip.style-outline { background: transparent; border: 1.5px solid var(--c-bd); box-shadow: none; }
+.chip .r.strong { margin-top: 5px; font-size: 12px; font-weight: 700; opacity: 1; color: var(--c-fg); }
+.chip-time, .chip-room { display: block; }
 .chip.dim { opacity: .38; }
 .chip .w-tag { font-size: 9.5px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; margin-left: 3px; opacity: .85; display: inline-block; word-break: break-all; }
 
@@ -613,6 +623,8 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .modal-head h3 { font-size: 18px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 .modal-foot .btn-danger { margin-right: auto; }
+.welcome-modal { width: min(400px, 94vw); }
+.welcome-copy { margin: -4px 0 18px; line-height: 1.7; }
 
 .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
 .swatches label { cursor: pointer; }
@@ -632,6 +644,25 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
 .swatches .sw-c[data-c="5"] { background: var(--n5-bg); }
 .swatches .sw-c[data-c="6"] { background: var(--n6-bg); }
 .swatches .sw-c[data-c="7"] { background: var(--n7-bg); }
+
+.style-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.style-swatches label { cursor: pointer; }
+.style-swatches input { position: absolute; opacity: 0; width: 0; }
+.style-swatch {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 54px; height: 30px; padding: 0 9px;
+  border-radius: 8px; border: 1.5px solid var(--line-strong);
+  font-size: 11.5px; color: var(--ink-2); background: var(--card-2);
+  transition: all .12s ease;
+}
+.style-swatch:hover { transform: translateY(-1px); border-color: var(--ink-3); }
+.style-swatches input:checked + .style-swatch {
+  border-color: var(--ink); color: var(--ink); font-weight: 700;
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--ink-3);
+}
+.style-swatch.style-soft { background: color-mix(in srgb, var(--card-2) 72%, var(--accent-soft)); }
+.style-swatch.style-solid { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.style-swatch.style-outline { background: transparent; border: 2px solid var(--green); }
 
 /* ============================================================
    云同步
@@ -812,10 +843,21 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   .tabbar a.active { color: var(--accent); font-weight: 600; }
 
   .grid-2, .grid-3 { grid-template-columns: 1fr; margin-top: 14px; gap: 14px; }
-  .hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 22px; }
-  .hero-left { width: 100%; }
-  .hero-clock { font-size: 42px; padding: 10px 20px; }
-  #hero-calendar { padding: 7px; }
+  /* 手机首页按参考图排版：左侧信息与时钟，右上角紧凑月历 */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "left calendar" "clock calendar";
+    align-items: start; column-gap: 12px; row-gap: 8px;
+    padding: 20px 18px 18px;
+  }
+  .hero-left { grid-area: left; width: auto; min-width: 0; }
+  .hero-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-clock-wrap { grid-area: clock; justify-self: start; }
+  .hero-clock { font-size: 34px; padding: 0; border: 0; background: transparent; }
+  .hero-right { grid-area: calendar; align-self: start; justify-self: end; }
+  #hero-calendar { width: 118px; padding: 7px; }
+  .hero-calendar-title { font-size: 11px; margin-bottom: 4px; }
   .hero-calendar-week, .hero-calendar-days { grid-template-columns: repeat(7, 15px); gap: 2px; }
   .hero-calendar-days i, .hero-calendar-week i { line-height: 15px; font-size: 9px; }
   .form-grid { grid-template-columns: 1fr; }

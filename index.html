@@ -317,6 +317,21 @@
   <a data-action="goto" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M19.5 7H20M4 17h.5M10 17h10"/><circle cx="16.5" cy="7" r="2.5"/><circle cx="7.5" cy="17" r="2.5"/></svg><span>设置</span></a>
 </nav>
 
+<!-- ============ 首次打开：设置称呼 ============ -->
+<div class="modal-mask" id="welcome-modal" hidden>
+  <div class="modal card welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div class="modal-head">
+      <h3 id="welcome-title">欢迎来到 work desktop</h3>
+    </div>
+    <p class="hint welcome-copy">先留个称呼吧，之后首页会这样问候你。也可以稍后在「设置」里修改。</p>
+    <label class="field">怎么称呼你<input id="welcome-name" maxlength="20" autocomplete="name" placeholder="例如：小何"></label>
+    <div class="modal-foot">
+      <button type="button" class="btn" data-action="skip-welcome-name">暂时跳过</button>
+      <button type="button" class="btn btn-primary" data-action="save-welcome-name">开始使用</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ 课程编辑弹窗 ============ -->
 <div class="modal-mask" id="course-modal" hidden>
   <div class="modal card">
@@ -346,6 +361,13 @@
         </div>
       </label>
       <label class="field">便利贴颜色<div class="swatches" id="f-colors"></div></label>
+      <label class="field">卡片样式
+        <div class="style-swatches" id="f-styles">
+          <label><input type="radio" name="f-style" value="soft" checked><span class="style-swatch style-soft">柔和</span></label>
+          <label><input type="radio" name="f-style" value="solid"><span class="style-swatch style-solid">强调</span></label>
+          <label><input type="radio" name="f-style" value="outline"><span class="style-swatch style-outline">线框</span></label>
+        </div>
+      </label>
       <div class="modal-foot">
         <button type="button" class="btn btn-danger" id="cm-del" data-action="del-course" hidden>删除这节课</button>
         <button type="submit" class="btn btn-primary">保存</button>

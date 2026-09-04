@@ -70,7 +70,7 @@ function addTombstone(ids, t = now_ts()) {
 function defaultState() {
   const thisMonday = mondayOf(new Date());
   return {
-    profile: { name: "同学", semesterStart: todayStr(thisMonday), theme: "paper", updatedAt: 0 },
+    profile: { name: "同学", semesterStart: todayStr(thisMonday), theme: "paper", namePrompted: false, updatedAt: 0 },
     slotsUpdatedAt: 0,
     slots: DEFAULT_SLOTS.map(s => ({ ...s })),
     courses: [],   // {id,name,teacher,room,day,slot,sec?,weeks,color,updatedAt}
@@ -105,13 +105,31 @@ function repairLegacyImportedCourseSlot(course) {
   return fixed;
 }
 
+// 旧版导入器没把“(11 9A111)”一类单周格式认作周次，而是错当教室，导致显示为每周。
+function repairLegacyImportedCourseWeeks(course) {
+  const fixed = { ...course };
+  if (fixed.weeks && fixed.weeks !== "all") return fixed;
+  const inferred = specFromEduText(fixed.room);
+  if (inferred) {
+    fixed.weeks = inferred;
+    fixed.updatedAt = now_ts();
+  }
+  return fixed;
+}
+
+function normalizeCourseStyle(course) {
+  const fixed = { ...course };
+  fixed.style = ["soft", "solid", "outline"].includes(fixed.style) ? fixed.style : "soft";
+  return fixed;
+}
+
 function normalize(d) {
   const def = defaultState();
   return {
     profile: { ...def.profile, ...(d && d.profile || {}) },
     slotsUpdatedAt: d?.slotsUpdatedAt || 0,
     slots: (Array.isArray(d?.slots) && d.slots.length === 5) ? d.slots : def.slots,
-    courses: Array.isArray(d?.courses) ? d.courses.map(repairLegacyImportedCourseSlot) : [],
+    courses: Array.isArray(d?.courses) ? d.courses.map(repairLegacyImportedCourseSlot).map(repairLegacyImportedCourseWeeks).map(normalizeCourseStyle) : [],
     todos: Array.isArray(d?.todos) ? d.todos : [],
     logs: (d?.logs && typeof d?.logs === "object") ? d.logs : {},
     habits: Array.isArray(d?.habits) ? d.habits : [],
@@ -462,6 +480,42 @@ function renderCurrent() { RENDERERS[currentPage]?.(); }
 /* ---------------- 主题 ---------------- */
 function applyTheme() { document.documentElement.dataset.theme = state.profile.theme || "paper"; }
 
+/* ---------------- 首次称呼设置（仅真正的新用户弹窗；已有数据的老用户不打扰） ---------------- */
+function shouldPromptForName(profile) {
+  if (profile?.namePrompted) return false;
+  // 有任何真实数据（非初始示例）说明是老用户，静默跳过
+  const hasRealData =
+    state.courses.some(c => !String(c.id).startsWith("demo-")) ||
+    state.todos.some(t => !String(t.id).startsWith("demo-")) ||
+    Object.keys(state.logs || {}).length > 0 ||
+    state.habits.length > 0;
+  if (hasRealData) { state.profile.namePrompted = true; return false; }
+  return true;
+}
+function dismissWelcomeNameModal() {
+  if ($("#welcome-modal").hidden) return;
+  state.profile.namePrompted = true;
+  state.profile.updatedAt = now_ts();
+  save();
+  $("#welcome-modal").hidden = true;
+}
+function showWelcomeNameModal() {
+  if (!shouldPromptForName(state.profile)) return;
+  $("#welcome-name").value = state.profile.name === "同学" ? "" : state.profile.name || "";
+  $("#welcome-modal").hidden = false;
+  setTimeout(() => $("#welcome-name").focus(), 30);
+}
+function saveWelcomeName() {
+  const name = $("#welcome-name").value.trim();
+  if (name) {
+    state.profile.name = name;
+    state.profile.updatedAt = now_ts();
+  }
+  dismissWelcomeNameModal();
+  renderCurrent();
+  if (name) toast(`你好，${name}！`);
+}
+
 /* ============================================================
    概览
    ============================================================ */
@@ -732,7 +786,7 @@ RENDERERS.dashboard = function renderDashboard() {
       <div class="tl-time">${s.start}<br>${s.end}</div>
       <div class="tl-body">
         <div class="tl-title">${esc(c.name)}${tag}</div>
-        <div class="tl-meta">${[c.teacher, c.room, c.sec, c.weeks && c.weeks !== "all" ? weeksLabel(c.weeks) : ""].filter(Boolean).join(" · ") || "&nbsp;"}</div>
+        <div class="tl-meta">${[c.room ? "教室：" + c.room : "", c.teacher ? "教师：" + c.teacher : "", c.sec, c.weeks && c.weeks !== "all" ? weeksLabel(c.weeks) : ""].filter(Boolean).join(" · ") || "&nbsp;"}</div>
       </div></div>`;
   }).join("") : `<div class="empty"><span class="e-ico">🌤️</span>今天没课，去图书馆或运动场吧</div>`;
 
@@ -852,10 +906,14 @@ RENDERERS.timetable = function renderTimetable() {
         const sh = courseShown(c, week);
         const dim = weekMode === "term" ? sh.dim : false;
         const wtag = c.weeks && c.weeks !== "all" ? `<span class="w-tag">${weeksTag(c.weeks)}</span>` : "";
-        const sub = [c.room, c.teacher].filter(Boolean).join(" ");
-        return `<div class="chip${dim ? " dim" : ""}" data-c="${c.color % COLOR_N}"
+        const style = ["soft", "solid", "outline"].includes(c.style) ? c.style : "soft";
+        const timeText = `${s.start}–${s.end}`;
+        const roomText = c.room ? `教室：${c.room}` : "教室待定";
+        return `<div class="chip style-${style}${dim ? " dim" : ""}" data-c="${c.color % COLOR_N}" data-style="${style}"
           data-action="edit-course" data-id="${c.id}" title="${esc([c.teacher, c.room].filter(Boolean).join(" · "))}">
-          <b>${esc(c.name)}</b>${wtag}<span class="r">${esc(sub)}</span></div>`;
+          <b>${esc(c.name)}</b>${wtag}
+          <span class="r strong"><span class="chip-time">${timeText}</span><span class="chip-room">${esc(roomText)}</span></span>
+          ${c.teacher ? `<span class="r">教师：${esc(c.teacher)}</span>` : ""}</div>`;
       }).join("");
       html += `<div class="tt-cell${showToday && day === thisIdx ? " today" : ""}" data-action="add-course" data-day="${day}" data-slot="${slotIdx}">${inner}</div>`;
     }
@@ -1035,6 +1093,9 @@ function openCourseModal(course, day, slot) {
     `<label><input type="radio" name="f-color" value="${i}" ${i === defColor ? "checked" : ""}>
       <span class="sw-c" data-c="${i}"></span></label>`).join("");
 
+  const style = course?.style || "soft";
+  $$('input[name="f-style"]').forEach(input => { input.checked = input.value === style; });
+
   $("#cm-del").hidden = !course;
   $("#course-modal").hidden = false;
   setTimeout(() => $("#f-name").focus(), 30);
@@ -1067,6 +1128,8 @@ document.addEventListener("click", e => {
   const act = el.dataset.action;
 
   switch (act) {
+    case "save-welcome-name": saveWelcomeName(); break;
+    case "skip-welcome-name": dismissWelcomeNameModal(); break;
     /* 导航 */
     case "goto": switchPage(el.dataset.page); break;
     case "toggle-theme":
@@ -1206,8 +1269,9 @@ document.addEventListener("click", e => {
     case "save-profile": {
       const name = $("#s-name").value.trim();
       const sem = $("#s-semester").value;
-      const changedProfile = state.profile.name !== (name || "同学") || state.profile.semesterStart !== sem;
+      const changedProfile = state.profile.name !== (name || "同学") || state.profile.semesterStart !== sem || !state.profile.namePrompted;
       state.profile.name = name || "同学";
+      state.profile.namePrompted = true;
       if (isDateStr(sem)) {
         state.profile.semesterStart = sem;
         toast("已保存，周次按新日期计算");
@@ -1405,6 +1469,7 @@ $("#course-form").addEventListener("submit", e => {
     slot: +$("#f-slot").value,
     weeks,
     color: +(new FormData($("#course-form")).get("f-color") || 0),
+    style: new FormData($("#course-form")).get("f-style") || "soft",
     updatedAt: now_ts(),
   };
   if (editingCourseId) {
@@ -1477,6 +1542,7 @@ document.addEventListener("keydown", e => {
   if (!$("#course-modal").hidden) closeCourseModal();
   else if (!$("#import-modal").hidden) $("#import-modal").hidden = true;
   else if (!$("#bot-panel").hidden) $("#bot-panel").hidden = true;
+  else if (!$("#welcome-modal").hidden) dismissWelcomeNameModal();
 });
 
 /* ============================================================
@@ -1543,10 +1609,18 @@ function secNoFromText(s) {
   return null;
 }
 
-const WEEK_LINE = /(单周|双周|\d+\s*[-–~]\s*\d+\s*周|\d+\s*周|周.{0,3}\d+|\d{1,2}\s*[,，、]\s*\d+)/;
+// EAMS 常把周次写成“(11 9A111)”或“(3-4,6 )”，没有“周”字也必须识别；
+// 否则会被误当教室，课程便退化成“每周”。
+const WEEK_LINE = /(单周|双周|\d+\s*[-–~]\s*\d+\s*周|\d+\s*周|周.{0,3}\d+|\d{1,2}\s*[,，、]\s*\d+|^[（(]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*(?=[\s)）]))/;
+function roomFromEduWeeksLine(raw) {
+  let t = String(raw || "").trim().replace(/^[（(]\s*/, "").replace(/\s*[）)]\s*$/, "").trim();
+  const prefix = t.match(/^(?:单周|双周|\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*)\s*(?:周)?\s*(?:[单双])?\s*(.*)$/);
+  return prefix?.[1]?.trim() || "";
+}
 function looksTeacherLine(s) {
-  const t = s.replace(/^(教师|主讲|老师)[::／/]?\s*/, "").trim();
-  return /^[\u4e00-\u9fa5·]{2,4}([,，、][\u4e00-\u9fa5·]{2,4})*$/.test(t)
+  const t = s.replace(/^(教师|主讲|老师)[::／/]?\s*/, "").trim()
+    .replace(/^[（(]\s*|\s*[）)]$/g, "");
+  return /^[\u4e00-\u9fa5·（）()]{2,8}([,，、][\u4e00-\u9fa5·（）()]{2,8})*$/.test(t)
     || /^[A-Za-z][A-Za-z.\s]{2,19}$/.test(t);
 }
 function looksRoomLine(s) {
@@ -1570,14 +1644,21 @@ function splitBlocks(text) {
 }
 function parseBlock(lines) {
   if (!lines.length) return null;
-  const name = lines[0].replace(/^【|】$/g, "").trim();
-  if (!name || name.length > 30) return null;
+  // Excel 的课程名行还会带课程号、节次、考核与学时等元数据；名称只保留节次标签之前。
+  const name = lines[0].replace(/^【|】$/g, "")
+    .replace(/\s*\[\s*\d{1,2}\s*[-–~]\s*\d{1,2}\s*节\s*\][\s\S]*$/, "").trim();
+  if (!name || name.length > 80) return null;
   let weeks = "all", teacher = "", room = "";
   for (let i = 1; i < lines.length; i++) {
     const l = lines[i];
     if (weeks === "all" && WEEK_LINE.test(l)) {
       const w = specFromEduText(l);
-      if (w) { weeks = w; continue; }
+      if (w) {
+        weeks = w;
+        const embeddedRoom = roomFromEduWeeksLine(l);
+        if (!room && embeddedRoom) room = embeddedRoom;
+        continue;
+      }
     }
     if (!teacher && looksTeacherLine(l)) { teacher = l.replace(/^(教师|主讲|老师)[::／/]?\s*/, ""); continue; }
     if (!room && looksRoomLine(l)) { room = l; continue; }
@@ -2085,6 +2166,7 @@ $("#bot-mic").addEventListener("click", () => {
 applyTheme();
 switchPage("dashboard");
 updateClock();
+showWelcomeNameModal();
 setInterval(updateClock, 1000);
 setInterval(() => {                    // 上课状态条每 30 秒刷新
   if (currentPage === "dashboard" && !document.hidden) {
@@ -2117,6 +2199,7 @@ if (IS_NATIVE_APP && window.Capacitor?.Plugins?.App) {
     if (!$("#course-modal").hidden) { closeCourseModal(); return; }
     if (!$("#import-modal").hidden) { $("#import-modal").hidden = true; return; }
     if (!$("#bot-panel").hidden) { $("#bot-panel").hidden = true; return; }
+    if (!$("#welcome-modal").hidden) { dismissWelcomeNameModal(); return; }
     if (currentPage !== "dashboard") { switchPage("dashboard"); return; }
     window.Capacitor.Plugins.App.exitApp();
   });
