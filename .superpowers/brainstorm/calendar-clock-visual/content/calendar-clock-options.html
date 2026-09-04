@@ -1,0 +1,64 @@
+<style>
+  .calendar-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  .calendar-choice { border:1px solid #d8c9b1; border-radius:16px; background:#fffaf0; overflow:hidden; cursor:pointer; transition:transform .18s ease,box-shadow .18s ease; }
+  .calendar-choice:hover { transform:translateY(-3px); box-shadow:0 10px 26px rgba(87,57,33,.14); }
+  .calendar-choice .choice-title { padding:13px 16px 4px; font-weight:750; color:#4b3827; }
+  .calendar-choice .choice-note { padding:0 16px 14px; color:#776654; font-size:13px; line-height:1.55; }
+  .calendar-mock { background:#f4ecdf; padding:16px; min-height:236px; }
+  .hero { min-height:174px; box-sizing:border-box; position:relative; overflow:hidden; padding:20px; border:1px solid #dfcfb5; border-radius:12px; background:#fffdf8; color:#403126; box-shadow:0 4px 0 rgba(127,86,42,.07); }
+  .hero:before { content:''; position:absolute; inset:0; opacity:.28; background-image:radial-gradient(#d7c7ad .65px,transparent .75px); background-size:10px 10px; pointer-events:none; }
+  .hero > * { position:relative; }
+  .tape { position:absolute; top:-7px; left:37%; width:86px; height:21px; transform:rotate(-3deg); background:rgba(244,202,83,.56); }
+  .greet { font-family:Georgia,'Microsoft YaHei',serif; font-size:19px; font-weight:700; }
+  .clock { font-variant-numeric:tabular-nums; font-size:29px; font-weight:800; letter-spacing:1px; color:#bb492f; }
+  .muted { color:#806c58; font-size:12px; }
+  .line { height:1px; background:#e5d7c1; margin:12px 0; }
+  .mini-label { color:#a05137; font-size:11px; font-weight:700; letter-spacing:.08em; }
+  .a-clock { position:absolute; right:20px; top:23px; text-align:right; }
+  .a-date { margin-top:12px; font-size:14px; font-weight:650; }
+  .a-lunar { margin-top:7px; font-size:12px; color:#9a6943; }
+  .b-main { display:flex; align-items:center; gap:14px; margin-top:10px; }
+  .date-tile { flex:0 0 56px; text-align:center; border-radius:10px; padding:7px 4px; color:#fff9ec; background:#c45a3d; box-shadow:3px 3px 0 #e4be9a; }
+  .date-tile b { display:block; font-size:29px; line-height:1; }
+  .date-tile span { display:block; font-size:10px; margin-top:4px; }
+  .b-calendar { font-size:14px; font-weight:750; }
+  .b-lunar { margin-top:4px; font-size:12px; color:#85644e; }
+  .b-clock { margin-top:9px; }
+  .c-layout { display:grid; grid-template-columns:1fr 106px; gap:12px; align-items:center; margin-top:11px; }
+  .month-card { height:100px; padding:9px; box-sizing:border-box; border:1px solid #dcc8aa; background:#fff7e8; transform:rotate(1deg); box-shadow:3px 3px 0 rgba(144,106,62,.14); }
+  .month-title { color:#a54e35; font-weight:800; font-size:12px; }
+  .weeks { margin-top:7px; display:grid; grid-template-columns:repeat(7,1fr); gap:3px; color:#8b7861; font-size:8px; text-align:center; }
+  .weeks i { padding:2px 0; font-style:normal; }
+  .weeks i.on { border-radius:50%; color:white; background:#c45a3d; }
+  @media (max-width:820px) { .calendar-options { grid-template-columns:1fr; } }
+</style>
+
+<h2>顶部“日历时钟”小样</h2>
+<p class="subtitle">都保留当前纸上学园手账感；选一个最顺眼的方向，或告诉我想混合哪几部分。</p>
+
+<div class="calendar-options">
+  <div class="calendar-choice" data-choice="a" onclick="toggleSelect(this)">
+    <div class="calendar-mock"><div class="hero">
+      <div class="tape"></div><div class="greet">下午好，Hzx</div><div class="muted" style="margin-top:5px">本学期第 1 周（单周）</div>
+      <div class="a-clock"><div class="clock">16:24</div><div class="muted">星期二</div></div>
+      <div class="line"></div><div class="a-date">2026 年 9 月 1 日</div><div class="a-lunar">农历七月二十 · 丙午马年 · 处暑</div>
+    </div></div>
+    <div class="choice-title">A · 信息一行展开</div><div class="choice-note">最接近现有版：日期和农历收在下方，阅读快、占用最少。</div>
+  </div>
+  <div class="calendar-choice" data-choice="b" onclick="toggleSelect(this)">
+    <div class="calendar-mock"><div class="hero">
+      <div class="tape"></div><div class="greet">下午好，Hzx</div><div class="muted" style="margin-top:5px">今天有 2 节课</div>
+      <div class="b-main"><div class="date-tile"><b>01</b><span>九月 · 周二</span></div><div><div class="b-calendar">2026 年 9 月</div><div class="b-lunar">农历七月二十 · 处暑</div><div class="clock b-clock">16:24:08</div></div></div>
+    </div></div>
+    <div class="choice-title">B · 撕页日历主角</div><div class="choice-note">日期最醒目，农历也更有存在感；我推荐这一版，和手账主题最搭。</div>
+  </div>
+  <div class="calendar-choice" data-choice="c" onclick="toggleSelect(this)">
+    <div class="calendar-mock"><div class="hero">
+      <div class="tape"></div><div class="greet">下午好，Hzx</div><div class="muted" style="margin-top:5px">农历七月二十 · 处暑</div>
+      <div class="c-layout"><div><div class="mini-label">TUESDAY · 2026.09.01</div><div class="clock" style="margin-top:6px">16:24</div><div class="muted" style="margin-top:7px">本学期第 1 周（单周）</div></div><div class="month-card"><div class="month-title">九月</div><div class="weeks"><i>一</i><i>二</i><i>三</i><i>四</i><i>五</i><i>六</i><i>日</i><i></i><i class="on">1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>10</i><i>11</i><i>12</i><i>13</i></div></div></div>
+    </div></div>
+    <div class="choice-title">C · 月历便签</div><div class="choice-note">带迷你当月日历，仪式感最强，但在手机上会略显紧凑。</div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:18px">点击卡片可标记选择。重点看：你希望“时间”、 “今天几号”还是“农历”谁最突出。</p>

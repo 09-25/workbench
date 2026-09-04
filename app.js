@@ -956,7 +956,7 @@ function todoItemHTML(t) {
     const label = overdue ? `逾期 · ${t.due.slice(5).replace("-", "/")}` : t.due === t0 ? "今天到期" : `${t.due.slice(5).replace("-", "/")} 截止`;
     dueBadge = `<span class="badge ${cls}">${label}</span>`;
   }
-  return `<div class="todo-item${t.done ? " done" : ""}">
+  return `<div class="todo-item${t.done ? " done" : ""}${t.justDone ? " just-done" : ""}">
     <button class="todo-check" data-action="toggle-todo" data-id="${t.id}" title="完成 / 取消">✓</button>
     <div class="todo-body">
       <div class="todo-text">${esc(t.text)}</div>
@@ -1232,7 +1232,12 @@ document.addEventListener("click", e => {
     /* 待办 */
     case "toggle-todo": {
       const t = state.todos.find(x => x.id === el.dataset.id);
-      if (t) { t.done = !t.done; t.updatedAt = now_ts(); save(); renderCurrent(); }
+      if (t) {
+        t.done = !t.done; t.updatedAt = now_ts(); save();
+        if (t.done) t.justDone = true;               // 勾选完成的小动画标记
+        renderCurrent();
+        delete t.justDone;
+      }
       break;
     }
     case "del-todo": {
@@ -1926,18 +1931,76 @@ const xlsxColIdx = ref => {
   }
   return n - 1;   // 0-based
 };
-/* 从课程格文本中挑出课程名：优先取到 ★ 结尾的行（可能跨行折行），跳过字段行 */
+/* 从课程格文本中挑出课程名：名字折行时按括号平衡拼接；跳过字段行 */
 function xlsxPickName(text) {
   const lines = String(text).split(/\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return "";
   const isField = l => /场地[:：]|教师[:：]|教学班|考核方式|学时|学分|选课备?注|课程学时|周学时|上课时间|^\/|^[(（]\s*\d{1,2}/.test(l);
-  const buf = [];
-  for (const l of lines) {
-    if (isField(l)) { if (buf.length) break; else continue; }
-    buf.push(l);
-    if (/[★☆＊*]$/.test(l) || buf.length >= 4) break;
+  if (isField(lines[0])) return "";              // 首行就是字段行 → 无课程名（碎片格），跳过
+  const bal = t => (t.match(/[\[［（(]/g) || []).length - (t.match(/[\]］）)]/g) || []).length;
+  let name = lines[0].replace(/[★☆＊*]+\s*$/, "");
+  for (let i = 1; i < Math.min(lines.length, 4); i++) {
+    if (bal(name) <= 0) break;                    // 名字已完整（括号闭合）
+    if (isField(lines[i])) break;
+    name += lines[i].replace(/[★☆＊*]+\s*$/, "");
   }
-  const name = buf.join("").replace(/[★☆＊*]+\s*$/, "").trim();
+  name = name.replace(/[★☆＊*]+\s*$/, "").replace(/\s*[\[［][^\]］]*节[^\]］]*[\]］]\s*$/g, "").trim();
   return name.length >= 2 && name.length <= 30 ? name : "";
+}
+
+/* —— 共享：从课程格文本提取字段（xlsx / PDF 通用）—— */
+function extractCourseCellFields(text, fbSecA = 0, fbSecB = 0) {
+  const joined = String(text).replace(/\n+/g, "");
+  let secA = 0, secB = 0;
+  const secM = joined.match(/[(（]\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节[)）]/) || joined.match(/第?\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节/);
+  if (secM) { secA = +secM[1]; secB = +secM[2]; }
+  else if (fbSecA) { secA = fbSecA; secB = fbSecB || fbSecA; }
+  const weeksM = joined.match(/第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*(?:[，,、]\s*第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*)*周/);
+  let weeks = "";
+  if (weeksM) {
+    const toks = weeksM[0].match(/\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2}/g) || [];
+    weeks = toks.join(",").replace(/\s+/g, "");
+  }
+  else if (/单周/.test(joined)) weeks = "odd";
+  else if (/双周/.test(joined)) weeks = "even";
+  let room = (joined.match(/(?:场地|地点|教室)[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
+  if (!room) {
+    const m = joined.match(/[（(][^（）;；]*周[^（）;；]*[;；]([^）()]*)[)）]/);   // (1-17周;教3-201) 形式的后半段
+    if (m) room = m[1].trim();
+  }
+  let teacher = (joined.match(/教师[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
+  if (!teacher) {
+    const lines = String(text).split(/\n/).map(l => l.trim()).filter(Boolean);
+    for (let i = lines.length - 1; i >= 1; i--) {          // 独立成行的裸姓名，如 (张文丽)；跳过名字行
+      const m = lines[i].match(/^[（(]([\u4e00-\u9fa5·]{2,5})[)）]$/);
+      if (m) { teacher = m[1]; break; }
+    }
+  }
+  let name = xlsxPickName(text);
+  name = name.replace(/\s*[\[［][^\]］]*节[^\]］]*[\]］]\s*$/g, "").trim();   // 去掉挂在名字上的 [1-2节]
+  return { name, weeks, teacher, room, secA, secB };
+}
+function buildCoursesFromEntries(entries) {
+  entries.sort((x, y) => x.day - y.day || x.secA - y.secA);
+  const list = [];
+  const seenKey = new Set();
+  for (const c of entries) {
+    const key = [c.name, c.day, c.weeks, c.teacher, c.room].join("|");
+    if (seenKey.has(key)) continue;
+    seenKey.add(key);
+    const prev = list[list.length - 1];
+    if (prev && prev.name === c.name && prev.day === c.day && prev.weeks === c.weeks
+      && prev.teacher === c.teacher && prev.room === c.room && c.secA <= prev.secB + 1) {
+      prev.secB = Math.max(prev.secB, c.secB);
+      continue;
+    }
+    list.push({ ...c });
+  }
+  return list.map(c => ({
+    id: uid(), name: c.name, teacher: c.teacher, room: c.room,
+    day: c.day, slot: slotOf(c.secA), sec: secLabel(c.secA, c.secB),
+    weeks: c.weeks, color: importColor(c.name),
+  }));
 }
 
 async function parseXlsxBuffer(u8) {
@@ -2011,60 +2074,155 @@ async function parseXlsxBuffer(u8) {
 
   /* 逐格解析课程（origin 格才有正文） */
   const entries = [];
-  const DAY_CN = "一二三四五六日";
   for (let r = headRow + 1; r <= maxRow; r++) {
     const secCell = secCol >= 0 ? (cellAt(r, secCol)?.text || "") : "";
     const secNum = parseFloat(secCell);
     for (const [c, day] of colDay) {
       const cell = cellAt(r, c);
       if (!cell || !cell.origin || !cell.text.trim()) continue;
-      const joined = cell.text.replace(/\n+/g, "");
-      /* 专用解析：课程名★ / (X-Y节) / 周次列表 / 场地: / 教师: */
-      let secA = 0, secB = 0;
-      const secM = joined.match(/[(（]\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节[)）]/) || joined.match(/第?\s*(\d{1,2})\s*[-–~]\s*(\d{1,2})\s*节/);
-      if (secM) { secA = +secM[1]; secB = +secM[2]; }
-      else if (!isNaN(secNum)) { secA = Math.round(secNum); secB = secA + cell.spanR - 1; }
-      else continue;
-      const weeksM = joined.match(/第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*(?:[，,、]\s*第?\s*(?:\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2})\s*周?\s*)*周/);
-      let weeks = "";
-      if (weeksM) {
-        const toks = weeksM[0].match(/\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2}/g) || [];
-        weeks = toks.join(",").replace(/\s+/g, "");
-      }
-      else if (/单周/.test(joined)) weeks = "odd";
-      else if (/双周/.test(joined)) weeks = "even";
-      const room = (joined.match(/(?:场地|地点|教室)[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
-      const teacher = (joined.match(/教师[:：]\s*([^\/\n（(]+)/) || [])[1]?.trim() || "";
-      const name = xlsxPickName(cell.text);
-      if (!name) continue;
-      if (!weeks) continue;                    // 没周次的当无效格，防止整片噪音
-      entries.push({ day, secA, secB, name, weeks, teacher, room });
+      const spanSecB = !isNaN(secNum) ? Math.round(secNum) + cell.spanR - 1 : 0;
+      const f = extractCourseCellFields(cell.text, isNaN(secNum) ? 0 : Math.round(secNum), spanSecB);
+      if (!f.name || !f.weeks || !f.secA) continue;   // 没名字/周次/节次的当无效格，防止噪音
+      entries.push({ day, secA: f.secA, secB: f.secB, name: f.name, weeks: f.weeks, teacher: f.teacher, room: f.room });
     }
   }
-  /* 相邻同字段合并（跨大节连排）+ 去重，直接构建课程（不经通用文本管线，保真多段周次） */
-  entries.sort((x, y) => x.day - y.day || x.secA - y.secA);
-  const list = [];
-  const seenKey = new Set();
-  for (const c of entries) {
-    const key = [c.name, c.day, c.weeks, c.teacher, c.room].join("|");
-    if (seenKey.has(key)) continue;
-    seenKey.add(key);
-    const prev = list[list.length - 1];
-    if (prev && prev.name === c.name && prev.day === c.day && prev.weeks === c.weeks
-      && prev.teacher === c.teacher && prev.room === c.room && c.secA <= prev.secB + 1) {
-      prev.secB = Math.max(prev.secB, c.secB);
-      continue;
-    }
-    list.push({ ...c });
-  }
-  const courses = list.map(c => ({
-    id: uid(), name: c.name, teacher: c.teacher, room: c.room,
-    day: c.day, slot: slotOf(c.secA), sec: secLabel(c.secA, c.secB),
-    weeks: c.weeks, color: importColor(c.name),
-  }));
+  const courses = buildCoursesFromEntries(entries);
   if (!courses.length)
     return { ok: false, msg: "找到表头但没解析出课程。可用 Excel 打开后全选复制，粘贴到上面试试。" };
   return { ok: true, courses };
+}
+
+/* ============================================================
+   PDF 课表解析：pdf.js 提取文本项坐标 → 重建表格网格 →
+   复用 xlsx 的字段提取器（课程名/周次/节次/场地/教师，含周六日）
+   ============================================================ */
+async function parsePdfBuffer(u8) {
+  if (typeof pdfjsLib === "undefined")
+    return { ok: false, msg: "PDF 组件未加载（离线首刷未完成？）。刷新一次页面再试。" };
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+    const pdf = await pdfjsLib.getDocument({ data: u8, isEvalSupported: false }).promise;
+    const items = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      for (const it of tc.items) {
+        if (!it.str || !it.str.trim()) continue;
+        items.push({ str: it.str.trim(), x: it.transform[4], y: it.transform[5], w: it.width || 0, h: it.height || 10 });
+      }
+    }
+    if (!items.length) return { ok: false, msg: "这个 PDF 里没有文字层（可能是扫描件）。请用文字版课表。" };
+
+    /* —— 视觉行聚类：按 y 分组（容差 = 中位字高 × 0.6） —— */
+    const heights = items.map(i => i.h).sort((a, b) => a - b);
+    const medH = heights[Math.floor(heights.length / 2)] || 10;
+    const rowTol = medH * 0.6;
+    items.sort((a, b) => (b.y - a.y) || (a.x - b.x));
+    const visRows = [];                    // [{y, chars:[{ch,x,w}]}]
+    for (const it of items) {
+      const row = visRows.find(r => Math.abs(r.y - it.y) <= rowTol);
+      if (row) row.items.push(it);
+      else visRows.push({ y: it.y, items: [it] });
+    }
+    visRows.sort((a, b) => b.y - a.y);
+    /* 每行展开成字符流（记录每个字的 x 区间），拼接时按字距补空格 */
+    for (const r of visRows) {
+      r.items.sort((a, b) => a.x - b.x);
+      r.chars = [];
+      for (const it of r.items) {
+        const cw = Math.min((it.w || it.str.length * medH) / it.str.length, medH * 1.05);   // item.width 尺度不可信，钳到字高附近
+        for (let i = 0; i < it.str.length; i++) {
+          const x0 = it.x + i * cw;
+          const prev = r.chars[r.chars.length - 1];
+          const gap = prev ? x0 - prev.xEnd : 0;
+          const needSpace = prev && gap > medH * 0.25 && /[A-Za-z0-9,.:;()%]$/.test(prev.ch) && /^[A-Za-z0-9(]/.test(it.str[i]);
+          if (needSpace) r.chars.push({ ch: " ", x: x0 - gap, xEnd: prev.xEnd + 0.01 });   // 空格不占几何宽，避免桥接切段间隙
+          r.chars.push({ ch: it.str[i], x: x0, xEnd: x0 + cw });
+        }
+      }
+      r.text = r.chars.map(c => c.ch).join("");
+    }
+
+    /* —— 表头：行文本含 ≥4 个「星期X」；列带 = 相邻表头中心的中线（数据段按段中心归属） —— */
+    let headRow = null, dayBands = [], secBand = null;
+    for (const r of visRows) {
+      const hits = [...r.text.matchAll(/星期\s*[一二三四五六日天]/g)].map(m => {
+        const c0 = r.chars[m.index], c1 = r.chars[m.index + m[0].length - 1];
+        return { d: dayFromText(m[0]), left: c0.x, right: c1.xEnd, cx: (c0.x + c1.xEnd) / 2 };
+      });
+      if (hits.length < 4) continue;
+      hits.sort((a, b) => a.cx - b.cx);
+      const medGap = (hits[hits.length - 1].cx - hits[0].cx) / (hits.length - 1);
+      for (let i = 0; i < hits.length; i++) {
+        dayBands.push({
+          day: hits[i].d,
+          left: i === 0 ? hits[0].cx - medGap / 2 : (hits[i - 1].cx + hits[i].cx) / 2,
+          right: i === hits.length - 1 ? Infinity : (hits[i].cx + hits[i + 1].cx) / 2,
+        });
+      }
+      secBand = { left: 0, right: dayBands[0].left };
+      headRow = r;
+      if (window.__PDF_DEBUG__) console.log("[pdf表头]", "dayBands=", JSON.stringify(dayBands.map(b => [b.day, Math.round(b.left), Number.isFinite(b.right) ? Math.round(b.right) : "∞"])));
+      break;
+    }
+    if (!headRow || !dayBands.length)
+      return { ok: false, msg: "PDF 里没找到「星期一~星期日」表头。请确认是教务导出的课表 PDF。" };
+
+    /* —— 逐视觉行：按字距切成原子片段（段中心落哪个表头带就整体归哪列，绝不拆段） —— */
+    const entries = [];
+    const acc = dayBands.map(() => null);   // 每列带一个正在积累的格 {text, secHint}
+    const lastEntry = dayBands.map(() => null);
+    const flushBand = bi => {
+      const a = acc[bi];
+      if (!a) return;
+      const f = extractCourseCellFields(a.text, a.secHint, a.secHint);
+      if (window.__PDF_DEBUG__) console.log('[pdf flush]', '周' + dayBands[bi].day, JSON.stringify(a.text.slice(0, 55)), '→ name:', JSON.stringify(f.name), 'weeks:', f.weeks, 'secA:', f.secA);
+      if (f.name && f.weeks && f.secA) {
+        const entry = { day: dayBands[bi].day, secA: f.secA, secB: f.secB, name: f.name, weeks: f.weeks, teacher: f.teacher, room: f.room, text: a.text };
+        entries.push(entry);
+        lastEntry[bi] = entry;
+      } else if (lastEntry[bi]) {
+        const tm = a.text.trim().match(/^[（(]([\u4e00-\u9fa5·]{2,5})[)）]$/);   // 掉队的裸教师行
+        if (tm && !lastEntry[bi].teacher) lastEntry[bi].teacher = tm[1];
+      }
+      acc[bi] = null;
+    };
+    for (const r of visRows) {
+      if (r === headRow) continue;
+      if (r.y > headRow.y) continue;                 // 只处理表头之后的数据行（跳过标题等）
+      /* 行内切段：间隙 > 半字高即分界（段 = 格子文字片段，原子分配） */
+      const segs = [];
+      let cur = null;
+      for (const c of r.chars) {
+        if (cur && c.x - cur.xEnd > medH * 0.5) { segs.push(cur); cur = null; }
+        if (!cur) cur = { text: "", left: c.x, xEnd: c.xEnd };
+        cur.text += c.ch;
+        cur.xEnd = Math.max(cur.xEnd, c.xEnd);
+      }
+      if (cur) segs.push(cur);
+      for (const s of segs) s.cx = (s.left + s.xEnd) / 2;
+
+      const secSegs = segs.filter(s => s.left < secBand.right);
+      const secJoin = secSegs.map(s => s.text).join(" ");
+      const rowSecNo = secNoFromText(secJoin.trim())?.a || (parseFloat(secJoin) ? Math.round(parseFloat(secJoin)) : 0);
+      dayBands.forEach((b, bi) => {
+        const text = segs.filter(s => s.cx >= b.left && s.cx < b.right && s.left >= secBand.right - 0.1).map(s => s.text).join(" ").trim();
+        if (!text) { flushBand(bi); return; }               // 该带空行 = 格边界
+        const secNo = rowSecNo || 0;
+        if (acc[bi] && secNo && acc[bi].secHint && secNo > acc[bi].secHint + 1) flushBand(bi);  // 节次跳号 = 新格
+        if (!acc[bi]) acc[bi] = { text, secHint: secNo || 0 };
+        else { acc[bi].text += "\n" + text; if (secNo && !acc[bi].secHint) acc[bi].secHint = secNo; }
+      });
+    }
+    for (let bi = 0; bi < dayBands.length; bi++) flushBand(bi);
+    const courses = buildCoursesFromEntries(entries);
+    if (!courses.length)
+      return { ok: false, msg: "PDF 里找到了表头但没解析出课程。把这个 PDF 发给开发者看看吧。" };
+    return { ok: true, courses };
+  } catch (e) {
+    console.warn("pdf parse failed:", e);
+    return { ok: false, msg: "PDF 解析失败：文件可能损坏或加密。" };
+  }
 }
 
 async function readImportFile(f) {
@@ -2075,6 +2233,14 @@ async function readImportFile(f) {
     r.readAsArrayBuffer(f);
   });
   const u8 = new Uint8Array(buf);
+  if (u8.length > 4 && u8[0] === 0x25 && u8[1] === 0x50 && u8[2] === 0x44 && u8[3] === 0x46) {   // %PDF
+    const res = await parsePdfBuffer(u8);
+    if (!res.ok) { impStatus(false, res.msg); return; }
+    pendingImport = res.courses;
+    impStatus(true, `✅ 从「${f.name}」解析出 <b>${res.courses.length} 门课程</b>。检查预览没问题后点「合并导入」或「替换整个课表」。`);
+    renderImportPreview();
+    return;
+  }
   if (u8.length > 4 && u8[0] === 0x50 && u8[1] === 0x4b) {            // PK → zip（xlsx）
     try {
       const res = await parseXlsxBuffer(u8);

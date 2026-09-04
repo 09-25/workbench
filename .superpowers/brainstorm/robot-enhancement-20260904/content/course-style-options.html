@@ -1,0 +1,37 @@
+<style>
+  .style-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  .style-option { cursor:pointer; border:1px solid #ddcfb9; border-radius:18px; padding:14px; background:#fffaf0; transition:transform .18s ease,box-shadow .18s ease; }
+  .style-option:hover { transform:translateY(-3px); box-shadow:0 12px 24px rgba(85,58,29,.12); }
+  .style-option.is-selected { outline:3px solid #c94b32; }
+  .mini-week { background:#f5efe3; border-radius:12px; padding:12px; }
+  .mini-day { display:flex; gap:8px; align-items:center; margin-bottom:10px; color:#6f5a46; font-size:11px; }
+  .mini-day b { color:#3d3026; font-size:13px; }
+  .course-card { padding:12px; border-radius:12px; min-height:82px; }
+  .course-card strong { display:block; font-size:14px; color:#3e3026; margin-bottom:7px; }
+  .course-card span { display:block; font-size:11px; color:#735e4d; line-height:1.5; }
+  .soft { background:#e9d9f5; border-left:5px solid #9b72c2; box-shadow:0 4px 0 rgba(155,114,194,.13); }
+  .solid { background:#c7543a; border-left:5px solid #8e2f20; box-shadow:0 5px 0 rgba(142,47,32,.2); }
+  .solid strong,.solid span { color:#fff9ee; }
+  .outline { background:#fffaf0; border:2px solid #7f9b8b; border-left:6px solid #557d69; }
+  .style-label { margin:12px 0 5px; color:#3d3026; font-weight:700; }
+  .style-copy { margin:0; color:#765e4b; font-size:12px; line-height:1.5; }
+  @media (max-width: 800px) { .style-grid { grid-template-columns:1fr; } }
+</style>
+
+<h2>课程卡片样式对比</h2>
+<p class="subtitle">点击你喜欢的一种，之后每门课程都可以单独选择颜色和样式。</p>
+
+<div class="style-grid">
+  <div class="style-option" data-choice="soft" onclick="toggleSelect(this)">
+    <div class="mini-week"><div class="mini-day"><b>周一</b><span>9 月 7 日</span></div><div class="course-card soft"><strong>通信原理</strong><span>08:00–09:50 · 9A111</span><span>第 1–2 节</span></div></div>
+    <div class="style-label">A · 柔和填充</div><p class="style-copy">颜色柔和、最耐看，适合大多数课程。</p>
+  </div>
+  <div class="style-option" data-choice="solid" onclick="toggleSelect(this)">
+    <div class="mini-week"><div class="mini-day"><b>周一</b><span>9 月 7 日</span></div><div class="course-card solid"><strong>通信原理</strong><span>08:00–09:50 · 9A111</span><span>第 1–2 节</span></div></div>
+    <div class="style-label">B · 实色强调</div><p class="style-copy">颜色更醒目，今天要上的课一眼就能找到。</p>
+  </div>
+  <div class="style-option" data-choice="outline" onclick="toggleSelect(this)">
+    <div class="mini-week"><div class="mini-day"><b>周一</b><span>9 月 7 日</span></div><div class="course-card outline"><strong>通信原理</strong><span>08:00–09:50 · 9A111</span><span>第 1–2 节</span></div></div>
+    <div class="style-label">C · 线框简洁</div><p class="style-copy">底色更干净，用边框和色条区分课程。</p>
+  </div>
+</div>

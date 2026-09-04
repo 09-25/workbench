@@ -1,8 +1,9 @@
 /* 我的工作台 · Service Worker：预缓存 + 后台更新（stale-while-revalidate） */
-const CACHE = "workbench-v1.3";
+const CACHE = "workbench-v1.4";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png",
+  "./vendor/pdf.min.js", "./vendor/pdf.worker.min.js",
 ];
 
 self.addEventListener("install", e => {

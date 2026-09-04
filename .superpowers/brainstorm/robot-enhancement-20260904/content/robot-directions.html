@@ -1,0 +1,66 @@
+<style>
+  .robot-picks { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  .robot-pick { cursor:pointer; min-height:350px; border:1px solid #ddcfb9; border-radius:18px; background:#fffaf0; overflow:hidden; box-shadow:0 10px 24px rgba(85,58,29,.08); transition:transform .18s ease, box-shadow .18s ease; }
+  .robot-pick:hover { transform:translateY(-4px); box-shadow:0 16px 28px rgba(85,58,29,.15); }
+  .robot-pick.is-selected { outline:3px solid #c94b32; }
+  .robot-window { padding:16px; min-height:238px; background:#f6efe2; }
+  .robot-window.dark { background:#242322; }
+  .robot-window.peach { background:#f4d5c6; }
+  .robot-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; color:#5b4c3c; font-size:12px; }
+  .robot-window.dark .robot-top { color:#f4dfbd; }
+  .robot-face { width:48px; height:48px; display:grid; place-items:center; border-radius:16px; background:#cf5034; color:#fff8e9; font-size:27px; box-shadow:0 5px 0 #a83d28; }
+  .robot-face.yellow { background:#f5bd55; box-shadow:0 5px 0 #c4872a; }
+  .robot-face.ink { background:#34312d; box-shadow:0 5px 0 #181716; }
+  .bubble { margin:0 0 10px 58px; padding:10px 12px; border-radius:13px 13px 4px 13px; background:#fffdf7; color:#3d3329; font-size:12px; line-height:1.5; }
+  .robot-window.dark .bubble { background:#3a3835; color:#fff5e3; }
+  .quick-row { display:flex; gap:7px; flex-wrap:wrap; }
+  .quick { padding:7px 9px; border:1px solid #d8c6ab; border-radius:999px; background:#fffdf8; color:#6a4a32; font-size:11px; }
+  .robot-window.dark .quick { border-color:#665b4d; background:#302e2b; color:#f4cf8a; }
+  .command { display:flex; gap:8px; align-items:center; margin-top:13px; padding:9px; border-radius:12px; background:rgba(255,255,255,.72); color:#927d65; font-size:11px; }
+  .pick-copy { padding:14px 16px 16px; }
+  .pick-copy h3 { margin:0 0 6px; color:#3e3127; }
+  .pick-copy p { margin:0; color:#765e4b; font-size:13px; line-height:1.55; }
+  @media (max-width: 850px) { .robot-picks { grid-template-columns:1fr; } .robot-pick { min-height:0; } }
+</style>
+
+<h2>小机器人升级方向</h2>
+<p class="subtitle">我准备让它继续离线运行，不接 AI API；先选一个你最喜欢的外观和操作感觉。</p>
+
+<div class="robot-picks">
+  <div class="robot-pick" data-choice="a" onclick="toggleSelect(this)">
+    <div class="robot-window">
+      <div class="robot-top"><span>WORK DESKTOP · 助手</span><span>● 在线</span></div>
+      <div class="robot-face">🤖</div>
+      <div class="bubble">下午好，Hzx！我可以帮你记待办、加课程、做倒计时。</div>
+      <div class="quick-row"><span class="quick">＋待办</span><span class="quick">＋课程</span><span class="quick">倒计时</span></div>
+      <div class="command">说一句话或输入：明天下午 3 点交实验报告</div>
+    </div>
+    <div class="pick-copy"><h3>A · 学习管家</h3><p>功能最完整：快捷按钮 + 自然语言输入 + 识别结果确认卡。适合每天都用。</p></div>
+  </div>
+
+  <div class="robot-pick" data-choice="b" onclick="toggleSelect(this)">
+    <div class="robot-window dark">
+      <div class="robot-top"><span>WORK DESKTOP</span><span>快捷指令</span></div>
+      <div class="robot-face yellow">✦</div>
+      <div class="bubble">今天有 2 节课。要不要打开课表，还是先处理待办？</div>
+      <div class="quick-row"><span class="quick">看今天</span><span class="quick">记一笔</span><span class="quick">专注 25 分钟</span></div>
+      <div class="command">▸ 点击即执行，少打字</div>
+    </div>
+    <div class="pick-copy"><h3>B · 指令中枢</h3><p>更像手机上的控制台：大按钮、状态反馈、少量对话。操作最快，视觉更有个性。</p></div>
+  </div>
+
+  <div class="robot-pick" data-choice="c" onclick="toggleSelect(this)">
+    <div class="robot-window peach">
+      <div class="robot-top"><span>今天 · 9 月 4 日</span><span>☼</span></div>
+      <div class="robot-face ink">◡</div>
+      <div class="bubble">慢慢来。先把今天最重要的一件事放进待办吧。</div>
+      <div class="quick-row"><span class="quick">写下想法</span><span class="quick">开始专注</span></div>
+      <div class="command">♡ 陪伴模式 · 不打扰</div>
+    </div>
+    <div class="pick-copy"><h3>C · 温柔陪伴</h3><p>更安静、更像桌面上的小伙伴：突出鼓励、日志和专注，不强调复杂操作。</p></div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <p class="subtitle">建议优先考虑 A：它能在保留现有“说一句话就能记事”的基础上，增加快捷操作和今日提醒。</p>
+</div>

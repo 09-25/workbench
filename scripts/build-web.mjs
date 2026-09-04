@@ -7,8 +7,12 @@ const root = resolve(here, '..');
 const dist = resolve(root, 'dist');
 await rm(dist, { recursive: true, force: true });
 await mkdir(resolve(dist, 'icons'), { recursive: true });
+await mkdir(resolve(dist, 'vendor'), { recursive: true });
 for (const file of ['index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'sw.js']) {
   await cp(resolve(root, file), resolve(dist, file));
+}
+for (const file of ['pdf.min.js', 'pdf.worker.min.js']) {
+  await cp(resolve(root, 'vendor', file), resolve(dist, 'vendor', file));
 }
 for (const file of ['icon-192.png', 'icon-512.png']) {
   await cp(resolve(root, 'icons', file), resolve(dist, 'icons', file));
