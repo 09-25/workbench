@@ -1567,7 +1567,7 @@ function impStatus(ok, msg) {
 function cellTextOf(cell) {
   const tmp = document.createElement("div");
   tmp.innerHTML = cell.innerHTML
-    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<br\b[^>]*>/gi, "\n")
     .replace(/<\/(td|th|tr|div|p|li)>/gi, "\n");
   return tmp.textContent.replace(/\u00a0/g, " ");
 }
@@ -1628,7 +1628,9 @@ function looksTeacherLine(s) {
     || /^[A-Za-z][A-Za-z.\s]{2,19}$/.test(t);
 }
 function looksRoomLine(s) {
-  return /\d/.test(s) && s.length <= 18 && !WEEK_LINE.test(s) && !looksTeacherLine(s);
+  const t = String(s || "").trim();
+  if (/^\[[^\]]*\]$/.test(t) || /^(?:第\s*)?\d{1,2}(?:\s*[-–~]\s*\d{1,2})?\s*节$/.test(t)) return false;
+  return /\d/.test(t) && t.length <= 18 && !WEEK_LINE.test(t) && !looksTeacherLine(t);
 }
 /* 一个格子里可能有多门课：按「课程名行」分块 */
 function splitBlocks(text) {
@@ -1650,6 +1652,7 @@ function parseBlock(lines) {
   if (!lines.length) return null;
   // Excel 的课程名行还会带课程号、节次、考核与学时等元数据；名称只保留节次标签之前。
   const name = lines[0].replace(/^【|】$/g, "")
+    .replace(/\s*\(\s*\d[\dA-Za-z.]*\s*\)/, "")
     .replace(/\s*\[\s*\d{1,2}\s*[-–~]\s*\d{1,2}\s*节\s*\][\s\S]*$/, "").trim();
   if (!name || name.length > 80) return null;
   let weeks = "all", teacher = "", room = "";
@@ -1664,7 +1667,10 @@ function parseBlock(lines) {
         continue;
       }
     }
-    if (!teacher && looksTeacherLine(l)) { teacher = l.replace(/^(教师|主讲|老师)[::／/]?\s*/, ""); continue; }
+    if (!teacher && looksTeacherLine(l)) {
+      teacher = l.replace(/^(教师|主讲|老师)[::／/]?\s*/, "").replace(/^[（(]\s*|\s*[）)]$/g, "").trim();
+      continue;
+    }
     if (!room && looksRoomLine(l)) { room = l; continue; }
   }
   return { name, weeks, teacher, room };
