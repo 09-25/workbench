@@ -1,0 +1,2004 @@
+{
+	"type": "npm",
+	"name": "pdfjs-dist",
+	"version": "3.11.174",
+	"default": "/build/pdf.min.js",
+	"files": [
+		{
+			"type": "directory",
+			"name": "cmaps",
+			"files": [
+				{
+					"type": "file",
+					"name": "78-EUC-H.bcmap",
+					"hash": "2SomEzbcGLjAOkbrTUYjgtM/Qzj6GV0wMlayAxQ0yHQ=",
+					"size": 2404
+				},
+				{
+					"type": "file",
+					"name": "78-EUC-V.bcmap",
+					"hash": "YWcL68TkgntnIwwFT9DYINbjDDWE0C44aATmK77cAyo=",
+					"size": 173
+				},
+				{
+					"type": "file",
+					"name": "78-H.bcmap",
+					"hash": "7OZBW4U9YeGyVgFlFRQH01zxbmVWkyuFoT6nUna3dAI=",
+					"size": 2379
+				},
+				{
+					"type": "file",
+					"name": "78-RKSJ-H.bcmap",
+					"hash": "aWsflzyXYjSWcDgJ6qpfm0BpbHdUAFdBP0uCagjt+ns=",
+					"size": 2398
+				},
+				{
+					"type": "file",
+					"name": "78-RKSJ-V.bcmap",
+					"hash": "U8ttVgqzd9pIz2XW3KywvbMfE/q3BmxYDeOMEqc6f/k=",
+					"size": 173
+				},
+				{
+					"type": "file",
+					"name": "78-V.bcmap",
+					"hash": "KJAA8C/TSHK2l1UDIX8zq65r7mdufSj2QEc6Z8jbFxI=",
+					"size": 169
+				},
+				{
+					"type": "file",
+					"name": "78ms-RKSJ-H.bcmap",
+					"hash": "okQllSGPX4vY4bQhiONoWH2HbP4MxM2HGW8HfIePcuI=",
+					"size": 2651
+				},
+				{
+					"type": "file",
+					"name": "78ms-RKSJ-V.bcmap",
+					"hash": "+N3Oupa/2dN0C9F4nuMNH0fHg3FSCoCE9x999Y8Zvgs=",
+					"size": 290
+				},
+				{
+					"type": "file",
+					"name": "83pv-RKSJ-H.bcmap",
+					"hash": "RAQAUeyBj+CblwNHK+py79J1nV7rX/DXfHGNa7Xm0d8=",
+					"size": 905
+				},
+				{
+					"type": "file",
+					"name": "90ms-RKSJ-H.bcmap",
+					"hash": "wT4EPoX/cVt1uwOAHo/Q+486deSkhJb6prqvkrW0i6E=",
+					"size": 721
+				},
+				{
+					"type": "file",
+					"name": "90ms-RKSJ-V.bcmap",
+					"hash": "SZu5Fs4a2+Qom25YEfTcIOsjjNwv+tIM8mrlZxaIW6s=",
+					"size": 290
+				},
+				{
+					"type": "file",
+					"name": "90msp-RKSJ-H.bcmap",
+					"hash": "e4s7i7+CFwLppN+fNZbOKSOAyMGwkl3trbtOSy2ASYs=",
+					"size": 715
+				},
+				{
+					"type": "file",
+					"name": "90msp-RKSJ-V.bcmap",
+					"hash": "YpbCtcB9yoEo6W1SltYhoyaIA9T6DlgSoh5S/igCqss=",
+					"size": 291
+				},
+				{
+					"type": "file",
+					"name": "90pv-RKSJ-H.bcmap",
+					"hash": "+1ED8D06NFR+GNMW5SttmybkhcZimZIi+E0rpUwuT6g=",
+					"size": 982
+				},
+				{
+					"type": "file",
+					"name": "90pv-RKSJ-V.bcmap",
+					"hash": "e8ta0rpVuWYs43nhbC2cwrgtYhpXmAc1N0EXLkr2FcI=",
+					"size": 260
+				},
+				{
+					"type": "file",
+					"name": "Add-H.bcmap",
+					"hash": "ov+rKLmQmYGBvMqbDpFLsiB4IPEArjHVxGlESJLlrY4=",
+					"size": 2419
+				},
+				{
+					"type": "file",
+					"name": "Add-RKSJ-H.bcmap",
+					"hash": "sp9LUuJGXQSFhW1eafG6aZJ96yhI2P0yjIA1WDs1u34=",
+					"size": 2413
+				},
+				{
+					"type": "file",
+					"name": "Add-RKSJ-V.bcmap",
+					"hash": "KqIjLCg6P10Jl8KDSjbOrQt5ziZXlEz+7QgUDCk0YP8=",
+					"size": 287
+				},
+				{
+					"type": "file",
+					"name": "Add-V.bcmap",
+					"hash": "JRJdOxvmToay31szRBcLRaQryqC0bkOjQxTvc8Fm5UI=",
+					"size": 282
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-0.bcmap",
+					"hash": "jGW+nVGp8mmlR9wSRgcHqvQDGrZ+voopAPS0zGs+RQ4=",
+					"size": 317
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-1.bcmap",
+					"hash": "cxUrwaWcxZS0FKxgaL5I5VErlq6FkgxA4yqZJp/bDAQ=",
+					"size": 371
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-2.bcmap",
+					"hash": "objTU73vlYTIIEZOjxyeIBPWTr9DPLoKqDHd31FYGMI=",
+					"size": 376
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-3.bcmap",
+					"hash": "L/wMdcefr95QYWPTwIw5DRgyUQCfP79q5Q0RZ9FLlXA=",
+					"size": 401
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-4.bcmap",
+					"hash": "mKH0cMh4xrlpGk1673dq+KybVfVYfJ+voAVH879lVxY=",
+					"size": 405
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-5.bcmap",
+					"hash": "3dbimVXrjLVF8uvQnGKMO72lAjJW7aG3KPdDx1+3eCk=",
+					"size": 406
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-6.bcmap",
+					"hash": "MXuy23Hg5bewxHt13h2pFcLiL2XwwIYVB/nKe6I4+KI=",
+					"size": 406
+				},
+				{
+					"type": "file",
+					"name": "Adobe-CNS1-UCS2.bcmap",
+					"hash": "5mWDfyGXxr0IzYlVrU1pMs7iOY4uMoslsA5r+zvXKvk=",
+					"size": 41193
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-0.bcmap",
+					"hash": "i4HM6KEdUQ5QVwSVPPpOSrCAwaDKuZEUWjUS7kM5Rrk=",
+					"size": 217
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-1.bcmap",
+					"hash": "BCaYMIF4jscgJwPnHx76S4YPdbk2mUI2AQs52JJRqB4=",
+					"size": 250
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-2.bcmap",
+					"hash": "5ns3qDsWCrODEwanGmBYk7JEVO6BrJthI78tOYTSaNU=",
+					"size": 465
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-3.bcmap",
+					"hash": "qima/D4SoocmFHMF8ZG+KMdJgHjIsYLs54hqx5zZkHg=",
+					"size": 470
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-4.bcmap",
+					"hash": "j719dMLdsTUMHOzOVKc/3j9UUwk9S+1EUoPsADPSCX8=",
+					"size": 601
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-5.bcmap",
+					"hash": "wiyy/P8kES+jHashEb3FGVcAZXbTGq1aJeZ3k6wBQow=",
+					"size": 625
+				},
+				{
+					"type": "file",
+					"name": "Adobe-GB1-UCS2.bcmap",
+					"hash": "IFB2ICYMDJNcNa/B5w5YiKpxJdXsf/wDzvGVn+ssFkE=",
+					"size": 33974
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-0.bcmap",
+					"hash": "Rk8IkFI29XA7H1z4NYdnyLGOa8yAiEDQgfHeLHqzgTQ=",
+					"size": 225
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-1.bcmap",
+					"hash": "TII4SHIhh9H/51rj9fkSbM0teJWgX60UyRn7EZ4DcAg=",
+					"size": 226
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-2.bcmap",
+					"hash": "eBD7gI42fnBCnpCpR4/mo/3D4hTyXHWCzpwtpqJCMVw=",
+					"size": 233
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-3.bcmap",
+					"hash": "hN6xgocRrT05DJiZw4q84b9hnWX/e/GjJuyVrMRfCPg=",
+					"size": 242
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-4.bcmap",
+					"hash": "P4pPl0kZwri65dEBdf+iZzvhQEgeAIQFQshdSO8YQGc=",
+					"size": 337
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-5.bcmap",
+					"hash": "HTzk/yjZd/jPN6kSrk7IEfQXXDFnsewLJWf+7D554ds=",
+					"size": 430
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-6.bcmap",
+					"hash": "Vgl5e5QBswvnLvlkXaYqh4KfBYw75LXGIzgxGfWEsdk=",
+					"size": 485
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Japan1-UCS2.bcmap",
+					"hash": "ZsXQ3Elk9Ak+d7GUAj86D2iTJAKOyDMOHh0FcLy6fC8=",
+					"size": 40951
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Korea1-0.bcmap",
+					"hash": "37jDh08OWow6z1l9LBLStj6QvF5PD86ZDsTFYHfYCzI=",
+					"size": 241
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Korea1-1.bcmap",
+					"hash": "YvJ3t7HEQcAHeXrnB9XDcljQKc5GYaK5EeLh7jXmrcE=",
+					"size": 386
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Korea1-2.bcmap",
+					"hash": "HXcGivRi+W160orX59Q+72QjxoW0edfcJf9d842wOA0=",
+					"size": 391
+				},
+				{
+					"type": "file",
+					"name": "Adobe-Korea1-UCS2.bcmap",
+					"hash": "hXtyMIi+lyVQU1Yr+kG9EHWn95ENO6tZoGRci7xwYP8=",
+					"size": 23293
+				},
+				{
+					"type": "file",
+					"name": "B5-H.bcmap",
+					"hash": "cYrQ/770w0+PPzEpLEYuUZzVZ6VRH8izRsYAENZPTvk=",
+					"size": 1086
+				},
+				{
+					"type": "file",
+					"name": "B5-V.bcmap",
+					"hash": "tcNzg1F0d2IM7ZJ7a0/9T0zGIw2AUbW0aiHWdo4H99g=",
+					"size": 142
+				},
+				{
+					"type": "file",
+					"name": "B5pc-H.bcmap",
+					"hash": "urYCiurR1hSUAOkEqxDP0xkILYJkc+1MWCyO7tkg8X4=",
+					"size": 1099
+				},
+				{
+					"type": "file",
+					"name": "B5pc-V.bcmap",
+					"hash": "QVQxQrl2fzt2EziZ/IRTKCsBrTxlOsrupC14xafQjGM=",
+					"size": 144
+				},
+				{
+					"type": "file",
+					"name": "CNS-EUC-H.bcmap",
+					"hash": "6Pic1h5khrlIIF2kZJnWWe0K7ZSbcJX9PI6V/+Kw56k=",
+					"size": 1780
+				},
+				{
+					"type": "file",
+					"name": "CNS-EUC-V.bcmap",
+					"hash": "yuQivsKsbb6Gv5Ic7JQrrNLQtzP/zKX5GzuhTpFwJaA=",
+					"size": 1920
+				},
+				{
+					"type": "file",
+					"name": "CNS1-H.bcmap",
+					"hash": "6Eh5casgzRbz3j6KxW7JlLcrZYrRE/KBgjnf1RCPUBo=",
+					"size": 706
+				},
+				{
+					"type": "file",
+					"name": "CNS1-V.bcmap",
+					"hash": "Qt+AdqqnV0UF5zBK+DozI+wDLEF31ksTCduMBD1ZSoo=",
+					"size": 143
+				},
+				{
+					"type": "file",
+					"name": "CNS2-H.bcmap",
+					"hash": "vGAk0nTUQPBiXGniXzcDbvbLZolDLOqhYNNDKipxbKc=",
+					"size": 504
+				},
+				{
+					"type": "file",
+					"name": "CNS2-V.bcmap",
+					"hash": "Lk9wqK/SOhIQMPwuW184FukDsR57qLjAllSzHIA5nDg=",
+					"size": 93
+				},
+				{
+					"type": "file",
+					"name": "ETen-B5-H.bcmap",
+					"hash": "h+5rP1v9pf4m+jVDEmTH1zBw0Q2785inUYXWOuMiwY0=",
+					"size": 1125
+				},
+				{
+					"type": "file",
+					"name": "ETen-B5-V.bcmap",
+					"hash": "R9wNLCHjveMXlHrsFnXOq8HVRgpgv5wkM0uMQHoXFyw=",
+					"size": 158
+				},
+				{
+					"type": "file",
+					"name": "ETenms-B5-H.bcmap",
+					"hash": "1fWnPaQXO32po6IOFvJvnNXRLesVU0CZGeDOxv03/e4=",
+					"size": 101
+				},
+				{
+					"type": "file",
+					"name": "ETenms-B5-V.bcmap",
+					"hash": "GCUvypD0cvR5rxvd1g1qtRyOG1Xc9oRZUUJlBJNFQ+A=",
+					"size": 172
+				},
+				{
+					"type": "file",
+					"name": "ETHK-B5-H.bcmap",
+					"hash": "0vEPpRkza8TvzHtt65YEt1QplGtA2C4xHLOpehmUyJo=",
+					"size": 4426
+				},
+				{
+					"type": "file",
+					"name": "ETHK-B5-V.bcmap",
+					"hash": "H+o/0Nnw9nn4BQWACFHvLkEx2BEn4YwAaTj/ovTIskc=",
+					"size": 158
+				},
+				{
+					"type": "file",
+					"name": "EUC-H.bcmap",
+					"hash": "+ZOc1X/M3GXF2fTCBf1Jfr29KDZDMI2lZjgBqMHZxZU=",
+					"size": 578
+				},
+				{
+					"type": "file",
+					"name": "EUC-V.bcmap",
+					"hash": "EoOlCnBlB8RDbag+3prXpEQL4lN48ulvbIGkMAgUJqM=",
+					"size": 170
+				},
+				{
+					"type": "file",
+					"name": "Ext-H.bcmap",
+					"hash": "QADtTmGhxmjvRTu9BgPPo4Pe+nk6vUalfthw1/UnNQs=",
+					"size": 2536
+				},
+				{
+					"type": "file",
+					"name": "Ext-RKSJ-H.bcmap",
+					"hash": "4NLw3zN2YOc4EyON1Kcl8R8GIbkPMnOFfbJT0OdpTKo=",
+					"size": 2542
+				},
+				{
+					"type": "file",
+					"name": "Ext-RKSJ-V.bcmap",
+					"hash": "9heiK21n/rsYeZCVIAbJGp9aTbIRVdJoxlYlLQwhmF0=",
+					"size": 218
+				},
+				{
+					"type": "file",
+					"name": "Ext-V.bcmap",
+					"hash": "wgh/uEWp46zqDCkizUDmr2fhGVe+x03NWX8She3UkM4=",
+					"size": 215
+				},
+				{
+					"type": "file",
+					"name": "GB-EUC-H.bcmap",
+					"hash": "koutBv2EpI9bpxUNdxZgkRn7Zg8qqnPsytgd2rm50gM=",
+					"size": 549
+				},
+				{
+					"type": "file",
+					"name": "GB-EUC-V.bcmap",
+					"hash": "qa2IrCR52lKbFtxIq8WVIzLie8NVM1+R31cppYdTMyQ=",
+					"size": 179
+				},
+				{
+					"type": "file",
+					"name": "GB-H.bcmap",
+					"hash": "EBjHd6iRC1u0bX1UpK7p1Rylz/it2ytByWnZEByz/Rw=",
+					"size": 528
+				},
+				{
+					"type": "file",
+					"name": "GB-V.bcmap",
+					"hash": "C5Z4kUPAu/nxZBrnFls0VtzNFNq//LsL1lTVv2+U+GM=",
+					"size": 175
+				},
+				{
+					"type": "file",
+					"name": "GBK-EUC-H.bcmap",
+					"hash": "IQP+0oZQ7eCWoigRBKGopDBNrg20FDQsY2hnUiMHEjs=",
+					"size": 14692
+				},
+				{
+					"type": "file",
+					"name": "GBK-EUC-V.bcmap",
+					"hash": "p/013RTZ29uVXzTmwGMGGLZiDf0J1Cg7L2WmXOd/yuo=",
+					"size": 180
+				},
+				{
+					"type": "file",
+					"name": "GBK2K-H.bcmap",
+					"hash": "PZGa5yrxbFzGhG7IekMmqfEl5JPFnTYoQp01wslf6MQ=",
+					"size": 19662
+				},
+				{
+					"type": "file",
+					"name": "GBK2K-V.bcmap",
+					"hash": "uSf9/VlcB86RWL8uwT9GQbLoOwHHCYna36vW7Xxqwtw=",
+					"size": 219
+				},
+				{
+					"type": "file",
+					"name": "GBKp-EUC-H.bcmap",
+					"hash": "0V69joH7T+iiRPGx6HeSLgNQCsae3fUAEJPlAkMEUdI=",
+					"size": 14686
+				},
+				{
+					"type": "file",
+					"name": "GBKp-EUC-V.bcmap",
+					"hash": "/cc21G5kJiXczIrYxZ8safx9t6E/LnmcbGt3nnB7uXo=",
+					"size": 181
+				},
+				{
+					"type": "file",
+					"name": "GBpc-EUC-H.bcmap",
+					"hash": "PEpOuC8Fq+UfZlCYXGMOGAQ4v91JExj10g0uwpI24cM=",
+					"size": 557
+				},
+				{
+					"type": "file",
+					"name": "GBpc-EUC-V.bcmap",
+					"hash": "IVvfooQnBWJLTPTNKbjjxyDx4ZI2XgMFwRAwpCTITXw=",
+					"size": 181
+				},
+				{
+					"type": "file",
+					"name": "GBT-EUC-H.bcmap",
+					"hash": "3F9E5Io58zZ64oZlAn2KsdjO21qdzFBoqQCs1nCfYPk=",
+					"size": 7290
+				},
+				{
+					"type": "file",
+					"name": "GBT-EUC-V.bcmap",
+					"hash": "oa0k5jZTuKo4jBj6XkmPAHVk5D3eaZqfkcy0ZFyZm+g=",
+					"size": 180
+				},
+				{
+					"type": "file",
+					"name": "GBT-H.bcmap",
+					"hash": "iv2nRaUFdj8/9UyBJu60jvN26p7QfZ9C/5oixcVH7Fc=",
+					"size": 7269
+				},
+				{
+					"type": "file",
+					"name": "GBT-V.bcmap",
+					"hash": "zcLsXDx8cDMpDJqIlIeCAvCGdOubGufTYhhDAyZ2h3E=",
+					"size": 176
+				},
+				{
+					"type": "file",
+					"name": "GBTpc-EUC-H.bcmap",
+					"hash": "eyPi97/bbJGPVntzJL+FjzmL2M1fJo107OGaPJG/TzI=",
+					"size": 7298
+				},
+				{
+					"type": "file",
+					"name": "GBTpc-EUC-V.bcmap",
+					"hash": "16GxPq2atRHPLNAd5s6LAqqOh2foSJUzfXo7Z/A5+Ts=",
+					"size": 182
+				},
+				{
+					"type": "file",
+					"name": "H.bcmap",
+					"hash": "oCM+IQR+wAuFISWyQ8vPMKvuURFVttgVnCT5RDhLye4=",
+					"size": 553
+				},
+				{
+					"type": "file",
+					"name": "Hankaku.bcmap",
+					"hash": "tFRwH3rs14VnaQFt/QTKZCgKBg8sZ6JGbVC0OV0kl04=",
+					"size": 132
+				},
+				{
+					"type": "file",
+					"name": "Hiragana.bcmap",
+					"hash": "LtZpOUdW3ZRYZRzZmVqymraR7LdoZlkAMwbN8idnpBQ=",
+					"size": 124
+				},
+				{
+					"type": "file",
+					"name": "HKdla-B5-H.bcmap",
+					"hash": "UkK84Y+xOrTMWbFGoD66NuTOQmZ+7/CeEJganSqkmWs=",
+					"size": 2654
+				},
+				{
+					"type": "file",
+					"name": "HKdla-B5-V.bcmap",
+					"hash": "LgU394bAeR1BqSX3K60tTnJoqmy/FaFACnImcs7Djiw=",
+					"size": 148
+				},
+				{
+					"type": "file",
+					"name": "HKdlb-B5-H.bcmap",
+					"hash": "/cgVmYS/Xb5HXA1d/LYh7O5N6gfDjGaL139MZ54jubM=",
+					"size": 2414
+				},
+				{
+					"type": "file",
+					"name": "HKdlb-B5-V.bcmap",
+					"hash": "sknrncuRWrRQV8XU16pV74jQ77sJKva64LLUcF0Tmr8=",
+					"size": 148
+				},
+				{
+					"type": "file",
+					"name": "HKgccs-B5-H.bcmap",
+					"hash": "q2TH/F6bLpd1DMTyabDaFP2GSeSRUbdZjI34ZZm6xZE=",
+					"size": 2292
+				},
+				{
+					"type": "file",
+					"name": "HKgccs-B5-V.bcmap",
+					"hash": "AuvffN/7U5X7IQkc1YoBOhiuU4iSKCL53GKS7xa5iVY=",
+					"size": 149
+				},
+				{
+					"type": "file",
+					"name": "HKm314-B5-H.bcmap",
+					"hash": "v9i73ms2qdpMHJAsdBIaMNmAenB5oA7uohi+atwiPO8=",
+					"size": 1772
+				},
+				{
+					"type": "file",
+					"name": "HKm314-B5-V.bcmap",
+					"hash": "KmSoFc+2/dSAZ0qGh2Lj0WH9oXVDsgySCZeFWfBmcWQ=",
+					"size": 149
+				},
+				{
+					"type": "file",
+					"name": "HKm471-B5-H.bcmap",
+					"hash": "SdfAN3WIJrW2wPoynDW78l05Qxl3VOcuzTDG+wTXReY=",
+					"size": 2171
+				},
+				{
+					"type": "file",
+					"name": "HKm471-B5-V.bcmap",
+					"hash": "viTBCeeKpP48HyfTCqs+0HQeeD+htrbCcZdBBytUsTI=",
+					"size": 149
+				},
+				{
+					"type": "file",
+					"name": "HKscs-B5-H.bcmap",
+					"hash": "CFmTePQdlrQFN63vbm7cxKeHvGP1rM9HwCbfSQWhORQ=",
+					"size": 4437
+				},
+				{
+					"type": "file",
+					"name": "HKscs-B5-V.bcmap",
+					"hash": "0HNUK32tHEy/AcGvXwzRMhjRKBpJGVbjEMVXAvyHBcQ=",
+					"size": 159
+				},
+				{
+					"type": "file",
+					"name": "Katakana.bcmap",
+					"hash": "O2ymZC+/iCLaANXlioqidSFtXDLb8r1z6TQZf8n8XFM=",
+					"size": 100
+				},
+				{
+					"type": "file",
+					"name": "KSC-EUC-H.bcmap",
+					"hash": "Z4ThbbxYYcA2wj0+VfDUugl1o+Rk2g7o5JvP/wvgcMQ=",
+					"size": 1848
+				},
+				{
+					"type": "file",
+					"name": "KSC-EUC-V.bcmap",
+					"hash": "/bNrrYXpkkgj1J2zdAZ5iOAkz4D8iUcR8skXiVHLvpU=",
+					"size": 164
+				},
+				{
+					"type": "file",
+					"name": "KSC-H.bcmap",
+					"hash": "wfbWHx0zBP1TmmWucmJPpWfsw4U79S4oOVinolFbPu4=",
+					"size": 1831
+				},
+				{
+					"type": "file",
+					"name": "KSC-Johab-H.bcmap",
+					"hash": "k5mT0hP2jbdjvxViF8IXriOvCCuRoOrOzz0R60/474w=",
+					"size": 16791
+				},
+				{
+					"type": "file",
+					"name": "KSC-Johab-V.bcmap",
+					"hash": "XWGWeqwOZm3vch6LjQ/tj5WoeaFPLnbOUWw9EcYh5Rk=",
+					"size": 166
+				},
+				{
+					"type": "file",
+					"name": "KSC-V.bcmap",
+					"hash": "19pa/Z8f50gW15yTJfATmk77ZDhmTr/fmnqpLzA0Ng8=",
+					"size": 160
+				},
+				{
+					"type": "file",
+					"name": "KSCms-UHC-H.bcmap",
+					"hash": "W3DY9qT6niKD3GSfD/ldkG1W777lCiDo0vrsOo/tB44=",
+					"size": 2787
+				},
+				{
+					"type": "file",
+					"name": "KSCms-UHC-HW-H.bcmap",
+					"hash": "pea6IqzrAv3t7hG/ue0ThGPYnoW4eBC58HW0adk2+Ow=",
+					"size": 2789
+				},
+				{
+					"type": "file",
+					"name": "KSCms-UHC-HW-V.bcmap",
+					"hash": "iQMypqJogNRjoS8qb/BIv5z35FB3z7HKiBW4m6p79BE=",
+					"size": 169
+				},
+				{
+					"type": "file",
+					"name": "KSCms-UHC-V.bcmap",
+					"hash": "FjG1McmkDIy+JMIxfboQc2Lkn6bhivYgQU1ifBEdVww=",
+					"size": 166
+				},
+				{
+					"type": "file",
+					"name": "KSCpc-EUC-H.bcmap",
+					"hash": "cJSAaCxVztuwEkuZYNeOKP6+7g3y40YH1hqsZgFkfsc=",
+					"size": 2024
+				},
+				{
+					"type": "file",
+					"name": "KSCpc-EUC-V.bcmap",
+					"hash": "AxcHiH1vwjeKNs22d1M0/XojbD+VBI2ENqv0P+JvxJ0=",
+					"size": 166
+				},
+				{
+					"type": "file",
+					"name": "LICENSE",
+					"hash": "qpKrWkcpdIZalv1KTpwTu0G/b+GzCctrjaSLyeGYOaI=",
+					"size": 2080
+				},
+				{
+					"type": "file",
+					"name": "NWP-H.bcmap",
+					"hash": "KGxsnjNdozCSigHtw8l6OmI/H388QnYrCn3C9lGxp48=",
+					"size": 2765
+				},
+				{
+					"type": "file",
+					"name": "NWP-V.bcmap",
+					"hash": "OnX7e1mt+xcnEHWMQl2Kxsk/1TYKZN1K/V3QTmCrS00=",
+					"size": 252
+				},
+				{
+					"type": "file",
+					"name": "RKSJ-H.bcmap",
+					"hash": "pw3mGiKomPaT8CzAEcPjz/LhCqp83bRmHkVqIa6Fn3g=",
+					"size": 534
+				},
+				{
+					"type": "file",
+					"name": "RKSJ-V.bcmap",
+					"hash": "aMGmRQZHGlJOpc/Ds6n49wAxmJpr2VQnsTUfM8z1CwY=",
+					"size": 170
+				},
+				{
+					"type": "file",
+					"name": "Roman.bcmap",
+					"hash": "HGs++dnlyxqjKRQs6UFLkPm21/kYKiqeknN42rjw1D8=",
+					"size": 96
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UCS2-H.bcmap",
+					"hash": "d5QoEWdS804kkKGUHSTkY0xx48ItBTuBHSCQri+zxwQ=",
+					"size": 48280
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UCS2-V.bcmap",
+					"hash": "HlzBhLhQ6kSrwt+K5WdCed9mjo7fXioaLqK9d629KA8=",
+					"size": 156
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF8-H.bcmap",
+					"hash": "Lyp0K80ahKFIpKUYue7VGo+cbKXtO8Xi5B//l95dwtg=",
+					"size": 53629
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF8-V.bcmap",
+					"hash": "t8PxB4Coxi3RyP9sMNweTiO2zch8Opb81RTMmP/Tr50=",
+					"size": 157
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF16-H.bcmap",
+					"hash": "Mv8Tmzx7kdatJfmUcB8857JCkGAixBj9c+ZJP8Iov+U=",
+					"size": 50419
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF16-V.bcmap",
+					"hash": "J46x5o0aI2xg71lHLPAXbuDUXzZChedsoSQZoI1G+5o=",
+					"size": 156
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF32-H.bcmap",
+					"hash": "vybrZ/4Z7lupFXmegMpyQIQAqoNC/faiRKT0Tej5czY=",
+					"size": 52679
+				},
+				{
+					"type": "file",
+					"name": "UniCNS-UTF32-V.bcmap",
+					"hash": "99o8r4POscs3k2+hBwDZum6cP3LFvJck46x5v/DAF54=",
+					"size": 160
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UCS2-H.bcmap",
+					"hash": "kgFWm0Auga2IYGUL2GNQxPoo5d1ZcfBfysr0D1HeGO0=",
+					"size": 43366
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UCS2-V.bcmap",
+					"hash": "8QKCM15NZCA7wqZTo6R9dF7HbIrgRUn01QGAwYmb4hY=",
+					"size": 193
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF8-H.bcmap",
+					"hash": "8he0OcgO5fobws9tHe/MMZ+NhEg9FmoA7hmeBaaFiN8=",
+					"size": 46837
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF8-V.bcmap",
+					"hash": "pk35R2MoeOrMUy+hk8c1ySo4O31m5vg3SsGTr3xk/GM=",
+					"size": 181
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF16-H.bcmap",
+					"hash": "OG/TlYEkXANNoBapLSPz3xEX0Wn5lhAAULJk/AmoTjU=",
+					"size": 44086
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF16-V.bcmap",
+					"hash": "BHPPu6YSuS3ZkY8P+K7pESiXxI4P/cDrgtoxRO2OqEo=",
+					"size": 178
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF32-H.bcmap",
+					"hash": "9IoUXcTj7R3KHd5xEXFqcjBqKkGRqwXGuuOlw6lhzS8=",
+					"size": 45738
+				},
+				{
+					"type": "file",
+					"name": "UniGB-UTF32-V.bcmap",
+					"hash": "EGrMSbcRi975ROMhB7TzSCOPOSmgoV07eqt7kQFTWZM=",
+					"size": 182
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UCS2-H.bcmap",
+					"hash": "rSNS9AhwiA+/f47lq63/dD+9Al+/mDC4raRy0cXk2gs=",
+					"size": 25439
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UCS2-HW-H.bcmap",
+					"hash": "Fuh+3KlUF3wIgch0hZ1ngyIJJdghtc37h1W2Hr2T+c4=",
+					"size": 119
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UCS2-HW-V.bcmap",
+					"hash": "GXNFfiwBkoGZR+VgaGJbNPuacuzIpHbObX6q5fc+Llw=",
+					"size": 680
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UCS2-V.bcmap",
+					"hash": "QqEz2OLOndbSKIAY4BWS0r8kNbMm05uU6gtuakSsM9M=",
+					"size": 664
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF8-H.bcmap",
+					"hash": "eY+wvwarB4jR9qkcLbfeWBYS7vA8Yo8Q6Pfs2PcKtEg=",
+					"size": 41695
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF8-V.bcmap",
+					"hash": "ECFhFCT5E7LfC/2+lL0yfATiJOyJ2OghxlAeo9IfQmU=",
+					"size": 678
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF16-H.bcmap",
+					"hash": "9qicVoiXhUjIP87pkOIFvGPHQnTVxptJAyo71MSaBe4=",
+					"size": 39443
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF16-V.bcmap",
+					"hash": "xnEm/HxzhQhVGGuw1kgqwKNlBX4LWHeMSrnyNGg/71M=",
+					"size": 643
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF32-H.bcmap",
+					"hash": "lhlZUM4P4kRD2OtCb6a4hTTsQh1775BG8LI2KAnPunM=",
+					"size": 40539
+				},
+				{
+					"type": "file",
+					"name": "UniJIS-UTF32-V.bcmap",
+					"hash": "7U2v2kAr3RnE1di/KrQUc8D4bzhFUrTHuWPWYn2u3rE=",
+					"size": 677
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF8-H.bcmap",
+					"hash": "aRxhTOQys+Ykhu+1TlyExtpa/ptRshJTveR1j+tIQYM=",
+					"size": 41779
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF8-V.bcmap",
+					"hash": "QKjH6i1GcRxfePyah4p9tosVQ7pc1g7PFPUZot64Kbc=",
+					"size": 682
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF16-H.bcmap",
+					"hash": "cQoy18tD/WvZ2/MNpZcfjJQVkPdEQeII2FLCvg50zJc=",
+					"size": 39534
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF16-V.bcmap",
+					"hash": "OxSa/1xXB7V/syFdF3WFLIsfQT7A9nnqYo8lz4f+CY0=",
+					"size": 647
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF32-H.bcmap",
+					"hash": "jSZY4YdBr3k31YalfIlymm/sDYYSEZfB+FGKpYspzfs=",
+					"size": 40630
+				},
+				{
+					"type": "file",
+					"name": "UniJIS2004-UTF32-V.bcmap",
+					"hash": "bdR1eC8ol2SKaDxIsvoBWhW48GhWdgvdyKF6Y/QYuss=",
+					"size": 681
+				},
+				{
+					"type": "file",
+					"name": "UniJISPro-UCS2-HW-V.bcmap",
+					"hash": "aCb5TXide/GWBmjBxYGcNMlYXBsjFS+8Ge6Bx98IUks=",
+					"size": 705
+				},
+				{
+					"type": "file",
+					"name": "UniJISPro-UCS2-V.bcmap",
+					"hash": "ST3p/RoI95RgZdirWPDDyf5In1oPEJ8tBaMWm0vVeJ8=",
+					"size": 689
+				},
+				{
+					"type": "file",
+					"name": "UniJISPro-UTF8-V.bcmap",
+					"hash": "YYHTgs9zbF4JSS6L6fJvMfolt0YiU/I6sWZGr0MsrYE=",
+					"size": 726
+				},
+				{
+					"type": "file",
+					"name": "UniJISX0213-UTF32-H.bcmap",
+					"hash": "aSBE4fszRFZoYyvJ/nOGgFxiSGS+Hd6ynWW7DJn8Yww=",
+					"size": 40517
+				},
+				{
+					"type": "file",
+					"name": "UniJISX0213-UTF32-V.bcmap",
+					"hash": "3VThbKe/+zqIYkJUmyv314oncIf3xg0mNvEYwhpbBkY=",
+					"size": 684
+				},
+				{
+					"type": "file",
+					"name": "UniJISX02132004-UTF32-H.bcmap",
+					"hash": "+A6lqYm+MMzaWogEuu9tO0sETSszm/izHGcbJGYXHPY=",
+					"size": 40608
+				},
+				{
+					"type": "file",
+					"name": "UniJISX02132004-UTF32-V.bcmap",
+					"hash": "lMIr2Z53HF++DdjcOYUFcNTbAHUHSsoT4nKBPt18xX8=",
+					"size": 688
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UCS2-H.bcmap",
+					"hash": "oQgTlqtK229KW2wV+JaWPCRMHJvLZc5WFtBglqG5gRw=",
+					"size": 25783
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UCS2-V.bcmap",
+					"hash": "bKtUdDGVj73B1AHQbr1N1hpz9VCaEPl03zK8vKEaLkM=",
+					"size": 178
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF8-H.bcmap",
+					"hash": "P6ycZRRfctfUIVejucXtaQRjIYTmoIiPK4KGma/SAC8=",
+					"size": 27790
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF8-V.bcmap",
+					"hash": "nsxs8w3TVLl3jduhY7bMcwKwh86fOdG6c0ctK3XtE8o=",
+					"size": 169
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF16-H.bcmap",
+					"hash": "QtNbOWKGSZ364XN6B62zpkUA3ze0JlgL+x0+qHKThRk=",
+					"size": 26327
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF16-V.bcmap",
+					"hash": "W9tzkMgNzBNstH1B3HRgCCVglpwXMi7nOf4wIPtkJBA=",
+					"size": 164
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF32-H.bcmap",
+					"hash": "OgHsUe0bgoEBNR4zf/uCUKvhGIADLlIQ+IEXD+0liN4=",
+					"size": 26451
+				},
+				{
+					"type": "file",
+					"name": "UniKS-UTF32-V.bcmap",
+					"hash": "39qJXs6u0IGvAw27uWK0linuqBf8PAK64V25PQxorNc=",
+					"size": 168
+				},
+				{
+					"type": "file",
+					"name": "V.bcmap",
+					"hash": "ua0cDAn/FLylL5ooqXZ+uFetDolG5kuhTHOHp+tphmo=",
+					"size": 166
+				},
+				{
+					"type": "file",
+					"name": "WP-Symbol.bcmap",
+					"hash": "VDkjvq0iVzKrowl2aQ7okJWhligne1hj7+zCxyjV178=",
+					"size": 179
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "build",
+			"files": [
+				{
+					"type": "file",
+					"name": "pdf.js",
+					"hash": "2Ddm8gpMMfvOWinZh4nN++94GxR0QdpFvh0Qeejg+Bw=",
+					"size": 568294
+				},
+				{
+					"type": "file",
+					"name": "pdf.js.map",
+					"hash": "W0nwVFY4inhYxz1raDU6NZ6+rNA21FxLj13txVAqbm4=",
+					"size": 1434098
+				},
+				{
+					"type": "file",
+					"name": "pdf.min.js",
+					"hash": "W1eZ5vjGgGYyB6xbQu4U7tKkBvp69I9QwVTwwLFWaUY=",
+					"size": 320004
+				},
+				{
+					"type": "file",
+					"name": "pdf.sandbox.js",
+					"hash": "zMzu+XvrKhoDzab+stHvnuoT5p5o7sR0UB+w0t/TvHg=",
+					"size": 637132
+				},
+				{
+					"type": "file",
+					"name": "pdf.sandbox.js.map",
+					"hash": "iAvHXmz6kQmm+Nv3pB9veVJ/53mRJj7/BoKAuCKGJvc=",
+					"size": 553585
+				},
+				{
+					"type": "file",
+					"name": "pdf.sandbox.min.js",
+					"hash": "srMAxRVcMCXD3Vsb3lxZ0BCKeJ1Q3n0ylxmzu5iJGlM=",
+					"size": 632918
+				},
+				{
+					"type": "file",
+					"name": "pdf.worker.entry.js",
+					"hash": "MaP7PA59WYtpv5PcFDrZ9XA58lrcXTQmtgdb783aMtg=",
+					"size": 693
+				},
+				{
+					"type": "file",
+					"name": "pdf.worker.js",
+					"hash": "4/AFsiFG8pCvFqwNwWq0Xw34mBc94cxTnW5AkoMtqdg=",
+					"size": 1981637
+				},
+				{
+					"type": "file",
+					"name": "pdf.worker.js.map",
+					"hash": "dyqB8mgSqo8XFM9Ml0ptoGJqpr/2prfP166MSh+VPQM=",
+					"size": 4971937
+				},
+				{
+					"type": "file",
+					"name": "pdf.worker.min.js",
+					"hash": "/qvfMJdw7SS7oxpUZ4Ns3Iz2OccFryfVK1hbBBu4Uns=",
+					"size": 1087212
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "image_decoders",
+			"files": [
+				{
+					"type": "file",
+					"name": "pdf.image_decoders.js",
+					"hash": "y4WfO4yw8KvvfJrug/2Uvm80xPgINSM0dIsO3EJkKVA=",
+					"size": 251634
+				},
+				{
+					"type": "file",
+					"name": "pdf.image_decoders.js.map",
+					"hash": "aa54wCPhL5kdndN/Y04cAVXj9EQdejDmiPZUtEH1vMc=",
+					"size": 656160
+				},
+				{
+					"type": "file",
+					"name": "pdf.image_decoders.min.js",
+					"hash": "BUmMP+omsGjcO6hRWJfcqnxqm7SMSF/1baFTbIdoGUY=",
+					"size": 118115
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "legacy",
+			"files": [
+				{
+					"type": "directory",
+					"name": "web",
+					"files": [
+						{
+							"type": "directory",
+							"name": "images",
+							"files": [
+								{
+									"type": "file",
+									"name": "annotation-check.svg",
+									"hash": "mmgPEhKIjt59yua/yMr8RHur9M5TEnHI0HJ3sK7a3pY=",
+									"size": 415
+								},
+								{
+									"type": "file",
+									"name": "annotation-comment.svg",
+									"hash": "xYs4W0oL5t6CKjJiuBkQc9FzD2QgNovZxtgNtzEjJ/8=",
+									"size": 883
+								},
+								{
+									"type": "file",
+									"name": "annotation-help.svg",
+									"hash": "dNm7oIFNEvWuJxUYnhdHt+31/22CxMp1uuhtcXMZtus=",
+									"size": 2168
+								},
+								{
+									"type": "file",
+									"name": "annotation-insert.svg",
+									"hash": "shU+LIjGIXkCnqmHbUYyFlKez1gbd9Uslxos3z0xZsY=",
+									"size": 408
+								},
+								{
+									"type": "file",
+									"name": "annotation-key.svg",
+									"hash": "V3K43RWLDwK7K+aJu2gPSQPYTiAsspo9wFYK9TE0xro=",
+									"size": 1452
+								},
+								{
+									"type": "file",
+									"name": "annotation-newparagraph.svg",
+									"hash": "pYPMoSImPZTD7r/v6DyWWhswW5yE5ao8W6EFJ5Qdt9s=",
+									"size": 426
+								},
+								{
+									"type": "file",
+									"name": "annotation-noicon.svg",
+									"hash": "djmecNMRg00Rqy1iORGLNoR9eaeNdlWx+DnVHIETBM8=",
+									"size": 158
+								},
+								{
+									"type": "file",
+									"name": "annotation-note.svg",
+									"hash": "EadcnyM90+XjUA7c3XMzWDlPKDlTN2FuiwQwaUvw26E=",
+									"size": 1041
+								},
+								{
+									"type": "file",
+									"name": "annotation-paperclip.svg",
+									"hash": "AhPIuu1PjEl4gf/tDkmrswkpHVFyWq8aCnVxdLSZk2g=",
+									"size": 552
+								},
+								{
+									"type": "file",
+									"name": "annotation-paragraph.svg",
+									"hash": "77zSps+0WB2tdKHAmtQ88rgkVhHlsZyWYxfalI8ry3w=",
+									"size": 1143
+								},
+								{
+									"type": "file",
+									"name": "annotation-pushpin.svg",
+									"hash": "IhlxhtGERZWeX+VXfY40RAsx2HyBHa9HMYB4MQwMVTA=",
+									"size": 1375
+								},
+								{
+									"type": "file",
+									"name": "loading-icon.gif",
+									"hash": "SDxKA5ZpGZOmQexAnES4t+Haqwrn4rKUTEvFlSC7dlU=",
+									"size": 2545
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.css",
+							"hash": "Ou1B2/tJV9gv9/pv+luSk2oYMisVL7Ud7iKSybfKg2M=",
+							"size": 56588
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.d.ts",
+							"hash": "SXLXe/d413x9/IVMKEHK35YrTCviO5LIII+NUsPqqxQ=",
+							"size": 54
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.js",
+							"hash": "5qaZeiGUcxQ8DXtJSR/9sLyOeT3Y/bArmIfPz1zQ0Ks=",
+							"size": 309716
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.js.map",
+							"hash": "SKbRctOxUT0CRlg7aXw4kANLPWyas8AzciXiEIXtoc4=",
+							"size": 798278
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "image_decoders",
+					"files": [
+						{
+							"type": "file",
+							"name": "pdf.image_decoders.js",
+							"hash": "DzM+9W7WLGoK1/yGMDgYALeQDZW+Zny6Z8yKN689oTQ=",
+							"size": 339923
+						},
+						{
+							"type": "file",
+							"name": "pdf.image_decoders.js.map",
+							"hash": "ed60lEJr0HOySxSZCy/mLzVw4sEPn6ROfpG7xYujcs8=",
+							"size": 879938
+						},
+						{
+							"type": "file",
+							"name": "pdf.image_decoders.min.js",
+							"hash": "afIWbClyPRbvfn309kSVdCZyei0SfEdeg5uUGU326hI=",
+							"size": 150149
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "build",
+					"files": [
+						{
+							"type": "file",
+							"name": "pdf.d.ts",
+							"hash": "3BGsUDAJJAndMYPbskF0vq81c5ubXJDyaLPPgrlFNwg=",
+							"size": 28
+						},
+						{
+							"type": "file",
+							"name": "pdf.js",
+							"hash": "jGpKRr0dWMMkF/O71SbtGiISgyFAGM3vYK1IPDXM6wA=",
+							"size": 711553
+						},
+						{
+							"type": "file",
+							"name": "pdf.js.map",
+							"hash": "Htep2aTHOAwfD1WjnrKh+KcOLH/YrFsXton4cUrK5R4=",
+							"size": 1784785
+						},
+						{
+							"type": "file",
+							"name": "pdf.min.js",
+							"hash": "l4/RstE0qY6YlmGGqXd3vr+H2Odw2tqx7ONofiGlqmw=",
+							"size": 377116
+						},
+						{
+							"type": "file",
+							"name": "pdf.sandbox.js",
+							"hash": "GAz7+Ti3HuCSt5FtACq6XuSvMDnxlXIxalpSP9EsV9Q=",
+							"size": 788809
+						},
+						{
+							"type": "file",
+							"name": "pdf.sandbox.js.map",
+							"hash": "3t2nfYXEghCredhrClsiDXvsFhuWtZoywnrsnL3xN9g=",
+							"size": 774802
+						},
+						{
+							"type": "file",
+							"name": "pdf.sandbox.min.js",
+							"hash": "Z17rHwLnSb1hlqbWpV36UkknzLbj4tbnJRHJHZ5rsx0=",
+							"size": 731582
+						},
+						{
+							"type": "file",
+							"name": "pdf.worker.entry.js",
+							"hash": "MaP7PA59WYtpv5PcFDrZ9XA58lrcXTQmtgdb783aMtg=",
+							"size": 693
+						},
+						{
+							"type": "file",
+							"name": "pdf.worker.js",
+							"hash": "ND6Fi54uU1PgR27OOScunB559E80v4RcoQT0GJ59wkw=",
+							"size": 2103752
+						},
+						{
+							"type": "file",
+							"name": "pdf.worker.js.map",
+							"hash": "/iSmw6/KIfbelwdjMF/sMH/cOrE9KaD0yzlFAnhWcjk=",
+							"size": 5230593
+						},
+						{
+							"type": "file",
+							"name": "pdf.worker.min.js",
+							"hash": "OM3lMRlXuGvDZp+T59JWbeMzqQBV7WY1vvYNm/AOlvI=",
+							"size": 1133660
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "standard_fonts",
+			"files": [
+				{
+					"type": "file",
+					"name": "FoxitDingbats.pfb",
+					"hash": "hFx1I5K2yRT7mJx1oIt3kriPVC0kmQQu8oifjIFKFu0=",
+					"size": 29513
+				},
+				{
+					"type": "file",
+					"name": "FoxitFixed.pfb",
+					"hash": "tsj+U/E0uLbUV4zS1UTfTO6WJMTvqNUaVg+0DqKWEBs=",
+					"size": 17597
+				},
+				{
+					"type": "file",
+					"name": "FoxitFixedBold.pfb",
+					"hash": "8bcVlwKXP1T8hiVOo4vPNxKypzbrOgmVdR6fS7Ra1gM=",
+					"size": 18055
+				},
+				{
+					"type": "file",
+					"name": "FoxitFixedBoldItalic.pfb",
+					"hash": "igAJRYQ70xrdBq7mO/n9QbdXi08yQqS3zUY0mtnSTU0=",
+					"size": 19151
+				},
+				{
+					"type": "file",
+					"name": "FoxitFixedItalic.pfb",
+					"hash": "UAf6+DIPofzAi4iUs1atl29guZK6Ke5ScleLveuvOHY=",
+					"size": 18746
+				},
+				{
+					"type": "file",
+					"name": "FoxitSerif.pfb",
+					"hash": "T1fSudiEr4+Qe/It9gGbUthsv2IU/b0Csa4FRypUPzU=",
+					"size": 19469
+				},
+				{
+					"type": "file",
+					"name": "FoxitSerifBold.pfb",
+					"hash": "C99LBOlkE5gY1R7aA9Vmupmfw7okIbHGxR+dyWkCLoA=",
+					"size": 19395
+				},
+				{
+					"type": "file",
+					"name": "FoxitSerifBoldItalic.pfb",
+					"hash": "pAbKyCWDv5gXXLYsh+1elcRfuzTuzmOhCwoT55PLLhA=",
+					"size": 20733
+				},
+				{
+					"type": "file",
+					"name": "FoxitSerifItalic.pfb",
+					"hash": "YQrgaHGYBFxNtdGmZQ/V6SU2YxcGOC64ty4431eNCuk=",
+					"size": 21227
+				},
+				{
+					"type": "file",
+					"name": "FoxitSymbol.pfb",
+					"hash": "R5Z9BVUw5zVwiKCEAxFUJWQ+ws39YgG6ivD71xFsFTk=",
+					"size": 16729
+				},
+				{
+					"type": "file",
+					"name": "LiberationSans-Bold.ttf",
+					"hash": "NhxhuC1XXFw1/ZFX/aiwGUvPzQ2I6oUhpPtd1T0z3dw=",
+					"size": 137052
+				},
+				{
+					"type": "file",
+					"name": "LiberationSans-BoldItalic.ttf",
+					"hash": "oiQHWsF0la0KOvO8CkGawHBKiz/RCVRWIB+5sJX8KB0=",
+					"size": 135124
+				},
+				{
+					"type": "file",
+					"name": "LiberationSans-Italic.ttf",
+					"hash": "gytEBtvvI2KIANOqrSEEhTSshNfjrZVb6DuBcu2O9RI=",
+					"size": 162036
+				},
+				{
+					"type": "file",
+					"name": "LiberationSans-Regular.ttf",
+					"hash": "+Kzh+JKyvZ3BeSun8Jf6dYj4T+1IMhSA4E3lOQgoIh8=",
+					"size": 139512
+				},
+				{
+					"type": "file",
+					"name": "LICENSE_FOXIT",
+					"hash": "tXjN0jRYQK2lUL0SUZUzgSMg1fHSHPTBx+GxsKMcmLc=",
+					"size": 1553
+				},
+				{
+					"type": "file",
+					"name": "LICENSE_LIBERATION",
+					"hash": "k/7UYBnDi75Wa0edIhSOLooeha2mFKzLAhHDeyxhwZs=",
+					"size": 4414
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "types",
+			"files": [
+				{
+					"type": "directory",
+					"name": "web",
+					"files": [
+						{
+							"type": "file",
+							"name": "annotation_editor_layer_builder.d.ts",
+							"hash": "4UjJIhXEcVtHDdDx+8lsJrwvYfV8jiuUf7Qzni6/Nfc=",
+							"size": 2285
+						},
+						{
+							"type": "file",
+							"name": "annotation_layer_builder.d.ts",
+							"hash": "mpBfivyTymntIJCCYFUP7BlxdecqqTk/RKEvmXli1G8=",
+							"size": 3802
+						},
+						{
+							"type": "file",
+							"name": "app_options.d.ts",
+							"hash": "89QODraLZF8KzxWNdWxmXezRz5lBeiuUbAOu8gFozc8=",
+							"size": 385
+						},
+						{
+							"type": "file",
+							"name": "download_manager.d.ts",
+							"hash": "zouZWv5v2856aQqBSL4IikOGtuqx4j97+ulzMAnmUXM=",
+							"size": 541
+						},
+						{
+							"type": "file",
+							"name": "event_utils.d.ts",
+							"hash": "M+GQv5KMwi8tY/Ngar+acJyrvsil/GJzRN30RxQNH6Y=",
+							"size": 2406
+						},
+						{
+							"type": "file",
+							"name": "generic_scripting.d.ts",
+							"hash": "ZReje1RVpl0RtQ2qmb1yoL33+9glHspqyrmUE4EII/M=",
+							"size": 300
+						},
+						{
+							"type": "file",
+							"name": "genericl10n.d.ts",
+							"hash": "/jtErZnHIFn4rtVwpbIpN/PBU6ujtK1QxcUyKew7Gyk=",
+							"size": 369
+						},
+						{
+							"type": "file",
+							"name": "interfaces.d.ts",
+							"hash": "oHy9JBXJTyI76aQRuLAVxKvdhEp1Z5VyKfOdX+9XVbc=",
+							"size": 4547
+						},
+						{
+							"type": "file",
+							"name": "l10n_utils.d.ts",
+							"hash": "Zwnl+S49gyXTLqH4ARi6pvyU23/5S3EL2AT6Z5PpgG8=",
+							"size": 304
+						},
+						{
+							"type": "file",
+							"name": "pdf_find_controller.d.ts",
+							"hash": "PiWOxGKFQxKBwX04UUB7c7yJndM1NqKuSsV4DChVVag=",
+							"size": 3743
+						},
+						{
+							"type": "file",
+							"name": "pdf_find_utils.d.ts",
+							"hash": "7F/QGSazFVJBo8dlFORZrjZYkVFRMprvxXGHAcEkyTQ=",
+							"size": 535
+						},
+						{
+							"type": "file",
+							"name": "pdf_history.d.ts",
+							"hash": "fIXCzdnufzxvJcLKSgpeaPgHLvP5IpVJCxKUG5Z8BsU=",
+							"size": 4514
+						},
+						{
+							"type": "file",
+							"name": "pdf_link_service.d.ts",
+							"hash": "Z3pP4HFQxC4craM5mcntmqZE14ygjWtW+fvLlsuOu74=",
+							"size": 7095
+						},
+						{
+							"type": "file",
+							"name": "pdf_page_view.d.ts",
+							"hash": "A5dmBMSVw9TSHbamkmWQGO+WZ4EU+OZMAUevDV8q+Pg=",
+							"size": 7918
+						},
+						{
+							"type": "file",
+							"name": "pdf_rendering_queue.d.ts",
+							"hash": "nKN5P8AKzaBPEhHwzK4gC3XGZ0GbtHrggtK7toI0XEk=",
+							"size": 1805
+						},
+						{
+							"type": "file",
+							"name": "pdf_scripting_manager.component.d.ts",
+							"hash": "5owBYMkLFNS1beWlEXcNhtDfhcSCJIhA+nlyUgtSkdY=",
+							"size": 238
+						},
+						{
+							"type": "file",
+							"name": "pdf_scripting_manager.d.ts",
+							"hash": "KeeqHEGOcKIwpVw2HTN+9MI/vXhGkylU1ly1ffTr9mM=",
+							"size": 1943
+						},
+						{
+							"type": "file",
+							"name": "pdf_single_page_viewer.d.ts",
+							"hash": "332OxPiyeI3Rug9K0BXZbxD/RvC29PF5R77q/U5a/O8=",
+							"size": 222
+						},
+						{
+							"type": "file",
+							"name": "pdf_thumbnail_view.d.ts",
+							"hash": "bBFXIH0Tt/d+3chkGA2Huc1VL+cHQfcTR1zvKAWGsR0=",
+							"size": 4685
+						},
+						{
+							"type": "file",
+							"name": "pdf_thumbnail_viewer.d.ts",
+							"hash": "Mx9It6bgPzGyDAcr46OgBW/hwKoMortwzc2r0Zg9Rqo=",
+							"size": 3262
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.component.d.ts",
+							"hash": "IOYGBnQw14iVwdQ55hVEdxgvHRqwWCOYL4RR9jt9C1w=",
+							"size": 1628
+						},
+						{
+							"type": "file",
+							"name": "pdf_viewer.d.ts",
+							"hash": "vtsRIObnoEt9TtIPLvR2I3kzxf7IukfzIbNgVhACuC8=",
+							"size": 17000
+						},
+						{
+							"type": "file",
+							"name": "struct_tree_layer_builder.d.ts",
+							"hash": "XniSTdjJhDGTBvFa+sXF+j9Rv9QIyHvw0QgtehX/J2s=",
+							"size": 177
+						},
+						{
+							"type": "file",
+							"name": "text_accessibility.d.ts",
+							"hash": "5qQ073kuKWbJj97n3K5A69yYet0Tbu01FFF/5r131Og=",
+							"size": 1690
+						},
+						{
+							"type": "file",
+							"name": "text_highlighter.d.ts",
+							"hash": "YdlWVbAy9U2q+Aql4OcxkO6fmrJdn32vknGGig98FcI=",
+							"size": 2218
+						},
+						{
+							"type": "file",
+							"name": "text_layer_builder.d.ts",
+							"hash": "Xf1pNkmd0Mj2IQXFzGxS1NjvIf62AlnunrrSvVBlVNU=",
+							"size": 2420
+						},
+						{
+							"type": "file",
+							"name": "ui_utils.d.ts",
+							"hash": "9MFw2uMh9ugICOh5NtlqrGqFXjtXio3bb3jVvA1sju4=",
+							"size": 10304
+						},
+						{
+							"type": "file",
+							"name": "xfa_layer_builder.d.ts",
+							"hash": "iBT5iqjwxDYXVKq0P3NTCHpPsc61wDBAcdvfZQPuqao=",
+							"size": 1812
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "src",
+					"files": [
+						{
+							"type": "directory",
+							"name": "display",
+							"files": [
+								{
+									"type": "directory",
+									"name": "editor",
+									"files": [
+										{
+											"type": "file",
+											"name": "annotation_editor_layer.d.ts",
+											"hash": "3jDTmop/HPvjj7RiAY1U9iHQ4pFkyDrVNyrJ3Knb4ZE=",
+											"size": 5942
+										},
+										{
+											"type": "file",
+											"name": "editor.d.ts",
+											"hash": "XmQHt2c+LVr8GEuJ8KfZnzb0qzPiFb8RZKcgoopeBQI=",
+											"size": 9785
+										},
+										{
+											"type": "file",
+											"name": "freetext.d.ts",
+											"hash": "s9Szyz3VczOnC6DaE80ykOkO0eJO6UN3GauJxa2AiFU=",
+											"size": 2291
+										},
+										{
+											"type": "file",
+											"name": "ink.d.ts",
+											"hash": "J64sEjpuDF2In6Ne2plxP5zEn7J536qfecFyyx9Fiao=",
+											"size": 2916
+										},
+										{
+											"type": "file",
+											"name": "stamp.d.ts",
+											"hash": "8sKAC9zZATu7r5X+uXHgDRm8Jyu4cBVAw5doWD5LaTk=",
+											"size": 984
+										},
+										{
+											"type": "file",
+											"name": "tools.d.ts",
+											"hash": "1BhLx6FPS9KKZhKvoHutWLZugAjawwwYDp8zmqq44PM=",
+											"size": 10526
+										}
+									]
+								},
+								{
+									"type": "file",
+									"name": "annotation_layer.d.ts",
+									"hash": "exknVgnsUOcyVGbPrWTp8NEu4RAWI+P/AaBI1rXtFUk=",
+									"size": 6946
+								},
+								{
+									"type": "file",
+									"name": "annotation_storage.d.ts",
+									"hash": "6ZwV0KfOb4fkhkV/FZbRg49UNEdViCi3FpfTSbLnO1M=",
+									"size": 2243
+								},
+								{
+									"type": "file",
+									"name": "api.d.ts",
+									"hash": "2W9Sh8HYqPaM8yHJ3RDGXuEgd77kC/vpbC0jzJb/tK8=",
+									"size": 56302
+								},
+								{
+									"type": "file",
+									"name": "base_factory.d.ts",
+									"hash": "eWLFLW82xTqPLi2sSdI0qDerXcWgz+4h2l+kjDfy5nk=",
+									"size": 1409
+								},
+								{
+									"type": "file",
+									"name": "canvas.d.ts",
+									"hash": "m65BB2N4d4Ten21JCGL3OQ0UDZ8hehgQH9wzSU9k+a4=",
+									"size": 7544
+								},
+								{
+									"type": "file",
+									"name": "content_disposition.d.ts",
+									"hash": "UT4h1rnI0QYgpi+t0DkjkNX87ne2zsBMSLd6YTJBfSw=",
+									"size": 289
+								},
+								{
+									"type": "file",
+									"name": "display_utils.d.ts",
+									"hash": "1pNX0E5E06gKfh+ejVfCmxS8bjRFXj8j0qxnj8CtMA8=",
+									"size": 9907
+								},
+								{
+									"type": "file",
+									"name": "fetch_stream.d.ts",
+									"hash": "SP5+k9fZY2SjX5pNU8UCVoew9fEG8PLeRFg62EH7MiI=",
+									"size": 2142
+								},
+								{
+									"type": "file",
+									"name": "font_loader.d.ts",
+									"hash": "bYTti04V8Wybqn6QLdoGXXSDiewgBTakGPxi9vCI4vc=",
+									"size": 1503
+								},
+								{
+									"type": "file",
+									"name": "metadata.d.ts",
+									"hash": "u1s5JzNizAOu0WCxkTb7XRd1Kz/qmbA4CCtMGxO/saw=",
+									"size": 226
+								},
+								{
+									"type": "file",
+									"name": "network.d.ts",
+									"hash": "yRXV4isjMX+slbV25Pe0du5hXZ5sNjEwPP85mgR4diM=",
+									"size": 2890
+								},
+								{
+									"type": "file",
+									"name": "network_utils.d.ts",
+									"hash": "hXo+UPlNPPFhsOy1Nog4wvWtdiqQMu/Dfa29hkobaKk=",
+									"size": 663
+								},
+								{
+									"type": "file",
+									"name": "node_stream.d.ts",
+									"hash": "o0hNezSH/5Q8tWnKUh9wh2laTtBHwAldzM5wwYsfBrQ=",
+									"size": 2207
+								},
+								{
+									"type": "file",
+									"name": "node_utils.d.ts",
+									"hash": "mWnVuMr6hDF7AU9fwAn3Fx0EE+C7LBu0mMvnSsY3tfU=",
+									"size": 807
+								},
+								{
+									"type": "file",
+									"name": "optional_content_config.d.ts",
+									"hash": "ZI1O8VubMmiss9U7prmMn30bXnnF1hcT2FPYA134dsU=",
+									"size": 334
+								},
+								{
+									"type": "file",
+									"name": "pattern_helper.d.ts",
+									"hash": "axP1jOrrqHVoXlLNREWVg/sdrPjKhWxHAF1r7il1rBU=",
+									"size": 2089
+								},
+								{
+									"type": "file",
+									"name": "svg.d.ts",
+									"hash": "8AEBTYECcWt+HXntLxic7/RtV7y9Z8YVa4hq7DRCtSI=",
+									"size": 4003
+								},
+								{
+									"type": "file",
+									"name": "text_layer.d.ts",
+									"hash": "Gve4drxb/tE98cyPuS3F4JBTFnE5jrnpfKOQLgHNRlI=",
+									"size": 4373
+								},
+								{
+									"type": "file",
+									"name": "transport_stream.d.ts",
+									"hash": "QcMz0Ux2TvnZChBZzNa+wxgOsOkt00CD6fa7if+O69g=",
+									"size": 2547
+								},
+								{
+									"type": "file",
+									"name": "worker_options.d.ts",
+									"hash": "SBBPGtTTrTOQREzZtOQDx0JQRjE7k7srRZE+JB+iTZo=",
+									"size": 936
+								},
+								{
+									"type": "file",
+									"name": "xfa_layer.d.ts",
+									"hash": "AnpEgRQ+bm4oRAt/eeNOwf17sN387T1wFpShlAwZZy4=",
+									"size": 1526
+								},
+								{
+									"type": "file",
+									"name": "xfa_text.d.ts",
+									"hash": "h9zNKWygehd9v/CXuDGFXXVi1oIuXhVgIOAgKwZ1p1s=",
+									"size": 747
+								}
+							]
+						},
+						{
+							"type": "directory",
+							"name": "shared",
+							"files": [
+								{
+									"type": "file",
+									"name": "image_utils.d.ts",
+									"hash": "dt9O6pj0qJi7y8lv6kt874fWgRymSNUT7HNWKHF3zOc=",
+									"size": 492
+								},
+								{
+									"type": "file",
+									"name": "message_handler.d.ts",
+									"hash": "CtJrmZPNVlYAtxR7NcKVbzV7fFQH/nHAPXPaoAhvdJw=",
+									"size": 1936
+								},
+								{
+									"type": "file",
+									"name": "murmurhash3.d.ts",
+									"hash": "FBj3SrXNmtaV/1GxcXRmcQms2u1U0rIOk3mMrakYs1Q=",
+									"size": 147
+								},
+								{
+									"type": "file",
+									"name": "scripting_utils.d.ts",
+									"hash": "C0niiB+gkawc4odEdU4tYsOX/3E1XrI2jpAfAj6IwW4=",
+									"size": 738
+								},
+								{
+									"type": "file",
+									"name": "util.d.ts",
+									"hash": "qrrq9RZui9SdwTGIAScxtrAvEo+8ZWaNQoFymzPiTm8=",
+									"size": 12330
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "interfaces.d.ts",
+							"hash": "D7eBSDX39cIws2tMALki2R27T+4Se+8eHR2R3AuLsyI=",
+							"size": 4042
+						},
+						{
+							"type": "file",
+							"name": "pdf.d.ts",
+							"hash": "3qDJxYoy0s52UTnvdk91jc8oNLkly+Cwwo3ANqyIXak=",
+							"size": 3769
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "external",
+					"files": [
+						{
+							"type": "directory",
+							"name": "webL10n",
+							"files": [
+								{
+									"type": "file",
+									"name": "l10n.d.ts",
+									"hash": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+									"size": 0
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "web",
+			"files": [
+				{
+					"type": "directory",
+					"name": "images",
+					"files": [
+						{
+							"type": "file",
+							"name": "annotation-check.svg",
+							"hash": "mmgPEhKIjt59yua/yMr8RHur9M5TEnHI0HJ3sK7a3pY=",
+							"size": 415
+						},
+						{
+							"type": "file",
+							"name": "annotation-comment.svg",
+							"hash": "xYs4W0oL5t6CKjJiuBkQc9FzD2QgNovZxtgNtzEjJ/8=",
+							"size": 883
+						},
+						{
+							"type": "file",
+							"name": "annotation-help.svg",
+							"hash": "dNm7oIFNEvWuJxUYnhdHt+31/22CxMp1uuhtcXMZtus=",
+							"size": 2168
+						},
+						{
+							"type": "file",
+							"name": "annotation-insert.svg",
+							"hash": "shU+LIjGIXkCnqmHbUYyFlKez1gbd9Uslxos3z0xZsY=",
+							"size": 408
+						},
+						{
+							"type": "file",
+							"name": "annotation-key.svg",
+							"hash": "V3K43RWLDwK7K+aJu2gPSQPYTiAsspo9wFYK9TE0xro=",
+							"size": 1452
+						},
+						{
+							"type": "file",
+							"name": "annotation-newparagraph.svg",
+							"hash": "pYPMoSImPZTD7r/v6DyWWhswW5yE5ao8W6EFJ5Qdt9s=",
+							"size": 426
+						},
+						{
+							"type": "file",
+							"name": "annotation-noicon.svg",
+							"hash": "djmecNMRg00Rqy1iORGLNoR9eaeNdlWx+DnVHIETBM8=",
+							"size": 158
+						},
+						{
+							"type": "file",
+							"name": "annotation-note.svg",
+							"hash": "EadcnyM90+XjUA7c3XMzWDlPKDlTN2FuiwQwaUvw26E=",
+							"size": 1041
+						},
+						{
+							"type": "file",
+							"name": "annotation-paperclip.svg",
+							"hash": "AhPIuu1PjEl4gf/tDkmrswkpHVFyWq8aCnVxdLSZk2g=",
+							"size": 552
+						},
+						{
+							"type": "file",
+							"name": "annotation-paragraph.svg",
+							"hash": "77zSps+0WB2tdKHAmtQ88rgkVhHlsZyWYxfalI8ry3w=",
+							"size": 1143
+						},
+						{
+							"type": "file",
+							"name": "annotation-pushpin.svg",
+							"hash": "IhlxhtGERZWeX+VXfY40RAsx2HyBHa9HMYB4MQwMVTA=",
+							"size": 1375
+						},
+						{
+							"type": "file",
+							"name": "loading-icon.gif",
+							"hash": "SDxKA5ZpGZOmQexAnES4t+Haqwrn4rKUTEvFlSC7dlU=",
+							"size": 2545
+						}
+					]
+				},
+				{
+					"type": "file",
+					"name": "pdf_viewer.css",
+					"hash": "Ou1B2/tJV9gv9/pv+luSk2oYMisVL7Ud7iKSybfKg2M=",
+					"size": 56588
+				},
+				{
+					"type": "file",
+					"name": "pdf_viewer.d.ts",
+					"hash": "d0KXRebUZ78bASG8RTppF1A4qQJgRRnYfO18J56fkNQ=",
+					"size": 51
+				},
+				{
+					"type": "file",
+					"name": "pdf_viewer.js",
+					"hash": "/I5HPMcIJZsik4DFai4oPJqEeS008Cigby96x+/iGI8=",
+					"size": 232342
+				},
+				{
+					"type": "file",
+					"name": "pdf_viewer.js.map",
+					"hash": "WwGeB8wt/95oqQAgKG8GRyRfLuWiA3hceSGjQiWHrOU=",
+					"size": 604616
+				}
+			]
+		},
+		{
+			"type": "file",
+			"name": "CODE_OF_CONDUCT.md",
+			"hash": "kC1TV682NCZjHZB+ZB4iCz7IkDkWR0P4RCs/EgR5t88=",
+			"size": 691
+		},
+		{
+			"type": "file",
+			"name": "LICENSE",
+			"hash": "DVQuDIgE45qn836wDaWnYhSdxoLXgpRRKH4RuTjpRZQ=",
+			"size": 10174
+		},
+		{
+			"type": "file",
+			"name": "package.json",
+			"hash": "gk1SoZCPpdzs5aBJUUbFsvGfZM2IHycokB+1xiYGuas=",
+			"size": 738
+		},
+		{
+			"type": "file",
+			"name": "README.md",
+			"hash": "xTrLzSe7mFGVSsK8JE31MbrR0Haci+O/rszZXrZQ0xw=",
+			"size": 666
+		},
+		{
+			"type": "file",
+			"name": "webpack.js",
+			"hash": "35F8avSWsYxnOZzP2Br52hdgaVLd/0VzHiKkN3oWats=",
+			"size": 855
+		}
+	],
+	"links": {
+		"stats": "https://data.jsdelivr.com/v1/stats/packages/npm/pdfjs-dist@3.11.174",
+		"entrypoints": "https://data.jsdelivr.com/v1/packages/npm/pdfjs-dist@3.11.174/entrypoints"
+	}
+}
