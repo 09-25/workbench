@@ -2504,7 +2504,7 @@ function parseIntent(raw) {
   const courseNoun = /课(?!程|表|时|代表|间)/.test(t);
   const courseHint = out.secA > 0 || /补课|调课|加课|换课|蹭课|上课/.test(t) || (out.date && courseNoun);
   if (courseHint) out.kind = 'course';
-  else if (out.date && /倒计时|距离|还有几天|考|试|竞赛|截止|报名|放假|开学/.test(raw)) out.kind = 'countdown';
+  else if (out.date && /倒计时|距离|还有几天|考试|测验|竞赛|四六级|期末|期中|月考|模拟考|截止|报名|放假|开学/.test(raw)) out.kind = 'countdown';
 
   /* 标题清洗 */
   let title = t.replace(/\s+/g, ' ').trim();
