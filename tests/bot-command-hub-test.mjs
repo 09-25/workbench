@@ -10,4 +10,6 @@ if (!app.includes('botFocusState')) throw new Error('缺少专注状态');
 if (!app.includes('function botToday')) throw new Error('缺少今日课表命令');
 if (!app.includes('function botQuickTodo')) throw new Error('缺少快速待办命令');
 if (!app.includes('function botFocus')) throw new Error('缺少专注命令');
+if (!app.includes('function clearBotFocusTimer')) throw new Error('专注计时缺少清理逻辑');
+if ((app.match(/botFocusTimer = setInterval/g) || []).length !== 1) throw new Error('专注计时器可能重复创建');
 console.log('PASS  机器人指令中枢结构存在');
