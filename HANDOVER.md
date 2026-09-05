@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.9；Android versionCode 11 / versionName 1.0.10（与 1.0.4-1.0.9 同签名，可覆盖安装）
+- **版本**：web sw.js 缓存 workbench-v1.12；Android versionCode 14 / versionName 1.0.13（与 1.0.4-1.0.12 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -114,3 +114,18 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **用户反馈**：课表页想滑动浏览周三周四周五，被手势判定成翻周，轻轻一划就跳第二周
 - **修复**：整体删除网格滑动翻周手势（touchstart/touchend 监听已移除）。翻周只走 ‹› 按钮（goWeek）和键盘方向键；网格横向滑动交给浏览器原生滚动，自由浏览周内的任意几天
 - swipe-test.js 已改为验证「滑动不翻周」
+
+## 2026-09-05 第七/八轮合并（ScheduleRemote 学习改造 + QA 修复单 v1.0.13）
+
+### 第七轮（1.0.12，学习他人 APK 的设置与课表界面）
+- **设置页新增「关于」tab**：关于卡（logo+APP_VERSION+数据本地化隐私说明）、更新卡（PWA 自动更新说明+check-update 按钮；APK 覆盖安装指引）、小提示卡（pdf.js 致谢）。APP_VERSION 常量在 app.js 头部，须与 gradle 同步
+- **课表页顶部周次横滑条**（第1~22周 chips 直达任意周，当前周红色高亮自动居中，week-jump 归位）；课程块圆角 12px；设置 tabs 手机端横滑
+- 悬浮球 restore() 按当前窗口 clamp（换设备/旋转屏不出屏）
+
+### 第八轮（1.0.13，QA 修复单）
+- **P1 农历早一天（连续四版）三根因全修**：①offset 两端 Date.UTC（1900 年中国 LMT+8:05:43 历史时区陷阱）②solarToLunar 重构为 lunarFromOffset 逐月表驱动 ③solarTermOf 精确节气表（2024-2027 内置）。**lunar-check2.js 9/9**（春节/中秋/除夕/立秋/冬至/国庆/七月廿四/八月初一/七月初一），2025 闰六月初一扩展自检 ✓。⚠️ lunar-check2 读 dist/，改源码后必须 npm run build:web 再验收
+- solarToLunar 的 fest 合并公历节日与除夕（明天正月初一→今天 fest=除夕）
+- **P3 夜灯主题按钮**：预览改文字前 12px 小色点（不再盖字）
+- **P3 证书墙空态**：#cert-list .empty padding-right:78px 避让悬浮球（文字右缘 296 < 球左 318）
+- **P3 概览副标题重复**：空课日改「明天预告」；hero-date 手机端允许换行（360px 农历不裁尾）
+- **P1(v1.0.12 回归) 周次条撑爆文档**：.page-head 首子层与 .week-chips 加 min-width:0（flex 子项 min-width:auto 默认被 chips max-content 撑到 1443px、tabbar 顶出屏幕）；验收 390/360 溢出=0、tabbar 回底、6 页可切
