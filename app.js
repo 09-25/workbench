@@ -2041,18 +2041,22 @@ function secNoFromText(s) {
 const WEEK_LINE = /(单周|双周|\d+\s*[-–~]\s*\d+\s*周|\d+\s*周|周.{0,3}\d+|\d{1,2}\s*[,，、]\s*\d+|^[（(]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*(?=[\s)）]))/;
 function roomFromEduWeeksLine(raw) {
   let t = String(raw || "").trim().replace(/^[（(]\s*/, "").replace(/\s*[）)]\s*$/, "").trim();
-  const prefix = t.match(/^(?:单周|双周|\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*)\s*(?:周)?\s*(?:[单双])?\s*(.*)$/);
-  return prefix?.[1]?.trim() || "";
+  t = t.replace(/[（(][^）)]*$/, "").trim();   // "1-14周(双" 这类剥尾括号后的残段
+
+  const prefix = t.match(/^(?:单周|双周|\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*)\s*(?:周\s*[单双]?|[单双]\s*周?)?\s*(.*)$/);
+  return prefix?.[1]?.trim().replace(/^[;；,，、.。\s]+/, "") || "";
 }
 function looksTeacherLine(s) {
   const t = s.replace(/^(教师|主讲|老师)[::／/]?\s*/, "").trim()
     .replace(/^[（(]\s*|\s*[）)]$/g, "");
+  if (/[场馆楼室厅区]$/.test(t) && t.length <= 8) return false;   // 田径场/体育馆 是教室不是人名
   return /^[\u4e00-\u9fa5·（）()]{2,8}([,，、][\u4e00-\u9fa5·（）()]{2,8})*$/.test(t)
     || /^[A-Za-z][A-Za-z.\s]{2,19}$/.test(t);
 }
 function looksRoomLine(s) {
   const t = String(s || "").trim();
   if (/^\[[^\]]*\]$/.test(t) || /^(?:第\s*)?\d{1,2}(?:\s*[-–~]\s*\d{1,2})?\s*节$/.test(t)) return false;
+  if (/[场馆楼室厅区]$/.test(t) && t.length <= 10) return true;   // 田径场/体育馆/实验楼 这类纯中文场地
   return /\d/.test(t) && t.length <= 18 && !WEEK_LINE.test(t) && !looksTeacherLine(t);
 }
 /* 一个格子里可能有多门课：按「课程名行」分块 */
@@ -2063,7 +2067,8 @@ function splitBlocks(text) {
   for (const line of lines) {
     if (/^[-—–]{3,}$/.test(line)) { if (cur.length) blocks.push(cur); cur = []; curHasWeeks = false; continue; }
     const isWeek = WEEK_LINE.test(line) || /^(每周|单周|双周)$/.test(line);
-    const isMeta = isWeek || looksTeacherLine(line) || looksRoomLine(line);
+    const isPlace = /[场馆楼室厅区]$/.test(line) && line.length <= 10;   // 田径场/体育馆/实验楼 是教室
+    const isMeta = isWeek || looksTeacherLine(line) || looksRoomLine(line) || isPlace;
     if (!isMeta && curHasWeeks && cur.length) { blocks.push(cur); cur = []; curHasWeeks = false; }
     if (isWeek) curHasWeeks = true;
     cur.push(line);
@@ -2076,7 +2081,8 @@ function parseBlock(lines) {
   // Excel 的课程名行还会带课程号、节次、考核与学时等元数据；名称只保留节次标签之前。
   const name = lines[0].replace(/^【|】$/g, "")
     .replace(/\s*\(\s*\d[\dA-Za-z.]*\s*\)/, "")
-    .replace(/\s*\[\s*\d{1,2}\s*[-–~]\s*\d{1,2}\s*节\s*\][\s\S]*$/, "").trim();
+    .replace(/\s*\[\s*\d{1,2}\s*[-–~]\s*\d{1,2}\s*节\s*\][\s\S]*$/, "")
+    .replace(/\s*[★☆＊*]+\s*$/, "").trim();
   if (!name || name.length > 80) return null;
   let weeks = "all", teacher = "", room = "";
   for (let i = 1; i < lines.length; i++) {
@@ -2235,6 +2241,38 @@ function parseImportTSV(text) {
   return { ok: true, courses };
 }
 
+/* CSV（引号感知，支持引号内逗号/换行）。教务/WPS 导出的课程表 CSV 是宽表，
+   行列结构与 Excel 复制出来的一致，转成 TSV 后复用全部识别管线 */
+function parseCSVRows(text) {
+  const rows = []; let row = [], field = "", inQ = false;
+  const s = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (inQ) {
+      if (ch === '"' && s[i + 1] === '"') { field += '"'; i++; continue; }
+      if (ch === '"') { inQ = false; continue; }
+      field += ch; continue;
+    }
+    if (ch === '"' && field === "") { inQ = true; continue; }
+    if (ch === ",") { row.push(field); field = ""; continue; }
+    if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; continue; }
+    field += ch;
+  }
+  row.push(field);
+  if (field || row.length > 1) rows.push(row);
+  return rows;
+}
+
+function looksLikeCSV(text) {
+  if (text.includes("\t")) return false;              // 已是 TSV，走原路
+  const rows = parseCSVRows(text).filter(r => r.some(c => c.trim()));
+  if (rows.length < 2) return false;
+  if (rows.filter(r => r.length >= 5).length < Math.ceil(rows.length * 0.6)) return false;
+  return rows.some(r => r.filter(c => dayFromText(c)).length >= 5);   // 必须有星期表头，普通逗号句子不误判
+}
+const tsvField = v => /[\t\n"]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+const csvToTSV = raw => parseCSVRows(raw).map(r => r.map(tsvField).join("\t")).join("\n");
+
 function handleImportRaw(raw, label) {
   if (raw.startsWith("PK")) {
     impStatus(false, "这是真正的 Excel(.xlsx) 二进制文件。请用 Excel 打开 → 全选 → 复制 → 粘贴到上面，或从教务课表网页直接全选复制。");
@@ -2246,8 +2284,10 @@ function handleImportRaw(raw, label) {
   }
   const res = /<table|<td|<tr/i.test(raw)
     ? parseImportHTML(raw)
-    : raw.includes("\t") ? parseImportTSV(raw) : null;
-  if (!res) { impStatus(false, "内容没认出来：需要包含表格的 HTML，或带制表符（Excel）的表格文本。"); return; }
+    : raw.includes("\t") ? parseImportTSV(raw)
+    : looksLikeCSV(raw) ? parseImportTSV(csvToTSV(raw))
+    : null;
+  if (!res) { impStatus(false, "内容没认出来：需要包含表格的 HTML、Excel/CSV 表格文本，或直接上传 .xlsx/.csv/.pdf 文件。"); return; }
   if (!res.ok) { impStatus(false, res.msg); return; }
   pendingImport = res.courses;
   impStatus(true, `✅ 从${label}解析出 ${res.courses.length} 门课程。检查预览没问题后点「合并导入」或「替换整个课表」。`);
@@ -2360,6 +2400,12 @@ function extractCourseCellFields(text, fbSecA = 0, fbSecB = 0) {
   if (weeksM) {
     const toks = weeksM[0].match(/\d{1,2}\s*[-–~]\s*\d{1,2}|\d{1,2}/g) || [];
     weeks = toks.join(",").replace(/\s+/g, "");
+    /* "1-14周(双)"/"1-14周单" 这类尾部单双周标记：不能丢掉数字区间 */
+    if (/^\d/.test(weeks)) {
+      const tail = joined.slice(joined.indexOf(weeksM[0]) + weeksM[0].length, joined.indexOf(weeksM[0]) + weeksM[0].length + 6);
+      const sd = tail.match(/^[（(]?\s*(单|双)/);
+      if (sd) weeks += sd[1];
+    }
   }
   else if (/单周/.test(joined)) weeks = "odd";
   else if (/双周/.test(joined)) weeks = "even";

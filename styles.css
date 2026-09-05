@@ -1155,3 +1155,27 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
   .tt-cell, .chip, .habit-pill, .theme-dot, .cert-chip, .bot-fab { transition: none !important; }
   .tabbar a.active svg { animation: none !important; }
 }
+
+/* ============================================================
+   手机触控优化：小控件热区扩展（视觉零变化）+ 控件加高
+   ============================================================ */
+/* 小勾/小叉/小箭头视觉保持精致，但点击热区向外扩 9px，手指好点中 */
+.todo-check, .todo-del, .subtle-delete, .icon-btn, .del-mini, .theme-dot, .todo-filter {
+  position: relative;
+}
+.todo-check::after, .todo-del::after, .subtle-delete::after,
+.icon-btn::after, .del-mini::after, .theme-dot::after, .todo-filter::after {
+  content: ""; position: absolute; inset: -9px; border-radius: 12px;
+}
+
+
+@media (max-width: 920px) {
+  .btn { min-height: 42px; padding-top: 10px; padding-bottom: 10px; }
+  .btn-sm { min-height: 40px; padding: 8px 14px; font-size: 13.5px; }
+  .page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .page select { min-height: 42px; }
+  .cert-chip { padding: 8px 13px; }
+  .icon-btn { width: 36px; height: 36px; font-size: 17px; }
+  .todo-check { width: 21px; height: 21px; font-size: 14px; }
+  .modal .btn, .modal input, .modal select { min-height: 42px; }
+}

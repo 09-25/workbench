@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.7；Android versionCode 9 / versionName 1.0.8（与 1.0.4-1.0.7 同签名，可覆盖安装）
+- **版本**：web sw.js 缓存 workbench-v1.8；Android versionCode 10 / versionName 1.0.9（与 1.0.4-1.0.8 同签名，可覆盖安装）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -94,3 +94,17 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **sticky 时间列贯穿**：翻周统一走 goWeek()（手势/键盘/按钮全部），渲染后 `.tt-wrap.scrollLeft` 归位到周一——时间列永远完整可见，不再浮在周末课程上方；时间列右缘加了 3px 渐变分隔
 - **状态栏遮字**：APK 全面屏（targetSdk 35）内容顶进状态栏。修法：MainActivity 给根容器加 statusBars+displayCutout 的顶部 padding（insets 监听），styles.xml 加 `windowOptOutEdgeToEdgeEnforcement`（Android 15 双保险）
 - **感知哈希检验**：.tools/wb-test/phash.js（纯JS实现 32x32 DCT pHash + 9x8 dHash + 汉明距离），ui-phash-test.js 8 项全绿：翻周前后 pHash 距离 22（同版式）、翻完瞬间 vs 稳定距离 0（无二次跳动）、页面间距离 28（可区分）、语义指纹（布局几何 JSON，问候语 top=79 > 状态栏38px）。基线存档 `_qa/phash-baseline.json`
+
+## 2026-09-05 第四轮（导入识别8缺陷修复 + CSV支持 + 触控优化 + 感知哈希基线）
+
+- **导入识别修复**（黄金样本 .tools/wb-test/import-accuracy-test.js 13 项零误差全绿，三格式 HTML/TSV/CSV 同一网格逐字段对比）：
+  1. 复合格式 `(1-17周;9A110)` 教室分号残留 → roomFromEduWeeksLine 吃掉前导分隔符
+  2. 课程名 ★ 尾缀残留 → parseBlock 去 ★☆＊*
+  3. `1-15单周` 的「周」字被当教室 → 单双/周任意顺序匹配
+  4. 「田径场」被当教师名 → looksTeacherLine 排除场所后缀（场馆楼室厅区）
+  5. `1-14周(双)` 剥尾括号残段 `(双` 进教室 → 未闭合括号段清理（语义 1~14 双周=2-14双 正确保留）
+  6. 普通逗号句子误判为课表 CSV → looksLikeCSV 必须有≥5列星期表头
+  7. CSV 单元格内换行破坏行列结构 → tsvField 引号转义后转 TSV
+  8. **新增 CSV 文件格式**（accept 加 .csv；引号感知；BOM/GBK 自动识别），与 HTML/TSV/xlsx/PDF 并列
+- **触控优化**：todo-check/todo-del/icon-btn/del-mini/theme-dot 热区 ::after 外扩 9px（视觉零变化，有效命中 39~54px）；手机端 .btn 42px 高、.btn-sm 40px、输入框 42px、cert-chip 加大
+- 感知哈希基线更新：_qa/phash-baseline.json（pHash/dHash + 布局语义指纹）
