@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.16";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.17";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };

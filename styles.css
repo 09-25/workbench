@@ -1160,6 +1160,7 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 
 /* 证书墙：筛选 chips + 悬浮球拖动 */
 #cert-list .empty { padding-right: 78px; }   /* 空状态结尾避开右下角悬浮球 */
+.tt-hint { padding-right: 78px; }             /* 课表页底部提示同款避让 */
 .cert-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 15px; }
 .cert-chip {
   font-size: 12px; padding: 5px 11px; border-radius: 999px;
