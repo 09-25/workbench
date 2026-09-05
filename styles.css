@@ -261,7 +261,23 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
   background: var(--card-2);
   white-space: nowrap;
 }
-.hero-right { justify-self: end; min-width: 0; }
+.hero-right {
+  justify-self: end; min-width: 0;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+}
+/* 月历下的手账便签 */
+.hero-note {
+  width: 100%; max-width: 160px;
+  background: color-mix(in srgb, #ffe9a8 34%, var(--card));
+  border: 1.5px solid color-mix(in srgb, #d9a92b 38%, var(--line));
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12.5px; color: var(--ink-2);
+  transform: rotate(-.7deg);
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.hero-note b { display: block; font-size: 11px; letter-spacing: .5px; color: var(--ink-3); margin-bottom: 4px; font-weight: 600; }
+.hero-note .row { display: flex; justify-content: space-between; gap: 8px; padding: 1.5px 0; font-variant-numeric: tabular-nums; }
 #hero-calendar {
   width: max-content;
   padding: 10px;

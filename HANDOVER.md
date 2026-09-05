@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.12；Android versionCode 14 / versionName 1.0.13（与 1.0.4-1.0.12 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+- **版本**：web sw.js 缓存 workbench-v1.13；Android versionCode 15 / versionName 1.0.14（与 1.0.4-1.0.13 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -129,3 +129,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **P3 证书墙空态**：#cert-list .empty padding-right:78px 避让悬浮球（文字右缘 296 < 球左 318）
 - **P3 概览副标题重复**：空课日改「明天预告」；hero-date 手机端允许换行（360px 农历不裁尾）
 - **P1(v1.0.12 回归) 周次条撑爆文档**：.page-head 首子层与 .week-chips 加 min-width:0（flex 子项 min-width:auto 默认被 chips max-content 撑到 1443px、tabbar 顶出屏幕）；验收 390/360 溢出=0、tabbar 回底、6 页可切
+
+## 2026-09-05 第九轮（1.0.14：概览月历下方空白 → 手账便签）
+
+- 用户反馈概览页月历卡下方、时钟右侧有空白。新增 `.hero-note`「📌 今日便签」便利贴（微倾黄底纸手账风）：待办完成 x/y、今日打卡 x/y、本周剩余课程数（空数据显示引导语）；hero-right 改为月历+便签竖排列，手机/桌面/夜灯三端适配

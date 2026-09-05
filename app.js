@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.13";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.14";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -859,6 +859,21 @@ RENDERERS.dashboard = function renderDashboard() {
   const weekInfo = w >= 1 ? ` · 本学期第 ${w} 周（${weekParity(w)}）` : " · 还没开学";
   $("#hero-date").textContent = calendarLine(d, DAYS[d.getDay()]) + weekInfo;
   $("#hero-calendar").innerHTML = monthCalendarHTML(d);
+  /* 月历下的手账便签：待办/打卡进度 + 本周剩余课程 */
+  {
+    const openTodos = state.todos.filter(t => !t.done).length, totalTodos = state.todos.length;
+    const doneHabits = state.habits.filter(h => h.done[todayStr()]).length, totalHabits = state.habits.length;
+    const wk = weekOf(todayStr());
+    const todayIdx = ((d.getDay() + 6) % 7) + 1;
+    const leftCls = state.courses.filter(c => c.day >= todayIdx && (!c.weeks || c.weeks === "all" || (weekSet(c.weeks) && weekSet(c.weeks).has(wk)))).length;
+    const rows = [];
+    if (totalTodos) rows.push(["待办", `${totalTodos - openTodos} / ${totalTodos}`]);
+    if (totalHabits) rows.push(["今日打卡", `${doneHabits} / ${totalHabits}`]);
+    if (leftCls) rows.push(["本周还有", `${leftCls} 节课`]);
+    $("#hero-note").innerHTML = "<b>📌 今日便签</b>" + (rows.length
+      ? rows.map(r => `<div class="row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join("")
+      : '<div class="row"><span>加条待办，贴在这里～</span></div>');
+  }
   const tc = todayCourses();
   $("#hero-sub").textContent = tc.length
     ? `今天有 ${tc.length} 节课，第一节 ${state.slots[tc[0].slot].start} 开上`

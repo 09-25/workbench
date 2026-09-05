@@ -21,7 +21,7 @@ check('Android 工程存在', existsSync(resolve(root, 'android', 'settings.grad
 const variables = readFileSync(resolve(root, 'android', 'variables.gradle'), 'utf8');
 check('最低 Android 版本为 8.0', /minSdkVersion\s*=\s*26/.test(variables));
 const gradle = readFileSync(resolve(root, 'android/app/build.gradle'), 'utf8');
-check('本次 Android 更新版本号正确', /versionCode\s+14/.test(gradle) && /versionName\s+"1\.0\.13"/.test(gradle));
+check('本次 Android 更新版本号正确', /versionCode\s+15/.test(gradle) && /versionName\s+"1\.0\.14"/.test(gradle));
 check('APP_VERSION 常量与 APK 版本一致', new RegExp('APP_VERSION = "' + gradle.match(/versionName\s+"([^"]+)"/)[1] + '"').test(readFileSync(resolve(root, 'app.js'), 'utf8')));
 const manifest = readFileSync(resolve(root, 'android', 'app/src/main/AndroidManifest.xml'), 'utf8');
 check('Android 应用名称正确', manifest.includes('android:label="@string/app_name"'));
