@@ -64,7 +64,18 @@ node bot-test.js          # 小助手解析
 
 ## 数据模型速查
 
-state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt, courses[{id,name,teacher,room,day:1-7,slot:0-4,sec?,weeks,color,updatedAt}], todos[], logs{date:{entries[],note,entriesUpdatedAt,noteUpdatedAt}}, habits[], countdowns[], links[], tombstones[{id,at}], sync{gistId,lastPush,lastPull} }
+state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt, courses[{id,name,teacher,room,day:1-7,slot:0-4,sec?,weeks,color,updatedAt}], todos[], logs{date:{entries[],note,entriesUpdatedAt,noteUpdatedAt}}, habits[], countdowns[], links[], certs[{id,name,cat,level,award,date,issuer,score,note,photo?,createdAt,updatedAt}], tombstones[{id,at}], sync{gistId,lastPush,lastPull} }
 - weeks 规范格式："all"|"odd"|"even"|"1-17"|"1-15单"|"1,3,5"（weekSet() 统一解析，支持逗号混合）
 - 多端合并：字段级 LWW（updatedAt）+ 删除墓碑（tombstones，防复活）
 - GitHub Token 存 localStorage 单独 key（hzx-workbench-token），不进备份文件
+
+## 2026-09-05 更新（证书墙 + 时间排列修复）
+
+- **新增证书墙页**（桌面侧边栏 + 手机底部 tab 第5个「证书」）：收录证书/奖项，字段为名称、类别、级别、奖项等级、获得日期、综测加分、颁发单位、备注、可选照片（canvas 压缩到 ≤900KB 后存 dataURL）；按学年分组（8月起算新学年），顶部统计卡（总数/本学年/加分合计），「复制综测清单」一键导出纯文本方便填综测表
+- **证书同步**：certs 已并入 mergeState 列表（字段级 LWW + 墓碑），与课程/待办同机制
+- **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
+- **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
+- **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
+- **版本**：web sw.js 缓存 workbench-v1.5；Android versionCode 7 / versionName 1.0.6（与 1.0.4/1.0.5 同签名，可覆盖安装）
+- 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
+- 农历 +1 天 bug 仍未修（见上文排查方向）

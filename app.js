@@ -47,6 +47,10 @@ function weekOf(dateStr) {
 const weekParity = w => (w % 2 === 1 ? "单周" : "双周");
 
 /* ---------------- 数据 ---------------- */
+const CERT_CATS = ["学科竞赛", "科技竞赛", "等级证书", "荣誉称号", "奖学金", "社会实践", "文体活动", "其他"];
+const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其他"];
+const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
+const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
@@ -80,6 +84,7 @@ function defaultState() {
     habits: [],    // {id,name,done:{date:true},updatedAt}
     countdowns: [],// {id,name,date,updatedAt}
     links: [],     // {id,name,url,updatedAt}
+    certs: [],     // {id,name,cat,level,award,date,issuer,score,note,photo,createdAt,updatedAt}
     tombstones: [],// {id, at}
     sync: { gistId: "", lastPush: 0, lastPull: 0 },
   };
@@ -155,14 +160,22 @@ function normalize(d) {
     habits: Array.isArray(d?.habits) ? d.habits : [],
     countdowns: Array.isArray(d?.countdowns) ? d.countdowns : [],
     links: Array.isArray(d?.links) ? d.links : [],
+    certs: Array.isArray(d?.certs) ? d.certs.filter(x => x && typeof x === "object" && typeof x.name === "string" && x.name).map(sanitizeCert) : [],
     tombstones: Array.isArray(d?.tombstones) ? d.tombstones : [],
     sync: { ...def.sync, ...(d?.sync || {}) },
   };
 }
 
 let state;
+let quotaWarned = false;
 function save(scheduleSync = true) {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn(e); }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+    quotaWarned = false;
+  } catch (e) {
+    console.warn(e);
+    if (!quotaWarned) { quotaWarned = true; toast("本机存储空间已满，这次可能没存上；删几张证书照片再试试", 3200); }
+  }
   if (scheduleSync) pushSyncSoon();
 }
 
@@ -364,7 +377,7 @@ function mergeState(localRaw, remoteRaw) {
   const tombstones = [...tm.values()];
 
   const lists = {};
-  for (const k of ["courses", "todos", "habits", "countdowns", "links"]) {
+  for (const k of ["courses", "todos", "habits", "countdowns", "links", "certs"]) {
     const merged = mergeList(a[k], b[k], tombstones);
     if (!eq(a[k], merged)) changes++;
     lists[k] = merged;
@@ -1002,7 +1015,8 @@ RENDERERS.journal = function renderJournal() {
   const d = parseDate(journalDate);
   const w = weekOf(journalDate);
   const L = solarToLunar(d);
-  $("#j-title").textContent = `${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${DAYS[d.getDay()]} · ${L.monthName}${L.dayName}`;
+  $("#j-title").innerHTML = [`${d.getMonth() + 1} 月 ${d.getDate()} 日`, DAYS[d.getDay()], `${L.monthName}${L.dayName}`]
+    .map(t => `<span class="seg">${t}</span>`).join("<span> · </span>");
   $("#j-week").textContent = w >= 1 ? `第 ${w} 周（${weekParity(w)}）`
     : `距开学还有 ${-daysUntil(state.profile.semesterStart)} 天`;
   if ($("#j-date-picker").value !== journalDate) $("#j-date-picker").value = journalDate;
@@ -1039,6 +1053,208 @@ function setSettingsTab(t) {
   $$("#set-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
   $$('#page-settings .card[data-group]').forEach(c => { c.hidden = c.dataset.group !== t; });
 }
+
+/* ---------------- 证书墙（综测档案） ---------------- */
+let certEditId = null;
+let certPhotoData = "";             // 表单里暂存的证书照片 dataURL
+
+// 格式像日期且真的存在于日历（拦 2099-13-45 这类）
+function isRealDateStr(s) {
+  if (!isDateStr(s)) return false;
+  const d = parseDate(s);
+  return +s.slice(0, 4) === d.getFullYear() && +s.slice(5, 7) === d.getMonth() + 1 && +s.slice(8, 10) === d.getDate();
+}
+
+function sanitizeCert(c) {
+  const n = +c.score;
+  const out = {
+    id: typeof c.id === "string" && c.id ? c.id.slice(0, 40) : uid(),
+    name: String(c.name || "").slice(0, 80),
+    cat: CERT_CATS.includes(c.cat) ? c.cat : "其他",
+    level: CERT_LEVELS.includes(c.level) ? c.level : "其他",
+    award: CERT_AWARDS.includes(c.award) ? c.award : "",
+    date: isRealDateStr(c.date) ? c.date : "",
+    issuer: typeof c.issuer === "string" ? c.issuer.slice(0, 40) : "",
+    note: typeof c.note === "string" ? c.note.slice(0, 100) : "",
+    score: isFinite(n) && n > 0 ? Math.min(100, Math.round(n * 10) / 10) : 0,
+    createdAt: +c.createdAt || 0,
+    updatedAt: +c.updatedAt || 0,
+  };
+  if (typeof c.photo === "string" && /^data:image\//.test(c.photo) && c.photo.length <= CERT_PHOTO_LIMIT * 2) out.photo = c.photo;
+  return out;
+}
+
+// 学年：8 月起算新学年，如 2026-09 → "2026-2027"
+function schoolYearOf(dateStr) {
+  if (!isRealDateStr(dateStr)) return "未标注学年";
+  const d = parseDate(dateStr);
+  return d.getMonth() >= 7 ? d.getFullYear() + "-" + (d.getFullYear() + 1) : (d.getFullYear() - 1) + "-" + d.getFullYear();
+}
+
+let certSelectsFilled = false;
+function fillCertSelects() {
+  if (certSelectsFilled) return;
+  certSelectsFilled = true;
+  $("#cert-cat").innerHTML = CERT_CATS.map(c => `<option>${c}</option>`).join("");
+  $("#cert-level").innerHTML = CERT_LEVELS.map(c => `<option>${c}</option>`).join("");
+  $("#cert-award").innerHTML = '<option value="">（无等级）</option>' + CERT_AWARDS.map(c => `<option>${c}</option>`).join("");
+  $("#cert-date").value = todayStr();
+}
+
+function certGroupsSorted() {
+  const certs = [...state.certs].sort((x, y) =>
+    (y.date || "").localeCompare(x.date || "") || (y.updatedAt || 0) - (x.updatedAt || 0));
+  const groups = new Map();
+  for (const c of certs) {
+    const y = schoolYearOf(c.date);
+    if (!groups.has(y)) groups.set(y, []);
+    groups.get(y).push(c);
+  }
+  return groups;
+}
+
+function certCard(c) {
+  const tags = [
+    c.level && c.level !== "其他" ? `<span class="cert-tag lv">${esc(c.level)}</span>` : "",
+    c.cat && c.cat !== "其他" ? `<span class="cert-tag">${esc(c.cat)}</span>` : "",
+    c.award ? `<span class="cert-tag award">${esc(c.award)}</span>` : "",
+    `<span class="cert-date">${esc(c.date || "时间未填")}</span>`,
+  ].join("");
+  return `<div class="card cert-card">
+    ${c.photo ? `<img class="cert-thumb" src="${esc(c.photo)}" data-action="cert-photo-view" data-id="${c.id}" alt="证书照片">` : ""}
+    <div class="cert-body">
+      <div class="cert-title"><b>${esc(c.name)}</b>${+c.score ? `<span class="cert-score">+${c.score} 分</span>` : ""}</div>
+      <div class="cert-tags">${tags}</div>
+      ${c.issuer ? `<div class="cert-issuer">颁发：${esc(c.issuer)}</div>` : ""}
+      ${c.note ? `<div class="cert-note">${esc(c.note)}</div>` : ""}
+    </div>
+    <div class="cert-ops">
+      <button class="del-mini" data-action="cert-edit" data-id="${c.id}" title="编辑">✎</button>
+      <button class="del-mini" data-action="cert-del" data-id="${c.id}" title="删除">✕</button>
+    </div>
+  </div>`;
+}
+
+RENDERERS.certs = function renderCerts() {
+  fillCertSelects();
+  const groups = certGroupsSorted();
+  const all = [...groups.values()].flat();
+  const thisYear = schoolYearOf(todayStr());
+  const yearCount = all.filter(c => schoolYearOf(c.date) === thisYear).length;
+  const totalScore = all.reduce((t, c) => t + (+c.score || 0), 0);
+  $("#cert-stats").innerHTML = `
+    <div class="cert-stat"><b>${all.length}</b><span>证书总数</span></div>
+    <div class="cert-stat"><b>${yearCount}</b><span>${thisYear} 学年</span></div>
+    <div class="cert-stat accent"><b>${totalScore}</b><span>综测加分合计</span></div>`;
+  $("#cert-list").innerHTML = all.length ? [...groups.entries()].map(([y, arr]) => {
+    const sub = arr.reduce((t, c) => t + (+c.score || 0), 0);
+    return `<div class="cert-year"><h2>${esc(y)} 学年<i>共 ${arr.length} 项 · 加分 ${sub} 分</i></h2></div>`
+      + arr.map(certCard).join("");
+  }).join("")
+    : `<div class="empty"><span class="e-ico">🎖️</span>还没有证书。拿了奖、考了证，就从上面收进来～</div>`;
+};
+
+function syncCertFormUi() {
+  const has = !!certPhotoData;
+  $(".cert-photo-clear").hidden = !has;
+  $("#cert-photo-hint").textContent = has
+    ? "已选照片 约" + Math.round(certPhotoData.length * 3 / 4 / 1024) + "KB"
+    : "可选，会压缩后存在本机";
+  $(".cert-cancel").hidden = !certEditId;
+  $("#cert-submit").textContent = certEditId ? "保存修改" : "收进证书墙";
+}
+
+function resetCertForm() {
+  certEditId = null;
+  certPhotoData = "";
+  $("#cert-form").reset();
+  $("#cert-date").value = todayStr();
+  syncCertFormUi();
+}
+
+function compressImage(file, maxW, q) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, maxW / img.width);
+        const cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(img.width * scale));
+        cv.height = Math.max(1, Math.round(img.height * scale));
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        res(cv.toDataURL("image/jpeg", q));
+      } catch (err) { URL.revokeObjectURL(url); rej(err); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img load failed")); };
+    img.src = url;
+  });
+}
+
+async function copyTextToClipboard(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+
+$("#cert-form").addEventListener("submit", e => {
+  e.preventDefault();
+  fillCertSelects();
+  const name = $("#cert-name").value.trim();
+  if (!name) { toast("先填证书名称哦"); return; }
+  const scoreRaw = parseFloat($("#cert-score").value);
+  const data = {
+    name: name.slice(0, 80),
+    cat: $("#cert-cat").value,
+    level: $("#cert-level").value,
+    award: $("#cert-award").value,
+    date: isDateStr($("#cert-date").value) ? $("#cert-date").value : "",
+    issuer: $("#cert-issuer").value.trim().slice(0, 40),
+    score: isFinite(scoreRaw) && scoreRaw > 0 ? Math.min(100, Math.round(scoreRaw * 10) / 10) : 0,
+    note: $("#cert-note").value.trim().slice(0, 100),
+  };
+  if (certEditId) {
+    const c = state.certs.find(x => x.id === certEditId);
+    if (c) {
+      Object.assign(c, data, stamp({ photo: certPhotoData || c.photo || "" }));
+      toast("已更新证书 ✏️");
+    } else toast("这条证书已被删除，没有可更新的");
+    certEditId = null;
+  } else {
+    state.certs.push(sanitizeCert(stamp({ id: uid(), createdAt: now_ts(), ...data, photo: certPhotoData })));
+    toast("已收进证书墙 🎖️");
+  }
+  certPhotoData = "";
+  e.target.reset();
+  $("#cert-date").value = todayStr();
+  syncCertFormUi();
+  save(); renderCurrent();
+});
+
+$("#cert-photo").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  if (!/^image\//.test(f.type)) { toast("请选择图片文件"); return; }
+  try {
+    let d = await compressImage(f, 900, 0.62);
+    if (d.length > CERT_PHOTO_LIMIT) d = await compressImage(f, 600, 0.5);   // 还超就压更狠
+    if (d.length > CERT_PHOTO_LIMIT) { toast("这张照片太大了，存不下；裁小一点再试"); return; }
+    certPhotoData = d;
+    syncCertFormUi();
+  } catch (e2) { toast("这张图片读取失败，换个试试"); }
+});
+
+fillCertSelects();
 
 RENDERERS.settings = function renderSettings() {
   $("#s-name").value = state.profile.name || "";
@@ -1363,6 +1579,82 @@ document.addEventListener("click", e => {
     case "sync-connect": testAndSaveSync(); break;
     case "sync-now": fullSync(); break;
     case "sync-disconnect": disconnectSync(); break;
+
+    /* 证书墙 */
+    case "cert-del": {
+      const c = state.certs.find(x => x.id === el.dataset.id);
+      if (!c) break;
+      if (!confirm("删除「" + c.name + "」？删除后同步的设备也会删掉")) break;
+      state.certs = state.certs.filter(x => x.id !== c.id);
+      addTombstone([c.id]);
+      if (certEditId === c.id) resetCertForm();
+      save(); renderCurrent();
+      break;
+    }
+    case "cert-edit": {
+      const c = state.certs.find(x => x.id === el.dataset.id);
+      if (!c) break;
+      certEditId = c.id;
+      certPhotoData = c.photo || "";
+      $("#cert-name").value = c.name || "";
+      $("#cert-cat").value = c.cat || "其他";
+      $("#cert-level").value = c.level || "其他";
+      $("#cert-award").value = c.award || "";
+      $("#cert-date").value = c.date || "";
+      $("#cert-score").value = +c.score || "";
+      $("#cert-issuer").value = c.issuer || "";
+      $("#cert-note").value = c.note || "";
+      syncCertFormUi();
+      $(".cert-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+      $("#cert-name").focus();
+      break;
+    }
+    case "cert-edit-cancel": resetCertForm(); break;
+    case "cert-photo-pick": $("#cert-photo").click(); break;
+    case "cert-photo-clear": certPhotoData = ""; syncCertFormUi(); break;
+    case "cert-photo-view": {
+      const c = state.certs.find(x => x.id === el.dataset.id);
+      if (!c || !c.photo) break;
+      let ov = $("#cert-photo-overlay");
+      if (!ov) {
+        ov = document.createElement("div");
+        ov.id = "cert-photo-overlay";
+        ov.className = "cert-photo-overlay";
+        ov.addEventListener("click", () => ov.classList.remove("open"));
+        document.body.appendChild(ov);
+      }
+      ov.innerHTML = `<img src="${esc(c.photo)}" alt="证书照片大图">`;
+      ov.classList.add("open");
+      break;
+    }
+    case "cert-copy": {
+      const groups = certGroupsSorted();
+      const all = [...groups.values()].flat();
+      if (!all.length) { toast("还没有证书可导出"); break; }
+      const who = state.profile.name && state.profile.name !== "同学" ? state.profile.name + " · " : "";
+      const lines = [who + "综测证书清单", ""];
+      for (const [y, arr] of groups) {
+        const sub = arr.reduce((t, c) => t + (+c.score || 0), 0);
+        lines.push(`【${y} 学年】共 ${arr.length} 项，加分合计 ${sub} 分`);
+        arr.forEach((c, i) => {
+          const parts = [
+            c.level && c.level !== "其他" ? c.level : "",
+            c.cat && c.cat !== "其他" ? c.cat : "",
+            c.award || "",
+            `《${c.name}》`,
+            c.date || "时间未填",
+            c.issuer ? `颁发单位：${c.issuer}` : "",
+            +c.score ? `综测加分 ${c.score} 分` : "",
+            c.note ? `备注：${c.note}` : "",
+          ].filter(Boolean);
+          lines.push(`${i + 1}. ${parts.join("，")}`);
+        });
+        lines.push("");
+      }
+      copyTextToClipboard(lines.join("\n")).then(ok =>
+        toast(ok ? "综测清单已复制，去粘贴吧 📋" : "复制失败，浏览器不支持自动复制"));
+      break;
+    }
 
     /* 小助手 */
     case "bot-clear":

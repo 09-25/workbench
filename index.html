@@ -40,6 +40,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.2C10 4.8 7 4.2 4 4.2v13.6c3 0 6 .6 8 2 2-1.4 5-2 8-2V4.2c-3 0-6 .6-8 2z"/><path d="M12 6.2v13.6"/></svg>
         <span>日志</span>
       </a>
+      <a class="nav-item" data-action="goto" data-page="certs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="m8.8 13.5-1.8 6 5-2.6 5 2.6-1.8-6"/></svg>
+        <span>证书墙</span>
+      </a>
       <a class="nav-item" data-action="goto" data-page="settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M19.5 7H20M4 17h.5M10 17h10"/><circle cx="16.5" cy="7" r="2.5"/><circle cx="7.5" cy="17" r="2.5"/></svg>
         <span>设置</span>
@@ -209,6 +213,44 @@
       </div>
     </section>
 
+    <!-- —— 证书墙 —— -->
+    <section class="page" id="page-certs">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">证书墙</h1>
+          <p class="page-sub">把拿到的证书都收进来，综测季一键导出清单</p>
+        </div>
+        <button class="btn btn-sm" data-action="cert-copy" title="复制为文本，粘贴到综测表">📋 复制综测清单</button>
+      </div>
+
+      <div class="card cert-form-card">
+        <form id="cert-form">
+          <input id="cert-name" placeholder="证书 / 奖项名称，如：蓝桥杯 Web 开发省赛" maxlength="60" required>
+          <div class="cert-grid">
+            <select id="cert-cat" title="类别"></select>
+            <select id="cert-level" title="级别"></select>
+            <select id="cert-award" title="奖项等级"></select>
+            <input type="date" id="cert-date" title="获得时间">
+            <input id="cert-score" type="number" step="0.1" placeholder="综测加分（选填，自动钳制0-100）" title="综测加分">
+            <input id="cert-issuer" placeholder="颁发单位（选填）" maxlength="40" title="颁发单位">
+          </div>
+          <input id="cert-note" placeholder="备注（选填）" maxlength="100">
+          <div class="cert-form-foot">
+            <input type="file" id="cert-photo" accept="image/*" hidden>
+            <button class="btn btn-sm" data-action="cert-photo-pick" type="button">📷 证书照片</button>
+            <button class="btn btn-sm cert-photo-clear" data-action="cert-photo-clear" type="button" hidden>移除照片</button>
+            <span class="muted cert-photo-hint" id="cert-photo-hint">可选，会压缩后存在本机</span>
+            <span class="flex-sp"></span>
+            <button class="btn btn-sm cert-cancel" data-action="cert-edit-cancel" type="button" hidden>取消编辑</button>
+            <button class="btn btn-primary" id="cert-submit" type="submit">收进证书墙</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="cert-stats" id="cert-stats"></div>
+      <div id="cert-list"></div>
+    </section>
+
     <!-- —— 设置 —— -->
     <section class="page" id="page-settings">
       <div class="page-head">
@@ -315,6 +357,7 @@
   <a data-action="goto" data-page="timetable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg><span>课表</span></a>
   <a data-action="goto" data-page="todos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg><span>待办</span></a>
   <a data-action="goto" data-page="journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.2C10 4.8 7 4.2 4 4.2v13.6c3 0 6 .6 8 2 2-1.4 5-2 8-2V4.2c-3 0-6 .6-8 2z"/><path d="M12 6.2v13.6"/></svg><span>日志</span></a>
+  <a data-action="goto" data-page="certs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="m8.8 13.5-1.8 6 5-2.6 5 2.6-1.8-6"/></svg><span>证书</span></a>
   <a data-action="goto" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M19.5 7H20M4 17h.5M10 17h10"/><circle cx="16.5" cy="7" r="2.5"/><circle cx="7.5" cy="17" r="2.5"/></svg><span>设置</span></a>
 </nav>
 
