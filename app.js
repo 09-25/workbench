@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.15";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.16";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -524,6 +524,8 @@ function seedDemo(s) {
 
 /* ---------------- 视图状态 ---------------- */
 let currentPage = "dashboard";
+let viewMode = matchMedia("(max-width: 920px)").matches ? "day" : "week";   // 课表：day 日视图（手机默认）/ week 周视图 / term 整学期
+let dayDate = todayStr();      // 日视图所选日期
 let todoFilter = "open";
 let journalDate = todayStr();
 let editingCourseId = null;
@@ -967,7 +969,90 @@ function weekStartDate(week) {   // 第 week 周的周一
   return addDays(base, (week - 1) * 7);
 }
 
+/* —— 日视图：顶部日期条 + 左侧逐节时间轴 + 当日课程卡 —— */
+function renderDayView() {
+  const dd = parseDate(dayDate);
+  const week = weekOf(dayDate);
+  const parity = week % 2 === 1 ? "单周" : "双周";
+  const dayIdx = ((dd.getDay() + 6) % 7) + 1;
+  const isToday = dayDate === todayStr();
+
+  $("#wk-label").textContent = week >= 1 ? `第 ${week} 周·${parity}` : "假期中";
+  $("#wk-today-btn").hidden = isToday;
+  $("#wk-mode-btn").textContent = "按周看";
+  $("#wk-day-btn").hidden = true;
+  $("#week-chips").hidden = true;
+
+  /* 顶部日期条：月 + 一~日（本 周 七天），点击切换 */
+  const ws = weekStartDate(week >= 1 ? week : 1);
+  const strip = [`<div class="ds-month">${ws.getMonth() + 1}月</div>`];
+  for (let i = 0; i < 7; i++) {
+    const dt = addDays(ws, i);
+    const ds = todayStr(dt);
+    strip.push(`<button class="ds-day${ds === dayDate ? " on" : ""}${ds === todayStr() ? " is-today" : ""}" data-action="ds-day" data-date="${ds}">
+      <span class="w">${"一二三四五六日"[i]}</span><span class="d">${dt.getDate()}</span></button>`);
+  }
+  const stripEl = $("#day-strip");
+  stripEl.hidden = false;
+  stripEl.innerHTML = strip.join("");
+
+  $("#tt-sub").textContent = week >= 1
+    ? `${dd.getMonth() + 1}.${dd.getDate()} · 显示这一天的课（点日期条换日子）`
+    : `还没开学（${state.profile.semesterStart} 开始）· 这一天暂无安排`;
+  const hintText = $("#tt-hint-text");
+  if (hintText) hintText.textContent = "点课程块可修改或删除；点上方「按周看」回到整周网格；「单周 / 双周」按学期开始日自动计算。";
+
+  /* 当日课程（按周次过滤；假期全显示） */
+  const dayCourses = state.courses
+    .filter(c => c.day === dayIdx)
+    .filter(c => week < 1 ? true : courseShown(c, week).show)
+    .sort((a, b) => a.slot - b.slot);
+
+  const isTodayView = isToday;
+  let rows = "";
+  state.slots.forEach((sl, i) => {
+    const list = dayCourses.filter(c => c.slot === i);
+    const cards = list.map(c => {
+      const sh = courseShown(c, week);
+      const dim = week >= 1 && !sh.show;
+      const wtag = c.weeks && c.weeks !== "all" ? `<span class="w-tag">${weeksTag(c.weeks)}</span>` : "";
+      const style = ["soft", "solid", "outline"].includes(c.style) ? c.style : "soft";
+      const now = isTodayView && slotOngoing(c.slot) ? `<span class="now-tag">正在上</span>` : "";
+      return `<div class="chip style-${style}${dim ? " dim" : ""}" data-c="${c.color % COLOR_N}" data-style="${style}"
+        data-action="edit-course" data-id="${c.id}" title="${esc([c.teacher, c.room].filter(Boolean).join(" · "))}">
+        <b>${esc(c.name)}</b>${wtag}${now}
+        <span class="r strong"><span class="chip-time">${sl.start}–${sl.end}</span><span class="chip-room">${esc(c.room ? "教室：" + c.room : "教室待定")}</span></span>
+        ${c.teacher ? `<span class="r teacher-r">教师：${esc(c.teacher)}</span>` : ""}</div>`;
+    }).join("");
+    rows += `<div class="day-row${list.length ? " has-course" : ""}">
+      <div class="day-node"><b>${i * 2 + 1}-${Math.min(i * 2 + 2, 12)}</b><span>${sl.start}</span><span>${sl.end}</span></div>
+      <div class="day-cells">${cards || ""}</div></div>`;
+  });
+  const emptyHint = dayCourses.length ? "" :
+    `<div class="day-empty-hint">${isTodayView ? "今天没课，去图书馆或运动场吧 🌤️" : "这一天没课 🌙"}</div>`;
+  $("#tt-grid").dataset.mode = weekMode;
+  $("#tt-grid").style.display = "none";
+  let tl = $("#day-timeline");
+  if (!tl) {
+    tl = document.createElement("div");
+    tl.id = "day-timeline";
+    document.querySelector(".tt-wrap").appendChild(tl);
+  }
+  tl.style.display = "";
+  tl.innerHTML = rows + emptyHint;
+
+  /* 滚动到正在上的那节 */
+  if (isTodayView) {
+    const cur = dayCourses.find(c => slotOngoing(c.slot));
+    if (cur) {
+      const row = tl.querySelectorAll(".day-row")[cur.slot];
+      if (row) setTimeout(() => row.scrollIntoView({ block: "nearest" }), 60);
+    }
+  }
+}
+
 RENDERERS.timetable = function renderTimetable() {
+  if (viewMode === "day") return renderDayView();
   const curWeek = weekOf(todayStr());
   if (viewWeek !== null) viewWeek = Math.max(1, Math.min(25, viewWeek));
   const week = weekMode === "term" ? curWeek : (viewWeek ?? Math.max(curWeek, 1));
@@ -981,6 +1066,8 @@ RENDERERS.timetable = function renderTimetable() {
 
   const weekStart = weekStartDate(week);
   const rangeTxt = `${weekStart.getMonth() + 1}.${weekStart.getDate()} – ${addDays(weekStart, 6).getMonth() + 1}.${addDays(weekStart, 6).getDate()}`;
+  const hintText2 = $("#tt-hint-text");
+  if (hintText2) hintText2.textContent = "点空格子新增一节课，点课程块可修改或删除；「单周 / 双周」按设置里的学期开始日自动计算。";
   $("#tt-sub").textContent = weekMode === "term"
     ? (curWeek >= 1
         ? `本学期第 ${curWeek} 周 · ${weekParity(curWeek)}（学期开始日：${state.profile.semesterStart}）；淡色 = 本周不上`
@@ -1005,6 +1092,13 @@ RENDERERS.timetable = function renderTimetable() {
   }
   const gridEl = $("#tt-grid");
   if (gridEl) gridEl.dataset.mode = weekMode;   // 周视图/整学期，供 CSS 区分（紧凑模式下周次角标仅在整学期显示）
+  $("#week-chips").hidden = false;
+  $("#day-strip").hidden = true;
+  const dayTl = $("#day-timeline");
+  if (dayTl) dayTl.style.display = "none";
+  $("#tt-grid").style.display = "";
+  $("#wk-day-btn").hidden = false;
+  $("#wk-mode-btn").textContent = weekMode === "term" ? "按周看" : "整学期";
   const chipsEl = $("#week-chips");
   const prevScroll = chipsEl.scrollLeft;
   chipsEl.innerHTML = chips.join("");
@@ -1645,8 +1739,22 @@ document.addEventListener("click", e => {
     case "j-next": journalDate = todayStr(addDays(parseDate(journalDate), 1)); renderCurrent(); break;
     case "j-today": journalDate = todayStr(); renderCurrent(); break;
     /* 周视图切换 */
-    case "week-prev": goWeek(-1); break;
-    case "week-next": goWeek(1); break;
+    case "week-prev":
+      if (viewMode === "day") { dayDate = todayStr(addDays(parseDate(dayDate), -1)); renderCurrent(); }
+      else goWeek(-1);
+      break;
+    case "week-next":
+      if (viewMode === "day") { dayDate = todayStr(addDays(parseDate(dayDate), 1)); renderCurrent(); }
+      else goWeek(1);
+      break;
+    case "day-toggle":
+      viewMode = viewMode === "day" ? "week" : "day";
+      if (viewMode === "day") dayDate = todayStr();
+      renderCurrent();
+      break;
+    case "ds-day":
+      if (isDateStr(el.dataset.date)) { dayDate = el.dataset.date; renderCurrent(); }
+      break;
     case "check-update": {
       const hint = $("#about-update-hint");
       if (IS_NATIVE_APP) {
@@ -1675,8 +1783,16 @@ document.addEventListener("click", e => {
       if (wrap) wrap.scrollLeft = 0;
       break;
     }
-    case "week-today": viewWeek = null; renderCurrent(); break;
-    case "week-mode": weekMode = weekMode === "week" ? "term" : "week"; renderCurrent(); break;
+    case "week-today":
+      if (viewMode === "day") { dayDate = todayStr(); }
+      else viewWeek = null;
+      renderCurrent();
+      break;
+    case "week-mode":
+      if (viewMode === "day") { viewMode = "week"; }
+      else weekMode = weekMode === "week" ? "term" : "week";
+      renderCurrent();
+      break;
     case "del-entry": {
       const log = state.logs[journalDate]; if (!log) break;
       log.entries = log.entries.filter(x => x.id !== el.dataset.id);

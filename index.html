@@ -132,8 +132,10 @@
             <button class="icon-btn" data-action="week-next" title="下一周">›</button>
             <button class="btn btn-sm" data-action="week-today" id="wk-today-btn" hidden>回到本周</button>
             <button class="btn btn-sm" data-action="week-mode" id="wk-mode-btn">整学期</button>
+            <button class="btn btn-sm" data-action="day-toggle" id="wk-day-btn" hidden>日视图</button>
           </div>
           <div class="week-chips" id="week-chips"></div>
+          <div class="day-strip" id="day-strip" hidden></div>
           <p class="page-sub" id="tt-sub"></p>
         </div>
         <div class="inline-action-row">
@@ -143,7 +145,7 @@
         </div>
       </div>
       <div class="card tt-wrap"><div class="tt" id="tt-grid"></div></div>
-      <p class="hint">点空格子新增一节课，点课程块可修改或删除；「单周 / 双周」按设置里的学期开始日自动计算。</p>
+      <p class="hint"><span id="tt-hint-text">点空格子新增一节课，点课程块可修改或删除；「单周 / 双周」按设置里的学期开始日自动计算。</span></p>
     </section>
 
     <!-- —— 待办 —— -->
