@@ -352,6 +352,7 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
    课程表
    ============================================================ */
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+.page-head > div:first-child { min-width: 0; max-width: 100%; flex: 1 1 100%; }   /* 装周次条的那层：不给 min-width:0 会被 chips 撑爆整页 */
 .page-title { font-size: 24px; }
 .page-sub { color: var(--ink-3); font-size: 13px; margin-top: 5px; }
 
@@ -615,8 +616,15 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   transition: all .15s ease;
 }
 .theme-opt input:checked + .sw { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-.sw.paper-swatch { background: linear-gradient(180deg, #fffdf6 55%, #f5efe2 55%); }
-.sw.night-swatch { background: linear-gradient(180deg, #f5efe2 55%, #211d15 55%); }
+/* 深浅色改为文字前的小色点：色块不再盖住文字下半截 */
+.sw.paper-swatch, .sw.night-swatch { background: var(--card); }
+.sw::before {
+  content: ""; display: inline-block; width: 12px; height: 12px;
+  border-radius: 50%; margin-right: 7px; vertical-align: -1px;
+  border: 1px solid var(--line-strong);
+}
+.sw.paper-swatch::before { background: linear-gradient(180deg, #fffdf6, #f5efe2); }
+.sw.night-swatch::before { background: linear-gradient(180deg, #f5efe2, #211d15); }
 [data-theme="night"] .sw.paper-swatch { color: #4a4438; }
 
 .data-card { margin-top: 18px; }
@@ -955,6 +963,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   }
   .hero-left { grid-area: left; width: auto; min-width: 0; }
   .hero-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-date { white-space: normal; overflow-x: visible; line-height: 1.5; }   /* 360px 下一行放不下就换行，不裁尾 */
   .hero-clock-wrap { grid-area: clock; justify-self: start; }
   .hero-clock { font-size: 34px; padding: 0; border: 0; background: transparent; }
   .hero-right { grid-area: calendar; align-self: start; justify-self: end; }
@@ -1134,6 +1143,7 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 .theme-dot:hover { transform: rotate(40deg) scale(1.12); }
 
 /* 证书墙：筛选 chips + 悬浮球拖动 */
+#cert-list .empty { padding-right: 78px; }   /* 空状态结尾避开右下角悬浮球 */
 .cert-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 15px; }
 .cert-chip {
   font-size: 12px; padding: 5px 11px; border-radius: 999px;
@@ -1197,6 +1207,7 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 
 .week-chips {
   display: flex; gap: 7px; overflow-x: auto;
+  min-width: 0; max-width: 100%; flex: 1 1 100%;   /* flex 子项不加 min-width:0 会被 22 个 chip 的 max-content 撑爆整个文档 */
   margin: 10px 0 2px; padding: 2px 2px 10px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }

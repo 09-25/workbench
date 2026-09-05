@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.12";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.13";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -717,6 +717,21 @@ const LUNAR_DAYS = ["初一","初二","初三","初四","初五","初六","初�
 const GAN = "甲乙丙丁戊己庚辛壬癸", ZHI = "子丑寅卯辰巳午未申酉戌亥";
 const ZODIAC = "鼠牛虎兔龙蛇马羊猴鸡狗猪";
 const TERM_NAMES = ["小寒","大寒","立春","雨水","惊蛰","春分","清明","谷雨","立夏","小满","芒种","夏至","小暑","大暑","立秋","处暑","白露","秋分","寒露","霜降","立冬","小雪","大雪","冬至"];
+
+/* 精确节气日表（北京时间万年历，2024-2027；其余年份回落到平均近似） */
+const TERM_DAYS = {
+  2024: "1/6,1/20,2/4,2/19,3/5,3/20,4/4,4/19,5/5,5/20,6/5,6/21,7/6,7/22,8/7,8/22,9/7,9/22,10/8,10/23,11/7,11/22,12/6,12/21",
+  2025: "1/5,1/20,2/3,2/18,3/5,3/20,4/4,4/20,5/5,5/21,6/5,6/21,7/7,7/22,8/7,8/23,9/7,9/23,10/8,10/23,11/7,11/22,12/7,12/21",
+  2026: "1/5,1/20,2/4,2/18,3/5,3/20,4/5,4/20,5/5,5/21,6/5,6/21,7/7,7/23,8/7,8/23,9/7,9/23,10/8,10/23,11/7,11/22,12/7,12/21",
+  2027: "1/6,1/21,2/4,2/19,3/6,3/21,4/5,4/20,5/6,5/21,6/6,6/21,7/7,7/23,8/8,8/23,9/8,9/23,10/9,10/24,11/8,11/22,12/7,12/22",
+};
+const TERM_DAY_MAP = {};
+for (const [y, v] of Object.entries(TERM_DAYS)) {
+  const mm = {};
+  v.split(",").forEach((md, i) => { const [mo, da] = md.split("/"); (mm[mo] = mm[mo] || {})[da] = TERM_NAMES[i]; });
+  TERM_DAY_MAP[y] = mm;
+}
+
 const TERM_MS = 31556925974.7 / 24;   // 每个节气的平均毫秒数（近似，误差≤1天）
 const SOLAR_FEST = { "1/1": "元旦", "2/14": "情人节", "3/8": "妇女节", "3/12": "植树节", "5/1": "劳动节", "5/4": "青年节", "6/1": "儿童节", "8/1": "建军节", "9/10": "教师节", "10/1": "国庆节", "12/25": "圣诞节" };
 const LUNAR_FEST = { "1/1": "春节", "1/15": "元宵节", "2/2": "龙抬头", "5/5": "端午节", "7/7": "七夕节", "8/15": "中秋节", "9/9": "重阳节", "12/8": "腊八节", "12/23": "小年" };
@@ -729,32 +744,49 @@ function lunarYearDays(y) {
   for (let i = 0x8000; i > 0x8; i >>= 1) s += (LUNAR_INFO[y - 1900] & i) ? 1 : 0;
   return s + lunarLeapDays(y);
 }
-function solarToLunar(date) {
-  let offset = Math.floor((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - new Date(1900, 0, 31)) / 864e5);
+function lunarFromOffset(offset) {
   let y = 1900;
   while (y < 2101 && offset >= lunarYearDays(y)) { offset -= lunarYearDays(y); y++; }
   const leap = lunarLeapMonth(y);
-  let m = 1, isLeap = false, days = 0;
-  while (m < 13 && offset > 0) {
-    if (leap > 0 && m === leap + 1 && !isLeap) { --m; isLeap = true; days = lunarLeapDays(y); }
-    else days = lunarMonthDays(y, m);
-    if (isLeap && m === leap + 1) isLeap = false;
-    offset -= days; m++;
+  let m = 1, isLeap = false, d = offset + 1;
+  /* 逐月表驱动：平月 → （若该年有闰）闰月紧跟其后 → 下一月，线性无歧义 */
+  for (m = 1; m <= 12; m++) {
+    const days = lunarMonthDays(y, m);
+    if (d <= days) break;
+    d -= days;
+    if (leap === m) {
+      const ld = lunarLeapDays(y);
+      if (d <= ld) { isLeap = true; break; }
+      d -= ld;
+    }
   }
-  if (offset === 0 && leap > 0 && m === leap + 1) { if (isLeap) { isLeap = false; } else { isLeap = true; --m; } }
-  if (offset < 0) { offset += days; --m; }
-  const d = offset + 1;
+  if (m > 12) { m = 12; isLeap = false; d = lunarMonthDays(y, 12); }   // 越界保护（理论到不了）
+  return { y, m, d, isLeap };
+}
+
+function solarToLunar(date) {
+  /* 1900 年中国还是 LMT+8:05:43，本地时区的「那天午夜」不是整天对齐，floor 会差一天——两端都用 UTC 天数 */
+  const offset = Math.floor((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(1900, 0, 31)) / 864e5);
+  const { y, m, d, isLeap } = lunarFromOffset(offset);
+  const nx = lunarFromOffset(offset + 1);
+  const chuxi = (!nx.isLeap && nx.m === 1 && nx.d === 1) ? "除夕" : "";   // 明天正月初一 → 今天除夕
   const gz = GAN[(y - 4) % 10] + ZHI[(y - 4) % 12];
   return {
     year: y, month: m, day: d, isLeap,
     monthName: (isLeap ? "闰" : "") + LUNAR_MONTHS[m - 1] + "月",
     dayName: LUNAR_DAYS[d - 1],
     ganzhi: gz, zodiac: ZODIAC[(y - 4) % 12],
-    fest: LUNAR_FEST[m + "/" + d] || "",
-    isChuxi: false,
+    fest: LUNAR_FEST[m + "/" + d] || SOLAR_FEST[(date.getMonth() + 1) + "/" + date.getDate()] || chuxi,
+    isChuxi: !!chuxi,
   };
 }
 function solarTermOf(d) {
+  const exact = TERM_DAY_MAP[d.getFullYear()];
+  if (exact) {
+    const name = (exact[d.getMonth() + 1] || {})[d.getDate()];
+    if (name) return name;
+    return "";   // 该年在精确表内：查不到就是无节气（近似会差一天，不回退）
+  }
   const base = Date.UTC(1900, 0, 6, 2, 5);
   const dayUtc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
   const n0 = Math.floor((dayUtc - base) / TERM_MS);
@@ -830,7 +862,11 @@ RENDERERS.dashboard = function renderDashboard() {
   const tc = todayCourses();
   $("#hero-sub").textContent = tc.length
     ? `今天有 ${tc.length} 节课，第一节 ${state.slots[tc[0].slot].start} 开上`
-    : "今天没有排课，安排点自己的事吧";
+    : (() => {   // 空课日副标题换成"明天预告"，避免和下方高亮块说同一句话
+        const tmwDow = (d.getDay() % 7) + 1;
+        const tmwN = state.courses.filter(c => c.day === tmwDow).length;
+        return tmwN ? `明天有 ${tmwN} 节课，今晚早点休息` : "明天也没有课，好好休息";
+      })();
   $("#hero-status").textContent = classStatusLine();
 
   /* 今日课程 */
