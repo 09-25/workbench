@@ -374,8 +374,8 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
   background: var(--card-2); border: 1.5px dashed var(--line-strong); border-radius: 9px;
 }
 
-.tt-wrap { overflow-x: auto; padding: 16px; }
-.tt { display: grid; grid-template-columns: 74px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 780px; }
+.tt-wrap { overflow-x: auto; padding: 16px 0; }
+.tt { display: grid; grid-template-columns: 74px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 812px; padding: 0 16px; }
 .tt.tt-empty { display: block; min-width: 0; }
 .empty-wide { grid-column: 1 / -1; }
 
@@ -397,8 +397,9 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
 }
 .tt-head:first-child { position: sticky; left: 0; z-index: 2; background: var(--card); }
 .tt-time::after, .tt-head:first-child::after {
-  content: ""; position: absolute; top: 0; right: -3px; bottom: 0; width: 3px;
-  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--ink) 10%, transparent));
+  content: ""; position: absolute; top: 0; right: -9px; bottom: 0; width: 9px;
+  background: var(--card);
+  border-right: 1.5px solid color-mix(in srgb, var(--ink) 10%, transparent);
   pointer-events: none;
 }
 .tt-time, .tt-head:first-child { border-top-left-radius: 4px; }
