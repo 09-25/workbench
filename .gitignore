@@ -7,3 +7,8 @@ android/app/build/
 android/capacitor-cordova-android-plugins/
 android/release.properties
 android/keystore/
+
+# APK 构建产物不入库
+*.apk
+dist/
+

@@ -76,6 +76,14 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.5；Android versionCode 7 / versionName 1.0.6（与 1.0.4/1.0.5 同签名，可覆盖安装）
+- **版本**：web sw.js 缓存 workbench-v1.6；Android versionCode 8 / versionName 1.0.7（与 1.0.4-1.0.6 同签名，可覆盖安装）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
+
+## 2026-09-05 第二轮（覆盖安装修复 + 证书筛选 + 动效 + 悬浮球拖动）
+
+- **覆盖安装不更新的根因**：APK 页面跑在 https://localhost，PWA Service Worker 把旧资源缓存在 WebView（覆盖安装不清应用数据）。修复：APK（IS_NATIVE_APP）内**不再注册 SW**，启动时发现残留 SW/caches 立即注销清空并一次性 reload；web 端 register 加 `updateViaCache:"none"`，新 SW 接管（controllerchange）后自动刷新一次
+- **证书墙筛选**：类别 chips（全部+8类，带数量），筛选后统计卡/列表联动；空类别有专属空态；「复制综测清单」始终导出全部
+- **悬浮球可拖动**：触摸/鼠标拖动机器人（8px 内算点击、超出手势），位置存 localStorage(hzx-workbench-fab) 刷新还原，边界钳制（底部留 74px 给 tabbar，resize 重钳）；拖完松手不触发打开面板
+- **按钮动效**：btn hover 上浮+按压缩放、icon/del 缩放、侧边栏 hover 右移、tabbar 选中图标 tabPop 弹跳、课程格/便利贴 hover 阴影、主题点旋转；prefers-reduced-motion 全部关闭
+- 测试：.tools/wb-test/polish-test.js（24 项）已入常驻回归

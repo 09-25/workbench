@@ -341,10 +341,34 @@ function renderSyncStatus() {
 }
 
 /* ---------------- PWA（https 部署后生效，本地双击打开自动跳过） ---------------- */
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => { }));
+/* APK 本地版绝不能留 Service Worker：WebView 里残留的旧 SW 会让覆盖安装后
+   仍显示旧版（用户被迫卸载重装）。发现即注销 + 清缓存 + 重载一次。 */
+if (IS_NATIVE_APP) {
+  (async () => {
+    try {
+      const regs = (navigator.serviceWorker && navigator.serviceWorker.getRegistrations)
+        ? await navigator.serviceWorker.getRegistrations() : [];
+      for (const r of regs) await r.unregister();
+      const ks = (window.caches && caches.keys) ? await caches.keys() : [];
+      for (const k of ks) await caches.delete(k);
+      if ((regs.length || ks.length) && !sessionStorage.getItem("sw-cleaned")) {
+        sessionStorage.setItem("sw-cleaned", "1");
+        location.reload();
+      }
+    } catch (e) { console.warn("sw cleanup:", e); }
+  })();
+} else if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  addEventListener("load", () =>
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => { }));
   navigator.serviceWorker.addEventListener("message", e => {
-    if (e.data && e.data.type === "SW_UPDATED") toast("🔄 新版本已就绪，刷新页面体验最新功能", 6000);
+    if (e.data && e.data.type === "SW_UPDATED") toast("🔄 新版本已就绪，正在为你刷新…", 6000);
+  });
+  /* 新 SW 接管后自动刷新一次，避免用户一直看旧页面 */
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!sessionStorage.getItem("sw-reloaded")) {
+      sessionStorage.setItem("sw-reloaded", "1");
+      location.reload();
+    }
   });
 }
 
@@ -1101,8 +1125,8 @@ function fillCertSelects() {
   $("#cert-date").value = todayStr();
 }
 
-function certGroupsSorted() {
-  const certs = [...state.certs].sort((x, y) =>
+function certGroupsSorted(list = state.certs) {
+  const certs = [...list].sort((x, y) =>
     (y.date || "").localeCompare(x.date || "") || (y.updatedAt || 0) - (x.updatedAt || 0));
   const groups = new Map();
   for (const c of certs) {
@@ -1135,13 +1159,22 @@ function certCard(c) {
   </div>`;
 }
 
+let certFilter = "all";
+
 RENDERERS.certs = function renderCerts() {
   fillCertSelects();
-  const groups = certGroupsSorted();
+  const view = certFilter === "all" ? state.certs : state.certs.filter(c => c.cat === certFilter);
+  const groups = certGroupsSorted(view);
   const all = [...groups.values()].flat();
   const thisYear = schoolYearOf(todayStr());
   const yearCount = all.filter(c => schoolYearOf(c.date) === thisYear).length;
   const totalScore = all.reduce((t, c) => t + (+c.score || 0), 0);
+  const totalAll = state.certs.length;
+  $("#cert-filter").innerHTML = ["all", ...CERT_CATS].map(cat => {
+    const n = cat === "all" ? totalAll : state.certs.filter(c => c.cat === cat).length;
+    const label = cat === "all" ? "全部" : cat;
+    return `<button class="cert-chip${certFilter === cat ? " on" : ""}" data-action="cert-filter" data-cat="${cat}">${label}<i>${n}</i></button>`;
+  }).join("");
   $("#cert-stats").innerHTML = `
     <div class="cert-stat"><b>${all.length}</b><span>证书总数</span></div>
     <div class="cert-stat"><b>${yearCount}</b><span>${thisYear} 学年</span></div>
@@ -1151,7 +1184,9 @@ RENDERERS.certs = function renderCerts() {
     return `<div class="cert-year"><h2>${esc(y)} 学年<i>共 ${arr.length} 项 · 加分 ${sub} 分</i></h2></div>`
       + arr.map(certCard).join("");
   }).join("")
-    : `<div class="empty"><span class="e-ico">🎖️</span>还没有证书。拿了奖、考了证，就从上面收进来～</div>`;
+    : (certFilter === "all"
+      ? `<div class="empty"><span class="e-ico">🎖️</span>还没有证书。拿了奖、考了证，就从上面收进来～</div>`
+      : `<div class="empty"><span class="e-ico">🔍</span>「${esc(certFilter)}」这个类别还没有证书</div>`);
 };
 
 function syncCertFormUi() {
@@ -1255,6 +1290,74 @@ $("#cert-photo").addEventListener("change", async e => {
 });
 
 fillCertSelects();
+
+/* —— 机器人悬浮球：可拖动，位置记在本机 —— */
+(() => {
+  const fab = $(".bot-fab");
+  if (!fab) return;
+  const FAB_KEY = "hzx-workbench-fab";
+  const TABBAR_RESERVE = 74;              // 底部给 tabbar 留的位置
+  let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false, moved = false;
+  const place = (x, y) => {
+    fab.style.left = Math.round(x) + "px";
+    fab.style.top = Math.round(y) + "px";
+    fab.style.right = "auto";
+    fab.style.bottom = "auto";
+  };
+  const restore = () => {
+    try {
+      const pos = JSON.parse(localStorage.getItem(FAB_KEY) || "null");
+      if (pos && isFinite(pos.x) && isFinite(pos.y)) place(pos.x, pos.y);
+    } catch (e) { }
+  };
+  const clamp = (x, y) => {
+    const r = fab.getBoundingClientRect();
+    return {
+      x: Math.min(Math.max(6, x), Math.max(6, innerWidth - r.width - 6)),
+      y: Math.min(Math.max(6, y), Math.max(6, innerHeight - r.height - TABBAR_RESERVE)),
+    };
+  };
+  const start = (x, y) => {
+    const r = fab.getBoundingClientRect();
+    dragging = true; moved = false;
+    sx = x; sy = y; ox = r.left; oy = r.top;
+  };
+  const move = (x, y) => {
+    if (!dragging) return;
+    if (!moved && Math.hypot(x - sx, y - sy) > 8) { moved = true; fab.classList.add("dragging"); }
+    if (!moved) return;
+    const p = clamp(ox + x - sx, oy + y - sy);
+    place(p.x, p.y);
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    fab.classList.remove("dragging");
+    if (moved) {
+      /* 存布局坐标而非 rect：rect 会被 hover 缩放/旋转变形 */
+      try {
+        localStorage.setItem(FAB_KEY, JSON.stringify({
+          x: parseFloat(fab.style.left) || 0,
+          y: parseFloat(fab.style.top) || 0,
+        }));
+      } catch (e) { }
+    }
+  };
+  fab.addEventListener("touchstart", e => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
+  fab.addEventListener("touchmove", e => { const t = e.touches[0]; move(t.clientX, t.clientY); if (moved) e.preventDefault(); }, { passive: false });
+  fab.addEventListener("touchend", end, { passive: true });
+  fab.addEventListener("mousedown", e => start(e.clientX, e.clientY));
+  addEventListener("mousemove", e => move(e.clientX, e.clientY));
+  addEventListener("mouseup", end);
+  /* 拖完松手那一下不当作"点击打开面板" */
+  fab.addEventListener("click", e => {
+    if (moved) { e.stopImmediatePropagation(); e.preventDefault(); moved = false; }
+  }, true);
+  addEventListener("resize", () => {
+    if (fab.style.left) { const p = clamp(parseFloat(fab.style.left), parseFloat(fab.style.top)); place(p.x, p.y); }
+  });
+  restore();
+})();
 
 RENDERERS.settings = function renderSettings() {
   $("#s-name").value = state.profile.name || "";
@@ -1610,6 +1713,7 @@ document.addEventListener("click", e => {
       break;
     }
     case "cert-edit-cancel": resetCertForm(); break;
+    case "cert-filter": certFilter = el.dataset.cat || "all"; renderCurrent(); break;
     case "cert-photo-pick": $("#cert-photo").click(); break;
     case "cert-photo-clear": certPhotoData = ""; syncCertFormUi(); break;
     case "cert-photo-view": {
