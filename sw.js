@@ -1,5 +1,5 @@
 /* 我的工作台 · Service Worker：预缓存 + 后台更新（stale-while-revalidate） */
-const CACHE = "workbench-v1.6";
+const CACHE = "workbench-v1.7";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png",

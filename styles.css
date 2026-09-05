@@ -396,6 +396,12 @@ h1, h2, h3, .serif { font-family: var(--font-display); font-weight: 600; }
   box-shadow: 6px 0 6px -6px color-mix(in srgb, var(--ink) 12%, transparent);
 }
 .tt-head:first-child { position: sticky; left: 0; z-index: 2; background: var(--card); }
+.tt-time::after, .tt-head:first-child::after {
+  content: ""; position: absolute; top: 0; right: -3px; bottom: 0; width: 3px;
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--ink) 10%, transparent));
+  pointer-events: none;
+}
+.tt-time, .tt-head:first-child { border-top-left-radius: 4px; }
 .tt-time b { font-size: 12px; font-weight: 600; color: var(--ink-2); }
 .tt-time span { font-size: 10px; color: var(--ink-3); font-variant-numeric: tabular-nums; margin-top: 2px; }
 
@@ -1081,9 +1087,11 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 .btn {
   transition: transform .12s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
 }
-.btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px color-mix(in srgb, var(--ink) 10%, transparent); }
+@media (hover: hover) {
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px color-mix(in srgb, var(--ink) 10%, transparent); }
 .btn:active { transform: translateY(0) scale(.97); box-shadow: none; }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #e0763f));
   box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 28%, transparent);
@@ -1109,11 +1117,9 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 @keyframes tabPop { 0% { transform: scale(.8); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
 /* 课程格与小控件：按下回弹 */
-.tt-cell { transition: border-color .15s ease, background .15s ease, transform .12s ease; }
-.tt-cell:active { transform: scale(.98); }
-.chip { transition: transform .12s ease, box-shadow .15s ease; }
-.chip:hover { transform: translateY(-1px); box-shadow: 0 3px 9px color-mix(in srgb, var(--ink) 9%, transparent); }
-.chip:active { transform: translateY(0) scale(.98); box-shadow: none; }
+/* 课表格与便利贴不做按压缩放：滑动翻周时手指按下会瞬间误触发，视觉上"大小突变" */
+.tt-cell { transition: border-color .15s ease, background .15s ease; }
+.chip { transition: box-shadow .15s ease; }
 
 .habit-pill { transition: transform .12s ease, background .15s ease, border-color .15s ease; }
 .habit-pill:active { transform: scale(.97); }

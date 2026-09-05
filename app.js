@@ -1572,8 +1572,8 @@ document.addEventListener("click", e => {
     case "j-next": journalDate = todayStr(addDays(parseDate(journalDate), 1)); renderCurrent(); break;
     case "j-today": journalDate = todayStr(); renderCurrent(); break;
     /* 周视图切换 */
-    case "week-prev": viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) - 1; renderCurrent(); break;
-    case "week-next": viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); break;
+    case "week-prev": goWeek(-1); break;
+    case "week-next": goWeek(1); break;
     case "week-today": viewWeek = null; renderCurrent(); break;
     case "week-mode": weekMode = weekMode === "week" ? "term" : "week"; renderCurrent(); break;
     case "del-entry": {
@@ -3094,9 +3094,18 @@ document.addEventListener("keydown", e => {
   if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
   const tag = document.activeElement?.tagName || "";
   if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
-  if (e.key === "ArrowLeft") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) - 1; renderCurrent(); }
-  if (e.key === "ArrowRight") { viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + 1; renderCurrent(); }
+  if (e.key === "ArrowLeft") goWeek(-1);
+  if (e.key === "ArrowRight") goWeek(1);
 });
+/* 课表页：翻周统一入口——渲染后把横向滚动归位到周一，
+   避免 sticky 时间列残留在周末位置浮在课程上方（贯穿感） */
+function goWeek(delta) {
+  viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + delta;
+  renderCurrent();
+  const wrap = document.querySelector(".tt-wrap");
+  if (wrap) wrap.scrollLeft = 0;
+}
+
 /* 手机手势：课表网格上横向滑动 60px 以上翻周（纵向滚动不受影响） */
 (() => {
   let sx = 0, sy = 0, on = false;
@@ -3112,8 +3121,7 @@ document.addEventListener("keydown", e => {
     const dx = t.clientX - sx, dy = t.clientY - sy;
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // 只认横向滑动意图
     if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
-    viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + (dx < 0 ? 1 : -1);
-    renderCurrent();
+    goWeek(dx < 0 ? 1 : -1);
   }, { passive: true });
 })();
 

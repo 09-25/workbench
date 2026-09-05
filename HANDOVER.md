@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.6；Android versionCode 8 / versionName 1.0.7（与 1.0.4-1.0.6 同签名，可覆盖安装）
+- **版本**：web sw.js 缓存 workbench-v1.7；Android versionCode 9 / versionName 1.0.8（与 1.0.4-1.0.7 同签名，可覆盖安装）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -87,3 +87,10 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **悬浮球可拖动**：触摸/鼠标拖动机器人（8px 内算点击、超出手势），位置存 localStorage(hzx-workbench-fab) 刷新还原，边界钳制（底部留 74px 给 tabbar，resize 重钳）；拖完松手不触发打开面板
 - **按钮动效**：btn hover 上浮+按压缩放、icon/del 缩放、侧边栏 hover 右移、tabbar 选中图标 tabPop 弹跳、课程格/便利贴 hover 阴影、主题点旋转；prefers-reduced-motion 全部关闭
 - 测试：.tools/wb-test/polish-test.js（24 项）已入常驻回归
+
+## 2026-09-05 第三轮（翻周瞬变 / sticky贯穿 / 状态栏遮挡 / 感知哈希检验）
+
+- **翻周瞬变**：根因是上一轮给课程格加的 `:active` 按压缩放，手机滑动翻周时手指按下瞬间误触发 scale(.98) 再弹回，看起来"大小突变"。已移除 .tt-cell/.chip 的按压缩放，hover 效果包进 `@media (hover:hover)`（触屏不粘滞）
+- **sticky 时间列贯穿**：翻周统一走 goWeek()（手势/键盘/按钮全部），渲染后 `.tt-wrap.scrollLeft` 归位到周一——时间列永远完整可见，不再浮在周末课程上方；时间列右缘加了 3px 渐变分隔
+- **状态栏遮字**：APK 全面屏（targetSdk 35）内容顶进状态栏。修法：MainActivity 给根容器加 statusBars+displayCutout 的顶部 padding（insets 监听），styles.xml 加 `windowOptOutEdgeToEdgeEnforcement`（Android 15 双保险）
+- **感知哈希检验**：.tools/wb-test/phash.js（纯JS实现 32x32 DCT pHash + 9x8 dHash + 汉明距离），ui-phash-test.js 8 项全绿：翻周前后 pHash 距离 22（同版式）、翻完瞬间 vs 稳定距离 0（无二次跳动）、页面间距离 28（可区分）、语义指纹（布局几何 JSON，问候语 top=79 > 状态栏38px）。基线存档 `_qa/phash-baseline.json`
