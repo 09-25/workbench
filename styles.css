@@ -1246,7 +1246,22 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
 .chip { border-radius: 12px; padding: 7px 8px; }
 .chip b { font-size: 13px; line-height: 1.25; }
 .chip .r { margin-top: 2px; }
+/* —— 手机端紧凑课表：列宽减半、块内只留课名+教室（时间看左列、详情点开看）—— */
 @media (max-width: 920px) {
-  .chip { padding: 6px 7px; }
-  .chip b { font-size: 12.5px; }
+  .tt { grid-template-columns: 46px repeat(7, minmax(56px, 1fr)); gap: 4px; min-width: 530px; padding: 0 10px; }
+  .tt-head { padding: 5px 0 7px; font-size: 11.5px; }
+  .tt-head b { font-size: 12.5px; }
+  .tt-head .d { font-size: 9.5px; }
+  .tt-time { padding: 4px 1px; }
+  .tt-time b { font-size: 10px; }
+  .tt-time span { font-size: 8.5px; margin-top: 1px; }
+  .tt-cell { min-height: 52px; padding: 2px; gap: 2px; border-radius: 9px; }
+  .chip { padding: 5px 5px; border-radius: 9px; gap: 1px; }
+  .chip b { font-size: 11px; line-height: 1.2; }
+  .chip .r.strong { margin-top: 2px; font-size: 9.5px; }
+  .chip .r { font-size: 9px; }
+  .chip .chip-time { display: none; }              /* 起止时间左侧时间列已有，块内省去 */
+  .chip .w-tag { display: none; }                  /* 周视图下本周展示，角标冗余；整学期视图保留（见下） */
+  .chip .teacher-r { display: none; }              /* 教师收进点击详情 */
+  #tt-grid[data-mode="term"] .chip .w-tag { display: inline-block; }   /* 整学期一格里多门课，靠角标区分 */
 }

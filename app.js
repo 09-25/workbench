@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.14";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.15";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -1003,6 +1003,8 @@ RENDERERS.timetable = function renderTimetable() {
     const mon = addDays(weekStartDate(n), 0);
     chips.push(`<button class="week-chip${n === curWeekAbs ? " on" : ""}" data-action="week-jump" data-week="${n}">第${n}周<span class="d">${mon.getMonth() + 1}.${mon.getDate()}</span></button>`);
   }
+  const gridEl = $("#tt-grid");
+  if (gridEl) gridEl.dataset.mode = weekMode;   // 周视图/整学期，供 CSS 区分（紧凑模式下周次角标仅在整学期显示）
   const chipsEl = $("#week-chips");
   const prevScroll = chipsEl.scrollLeft;
   chipsEl.innerHTML = chips.join("");
@@ -1034,7 +1036,7 @@ RENDERERS.timetable = function renderTimetable() {
           data-action="edit-course" data-id="${c.id}" title="${esc([c.teacher, c.room].filter(Boolean).join(" · "))}">
           <b>${esc(c.name)}</b>${wtag}
           <span class="r strong"><span class="chip-time">${timeText}</span><span class="chip-room">${esc(roomText)}</span></span>
-          ${c.teacher ? `<span class="r">教师：${esc(c.teacher)}</span>` : ""}</div>`;
+          ${c.teacher ? `<span class="r teacher-r">教师：${esc(c.teacher)}</span>` : ""}</div>`;
       }).join("");
       html += `<div class="tt-cell${showToday && day === thisIdx ? " today" : ""}" data-action="add-course" data-day="${day}" data-slot="${slotIdx}">${inner}</div>`;
     }

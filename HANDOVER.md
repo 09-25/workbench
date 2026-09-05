@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.13；Android versionCode 15 / versionName 1.0.14（与 1.0.4-1.0.13 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+- **版本**：web sw.js 缓存 workbench-v1.14；Android versionCode 16 / versionName 1.0.15（与 1.0.4-1.0.14 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -133,3 +133,10 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 ## 2026-09-05 第九轮（1.0.14：概览月历下方空白 → 手账便签）
 
 - 用户反馈概览页月历卡下方、时钟右侧有空白。新增 `.hero-note`「📌 今日便签」便利贴（微倾黄底纸手账风）：待办完成 x/y、今日打卡 x/y、本周剩余课程数（空数据显示引导语）；hero-right 改为月历+便签竖排列，手机/桌面/夜灯三端适配
+
+## 2026-09-05 第十轮（1.0.15：手机端紧凑课表）
+
+- **用户反馈**：课表网格太大，一屏只能看 2 列，滑很久才看到后面几天
+- **手机端（≤920px）紧凑模式**：列宽 96→56px（.tt 总宽 812→530px，一屏约 4.5 列，两屏内看完一周）；课程块只留「课名 + 教室」，起止时间由左侧时间列承担（chip-time 隐藏）、教师收进点击详情（teacher-r 隐藏）、周次角标周视图隐藏/**整学期视图保留**（#tt-grid[data-mode=term]，同格多课靠角标区分——渲染时 gridEl.dataset.mode 标注）
+- 时间列 74→46px（第X节+起止 8.5px 两行）；桌面端（>920px）保持详细模式不变
+- ui-phash-test 时间列宽度断言阈值 60→44（紧凑列宽）；phash 基线更新
