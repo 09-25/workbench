@@ -3143,33 +3143,15 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") goWeek(-1);
   if (e.key === "ArrowRight") goWeek(1);
 });
-/* 课表页：翻周统一入口——渲染后把横向滚动归位到周一，
-   避免 sticky 时间列残留在周末位置浮在课程上方（贯穿感） */
+/* 课表页：翻周统一入口（‹›按钮/键盘方向键）——渲染后把横向滚动归位到周一，
+   避免 sticky 时间列残留在周末位置浮在课程上方（贯穿感）。
+   注意：网格上横向滑动只用于滚动浏览周四周五等，不再触发翻周。 */
 function goWeek(delta) {
   viewWeek = (viewWeek ?? Math.max(weekOf(todayStr()), 1)) + delta;
   renderCurrent();
   const wrap = document.querySelector(".tt-wrap");
   if (wrap) wrap.scrollLeft = 0;
 }
-
-/* 手机手势：课表网格上横向滑动 60px 以上翻周（纵向滚动不受影响） */
-(() => {
-  let sx = 0, sy = 0, on = false;
-  document.addEventListener("touchstart", e => {
-    if (currentPage !== "timetable" || e.touches.length !== 1) return;
-    if (!document.querySelector("#tt-grid")?.contains(e.target)) return;
-    sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true;
-  }, { passive: true });
-  document.addEventListener("touchend", e => {
-    if (!on) return;
-    on = false;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // 只认横向滑动意图
-    if (!$("#course-modal").hidden || !$("#import-modal").hidden) return;
-    goWeek(dx < 0 ? 1 : -1);
-  }, { passive: true });
-})();
 
 if (!IS_NATIVE_APP && getToken() && state.sync.gistId) {
   pullSync(false);

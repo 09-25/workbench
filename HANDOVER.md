@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.8；Android versionCode 10 / versionName 1.0.9（与 1.0.4-1.0.8 同签名，可覆盖安装）
+- **版本**：web sw.js 缓存 workbench-v1.9；Android versionCode 11 / versionName 1.0.10（与 1.0.4-1.0.9 同签名，可覆盖安装）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -108,3 +108,9 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
   8. **新增 CSV 文件格式**（accept 加 .csv；引号感知；BOM/GBK 自动识别），与 HTML/TSV/xlsx/PDF 并列
 - **触控优化**：todo-check/todo-del/icon-btn/del-mini/theme-dot 热区 ::after 外扩 9px（视觉零变化，有效命中 39~54px）；手机端 .btn 42px 高、.btn-sm 40px、输入框 42px、cert-chip 加大
 - 感知哈希基线更新：_qa/phash-baseline.json（pHash/dHash + 布局语义指纹）
+
+## 2026-09-05 第五轮（移除滑动翻周手势）
+
+- **用户反馈**：课表页想滑动浏览周三周四周五，被手势判定成翻周，轻轻一划就跳第二周
+- **修复**：整体删除网格滑动翻周手势（touchstart/touchend 监听已移除）。翻周只走 ‹› 按钮（goWeek）和键盘方向键；网格横向滑动交给浏览器原生滚动，自由浏览周内的任意几天
+- swipe-test.js 已改为验证「滑动不翻周」
