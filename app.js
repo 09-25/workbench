@@ -52,6 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
+const APP_VERSION = "1.0.12";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -944,6 +945,20 @@ RENDERERS.timetable = function renderTimetable() {
     return weekMode === "term" ? { on: true, dim: sh.dim } : { on: sh.show, dim: false };
   };
 
+  /* —— 周次条：点任意一周直达 —— */
+  const curWeekAbs = week;
+  const chips = [];
+  for (let n = 1; n <= 22; n++) {
+    const mon = addDays(weekStartDate(n), 0);
+    chips.push(`<button class="week-chip${n === curWeekAbs ? " on" : ""}" data-action="week-jump" data-week="${n}">第${n}周<span class="d">${mon.getMonth() + 1}.${mon.getDate()}</span></button>`);
+  }
+  const chipsEl = $("#week-chips");
+  const prevScroll = chipsEl.scrollLeft;
+  chipsEl.innerHTML = chips.join("");
+  const onChip = chipsEl.querySelector(".week-chip.on");
+  if (onChip) onChip.scrollIntoView({ block: "nearest", inline: "center" });
+  chipsEl.scrollLeft = prevScroll > 0 ? prevScroll : chipsEl.scrollLeft;
+
   /* —— 网格 —— */
   let html = `<div class="tt-head"></div>`;
   for (let day = 1; day <= 7; day++) {
@@ -1307,7 +1322,10 @@ fillCertSelects();
   const restore = () => {
     try {
       const pos = JSON.parse(localStorage.getItem(FAB_KEY) || "null");
-      if (pos && isFinite(pos.x) && isFinite(pos.y)) place(pos.x, pos.y);
+      if (pos && isFinite(pos.x) && isFinite(pos.y)) {
+        const p = clamp(pos.x, pos.y);   // 换设备/旋转屏幕后旧位置可能出界，先钳回当前窗口
+        place(p.x, p.y);
+      }
     } catch (e) { }
   };
   const clamp = (x, y) => {
@@ -1360,6 +1378,8 @@ fillCertSelects();
 })();
 
 RENDERERS.settings = function renderSettings() {
+  const aboutVer = $("#about-version");
+  if (aboutVer) aboutVer.textContent = "v" + APP_VERSION + "（web）";
   $("#s-name").value = state.profile.name || "";
   $("#s-semester").value = state.profile.semesterStart || "";
   $$('input[name="s-theme"]').forEach(r => r.checked = r.value === (state.profile.theme || "paper"));
@@ -1574,6 +1594,34 @@ document.addEventListener("click", e => {
     /* 周视图切换 */
     case "week-prev": goWeek(-1); break;
     case "week-next": goWeek(1); break;
+    case "check-update": {
+      const hint = $("#about-update-hint");
+      if (IS_NATIVE_APP) {
+        if (hint) hint.textContent = "APK 版请用新安装包覆盖安装（数据不会丢）";
+        toast("APK 版：用新安装包覆盖即可更新");
+        break;
+      }
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+        navigator.serviceWorker.getRegistration().then(reg => {
+          if (!reg) { if (hint) hint.textContent = "当前就是最新版"; toast("当前就是最新版"); return; }
+          return reg.update().then(() => {
+            if (hint) hint.textContent = "已检查：有新版本会自动刷新页面";
+            toast("已检查更新：有新版本会自动刷新 🔄");
+          });
+        }).catch(() => toast("检查失败，刷新页面即是最新"));
+      } else {
+        if (hint) hint.textContent = "刷新页面即是最新版";
+      }
+      break;
+    }
+    case "week-jump": {
+      const n = Math.max(1, Math.min(30, +el.dataset.week || 1));
+      viewWeek = n;
+      renderCurrent();
+      const wrap = document.querySelector(".tt-wrap");
+      if (wrap) wrap.scrollLeft = 0;
+      break;
+    }
     case "week-today": viewWeek = null; renderCurrent(); break;
     case "week-mode": weekMode = weekMode === "week" ? "term" : "week"; renderCurrent(); break;
     case "del-entry": {

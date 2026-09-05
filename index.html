@@ -130,6 +130,7 @@
             <button class="btn btn-sm" data-action="week-today" id="wk-today-btn" hidden>回到本周</button>
             <button class="btn btn-sm" data-action="week-mode" id="wk-mode-btn">整学期</button>
           </div>
+          <div class="week-chips" id="week-chips"></div>
           <p class="page-sub" id="tt-sub"></p>
         </div>
         <div class="inline-action-row">
@@ -265,6 +266,7 @@
         <button data-action="set-tab" data-tab="basic" class="on"> 基本 </button>
         <button data-action="set-tab" data-tab="remind">提醒与入口</button>
         <button data-action="set-tab" data-tab="data">同步与数据</button>
+        <button data-action="set-tab" data-tab="about">关于</button>
       </div>
 
       <div class="grid-2">
@@ -346,6 +348,33 @@
           <button class="btn btn-danger" data-action="reset-all">清空全部数据</button>
           <input type="file" id="import-file" accept="application/json" hidden>
         </div>
+      </div>
+
+      <div class="card about-card" data-group="about">
+        <div class="card-head"><h2>关于</h2></div>
+        <div class="about-app">
+          <div class="brand-mark">册</div>
+          <div class="about-name"><b>work desktop</b><span class="muted" id="about-version"></span></div>
+        </div>
+        <p class="hint">课表、待办、日志、证书都保存在<b>你自己的设备</b>里；「同步与数据」页的数据存在<b>你自己创建</b>的 GitHub 私有 Gist，开发者拿不到任何数据。</p>
+        <p class="hint">只在你主动连接同步、打开教务系统或检查更新时联网；查看、编辑、切换周次和导入导出都不需要网络。</p>
+        <p class="hint">升级或覆盖安装<b>不会删除</b>已有课表和数据。</p>
+      </div>
+
+      <div class="card" data-group="about">
+        <div class="card-head"><h2>更新</h2></div>
+        <p class="hint">电脑浏览器 / 手机「添加到主屏幕」的 PWA：重新打开即自动是最新版，也可点下面按钮手动检查。</p>
+        <p class="hint">APK 版：收到新安装包后<b>直接覆盖安装</b>，数据不会丢、不用卸载。</p>
+        <div class="btn-row">
+          <button class="btn" data-action="check-update">检查更新</button>
+          <span class="muted" id="about-update-hint"></span>
+        </div>
+      </div>
+
+      <div class="card" data-group="about">
+        <div class="card-head"><h2>小提示</h2></div>
+        <p class="hint">· 课表页点空格子新增课程，点课程块可修改或删除；顶部周次条点任意一周直接跳转<br>· 「整学期」看全部课程；「单周 / 双周」按设置里的开学日自动计算<br>· 小助手支持语音速记，说「明天下午3点交实验报告」试试<br>· 证书墙按学年分组，综测季一键复制清单</p>
+        <p class="hint">教务 PDF 课表解析使用了 Mozilla <b>pdf.js</b>（Apache-2.0 开源库）。</p>
       </div>
     </section>
 
