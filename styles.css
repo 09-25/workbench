@@ -994,6 +994,12 @@ textarea { width: 100%; resize: vertical; line-height: 1.7; }
   /* 窄屏两行排：‹ 日期 › 一行，日期选择器+回到今天一行，日期不再被挤成竖排 */
   .icon-btn[data-action="j-prev"] { order: 1; }
   .jdate { order: 2; min-width: 190px; flex: 1 1 auto; }
+  /* 日志日期栏整体放大一档 */
+  .journal-datebar { padding: 15px 16px; gap: 10px; }
+  .jdate > div:first-child { font-size: 19px; }
+  .jdate > span { font-size: 13.5px; }
+  .journal-datebar .icon-btn { width: 40px; height: 40px; font-size: 18px; }
+  .journal-datebar input[type="date"] { min-height: 46px; font-size: 15px; }
   .icon-btn[data-action="j-next"] { order: 3; }
   #j-date-picker { order: 4; flex: 0 1 150px; min-width: 0; }
   [data-action="j-today"] { order: 5; }

@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.16；Android versionCode 18 / versionName 1.0.17（与 1.0.4-1.0.16 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+- **版本**：web sw.js 缓存 workbench-v1.17；Android versionCode 19 / versionName 1.0.18（与 1.0.4-1.0.17 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -154,3 +154,8 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 
 ## 2026-09-06 补（1.0.17：QA P3 课表底部提示避让悬浮球）
 - .tt-hint 加 padding-right:78px（与证书空态同款）；390/360 两档验收文字与悬浮球不相交（291<318、254<288）
+
+## 2026-09-06 补（1.0.18：默认周视图 + 日志日期栏放大）
+- 课表手机端**默认改回周视图**（用户反馈：日视图不如整周直观）；日视图保留，周视图点「日视图」按钮进入
+- **日志页日期栏整体放大一档**（用户要求）：日期行 19px、周次 13.5px、‹›按钮 40px、日期选择器 46px 高
+- 测试：dayview-verify 改为「默认周视图」断言；ui-phash/hint-verify 去掉冗余的 wk-mode 点击
