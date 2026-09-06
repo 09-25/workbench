@@ -169,4 +169,9 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
   - 单元格多行：`课程名 (060011.01)` / `(教师1,教师2)` / `(1  教3-405(未央))`（**周次与教室空格分隔、无"周"字**、外层括号包内嵌校区括号），且一格多门同课名不同周次
   - **根因**：`looksRoomLine` 把"课程名 (课程号)"行（含数字+≤18字）误判为教室行 → 不切块、课程名进教室字段
   - **修复**：looksRoomLine 排除"4+连续汉字且无场所词（教室/馆/楼/室/厅/区）"的行；周次/教室空格分隔格式被 WEEK_LINE 的"括号纯周次"分支+specFromEduText/roomFromEduWeeksLine 正确消化
-- 样本沉淀：sample-xu.xls（真实他校课表），验收=识别出全部课程（含"模式识别基础"5 个周次段：1/2-12/1-8/15-16×2），第2周视图周一/周三模式识别（教2-406）可见
+- 样本沉淀：sample-xu.xls（真实他校课表），验收=识别出全部课程（含"模式识别基础"5 个周次段：1/2-12/1-8/15-16×2），第2周视图周一/周三模式识别（教2-406）可见- **版本**：web sw.js 缓存 workbench-v2.1；Android versionCode 23 / versionName 2.0.1（2.0.0 里程碑后首版；与 1.0.4 起同签名链连续，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+
+### 2.0.1（课程表单底部弹层选择器）
+- 添加课程弹窗的星期/节次/周次从原生 select 换成**底部弹层**：星期/节次大字列表单选，周次=快捷 chips（每周都上/单周/双周/全选）+ 1-22 宫格多选（canonicalWeeks 归一规范 spec）
+- 原生 select 转为 .sr-only 数据层：提交逻辑与 feature-test 的 selectOption/value 断言零改动兼容；specToSet 截到 22
+- picker-verify.js 整链路验收 ✓（选周六/第7-8节/双周+微调→custom spec→保存落库）
