@@ -1316,3 +1316,59 @@ body, .card, .sidebar, input, select, textarea { transition: background-color .2
   text-align: center; color: var(--ink-3); font-size: 14px;
   padding: 26px 0 10px;
 }
+
+/* ============================================================
+   表单底部弹层选择器（星期/节次/周次，替代原生下拉）
+   ============================================================ */
+.sr-only { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pick-btn {
+  width: 100%; text-align: left;
+  font-family: var(--font-body); font-size: 14px; color: var(--ink);
+  padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid var(--line-strong); background: var(--card);
+  cursor: pointer; transition: border-color .15s ease, transform .12s ease;
+}
+.pick-btn::after { content: "▾"; float: right; color: var(--ink-3); }
+.pick-btn:active { transform: scale(.985); }
+
+#picker-sheet { z-index: 80; align-items: flex-end; }
+.sheet {
+  width: 100%; max-width: 560px; margin: 0 auto;
+  background: var(--card); border-radius: 18px 18px 0 0;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  max-height: 80vh; overflow-y: auto;
+  animation: sheetUp .24s cubic-bezier(.34, 1.4, .5, 1) both;
+}
+@keyframes sheetUp { from { transform: translateY(48px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sheet-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; }
+.sheet-save { width: 100%; padding: 13px; font-size: 15px; border-radius: 12px; margin-top: 14px; }
+
+.ps-list { display: flex; flex-direction: column; }
+.ps-opt {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 6px; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; font-family: var(--font-body);
+  font-size: 15.5px; color: var(--ink); cursor: pointer; text-align: left;
+}
+.ps-opt.on { color: var(--accent); font-weight: 700; }
+.ps-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--ink-3); flex: none; }
+.ps-opt.on .ps-radio { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 42%, transparent 46%); }
+
+.quick-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.quick-chip {
+  flex: 1; padding: 8px 0; border-radius: 999px;
+  border: 1.5px solid var(--line); background: var(--card-2);
+  font-size: 12.5px; color: var(--ink-2); cursor: pointer;
+  transition: all .15s ease;
+}
+.quick-chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.week-grid button {
+  padding: 11px 0; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--card-2);
+  font-size: 14px; color: var(--ink); cursor: pointer;
+  transition: all .12s ease; font-variant-numeric: tabular-nums;
+}
+.week-grid button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.ps-tip { margin-top: 10px; }

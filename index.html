@@ -425,12 +425,13 @@
         <label class="field">教室<input id="f-room" maxlength="16" placeholder="可选"></label>
       </div>
       <div class="row2">
-        <label class="field">星期<select id="f-day"></select></label>
-        <label class="field">节次<select id="f-slot"></select></label>
+        <label class="field">星期<button type="button" class="pick-btn" id="f-day-btn" data-action="pick-day">周一</button><select id="f-day" class="sr-only" tabindex="-1"></select></label>
+        <label class="field">节次<button type="button" class="pick-btn" id="f-slot-btn" data-action="pick-slot">第1-2节</button><select id="f-slot" class="sr-only" tabindex="-1"></select></label>
       </div>
       <label class="field">周次
+        <button type="button" class="pick-btn" id="f-weeks-btn" data-action="pick-weeks">每周都上</button>
         <div class="week-field-row">
-          <select id="f-weeks">
+          <select id="f-weeks" class="sr-only" tabindex="-1">
             <option value="all">每周都上</option>
             <option value="odd">单周上</option>
             <option value="even">双周上</option>
@@ -452,6 +453,14 @@
         <button type="submit" class="btn btn-primary">保存</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="modal-mask" id="picker-sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head"><h3 id="ps-title"></h3><button class="icon-btn" data-action="ps-close">✕</button></div>
+    <div class="sheet-body" id="ps-body"></div>
+    <button type="button" class="btn btn-primary sheet-save" data-action="ps-save">保存</button>
   </div>
 </div>
 

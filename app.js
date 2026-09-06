@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "2.0.0";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "2.0.1";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -1591,6 +1591,7 @@ function openCourseModal(course, day, slot) {
   const customInput = $("#f-weeks-custom");
   customInput.hidden = $("#f-weeks").value !== "custom";
   customInput.value = $("#f-weeks").value === "custom" ? (course?.weeks || "") : "";
+  syncPickBtns();
 
   const defColor = course ? course.color % COLOR_N : state.courses.length % COLOR_N;
   $("#f-colors").innerHTML = Array.from({ length: COLOR_N }, (_, i) =>
@@ -1604,7 +1605,92 @@ function openCourseModal(course, day, slot) {
   $("#course-modal").hidden = false;
   setTimeout(() => $("#f-name").focus(), 30);
 }
-function closeCourseModal() { $("#course-modal").hidden = true; editingCourseId = null; }
+function syncPickBtns() {
+  const d = +$("#f-day").value || 1;
+  $("#f-day-btn").textContent = "周" + "一二三四五六日"[d - 1];
+  const sl = state.slots[+$("#f-slot").value || 0];
+  if (sl) $("#f-slot-btn").textContent = `${sl.label} ${sl.start}`;
+  const wv = $("#f-weeks").value;
+  $("#f-weeks-btn").textContent = wv === "all" ? "每周都上" : wv === "odd" ? "单周上" : wv === "even" ? "双周上" : ($("#f-weeks-custom").value.trim() || "自定义周次");
+}
+
+function closeCourseModal() { $("#course-modal").hidden = true; $("#picker-sheet").hidden = true; editingCourseId = null; }
+
+/* —— 底部弹层选择器（星期/节次/周次）—— */
+let pickerState = null;   // {type:'day'|'slot'|'weeks', set?:Set, quick?:'all'|'odd'|'even'}
+
+const WEEK_MAX = 22;
+function fullWeekSet() { return new Set(Array.from({ length: WEEK_MAX }, (_, i) => i + 1)); }
+function specToSet(spec) {
+  if (!spec || spec === "all") return fullWeekSet();
+  const set = weekSet(spec);
+  if (!set || !set.size) return fullWeekSet();
+  return new Set([...set].filter(n => n <= WEEK_MAX));   // 宫格只到 22，超出部分不悄悄带进来
+}
+
+function openPicker(type) {
+  pickerState = { type };
+  const title = { day: "选择星期", slot: "选择节次", weeks: "周数" }[type];
+  $("#ps-title").textContent = title;
+  renderPickerBody();
+  $("#picker-sheet").hidden = false;
+}
+
+function closePicker() { $("#picker-sheet").hidden = true; pickerState = null; }
+
+function renderPickerBody() {
+  const body = $("#ps-body");
+  if (pickerState.type === "day") {
+    const cur = +$("#f-day").value || 1;
+    body.innerHTML = `<div class="ps-list">` + [1, 2, 3, 4, 5, 6, 7].map(d =>
+      `<button type="button" class="ps-opt${d === cur ? " on" : ""}" data-action="ps-day" data-v="${d}"><span>周${"一二三四五六日"[d - 1]}</span><i class="ps-radio"></i></button>`).join("") + `</div>`;
+  } else if (pickerState.type === "slot") {
+    const cur = +$("#f-slot").value || 0;
+    body.innerHTML = `<div class="ps-list">` + state.slots.map((sl, i) =>
+      `<button type="button" class="ps-opt${i === cur ? " on" : ""}" data-action="ps-slot" data-v="${i}"><span>${esc(sl.label)} ${sl.start}</span><i class="ps-radio"></i></button>`).join("") + `</div>`;
+  } else {
+    if (!pickerState.set) {
+      const wv = $("#f-weeks").value;
+      pickerState.quick = wv === "all" || wv === "odd" || wv === "even" ? wv : null;
+      pickerState.set = wv === "all" ? fullWeekSet() : specToSet(wv === "custom" ? ($("#f-weeks-custom").value || "all") : wv);
+    }
+    const quick = pickerState.quick || "";
+    const set = pickerState.set;
+    body.innerHTML = `
+      <div class="quick-row">
+        ${[["all", "每周都上"], ["odd", "单周"], ["even", "双周"], ["full", "全选"]].map(([v, t]) =>
+        `<button type="button" class="quick-chip${quick === (v === "full" ? "" : v) && v !== "full" ? " on" : ""}${v === "full" ? " full" : ""}" data-action="ps-quick" data-v="${v}">${t}</button>`).join("")}
+      </div>
+      <div class="week-grid">` +
+      Array.from({ length: WEEK_MAX }, (_, i) => i + 1).map(n =>
+        `<button type="button" class="${set.has(n) ? "on" : ""}" data-action="ps-week" data-v="${n}">${n}</button>`).join("") +
+      `</div>
+      <p class="hint ps-tip">点数字可多选；选「单周 / 双周」会自动挑好单双数周，也可以自己微调。</p>`;
+  }
+}
+
+function savePicker() {
+  if (!pickerState) return closePicker();
+  if (pickerState.type === "day") {
+    /* ps-day 点击时已写回 */
+  } else if (pickerState.type === "slot") {
+    /* ps-slot 同上 */
+  } else {
+    const set = pickerState.set;
+    const q = pickerState.quick;
+    let spec = "all";
+    if (q === "odd") spec = "odd";
+    else if (q === "even") spec = "even";
+    else if (q === "all" || !set || !set.size) spec = "all";
+    else spec = canonicalWeeks(set);
+    $("#f-weeks").value = ["all", "odd", "even"].includes(spec) ? spec : "custom";
+    const customInput = $("#f-weeks-custom");
+    customInput.hidden = $("#f-weeks").value !== "custom";
+    if ($("#f-weeks").value === "custom") customInput.value = spec === "all" ? "" : spec;
+  }
+  syncPickBtns();
+  closePicker();
+}
 
 /* ============================================================
    Toast
@@ -1755,6 +1841,36 @@ document.addEventListener("click", e => {
     case "ds-day":
       if (isDateStr(el.dataset.date)) { dayDate = el.dataset.date; renderCurrent(); }
       break;
+    case "pick-day": openPicker("day"); break;
+    case "pick-slot": openPicker("slot"); break;
+    case "pick-weeks": openPicker("weeks"); break;
+    case "ps-close": closePicker(); break;
+    case "ps-day":
+      $("#f-day").value = el.dataset.v;
+      renderPickerBody();
+      break;
+    case "ps-slot":
+      $("#f-slot").value = el.dataset.v;
+      renderPickerBody();
+      break;
+    case "ps-week": {
+      const n = +el.dataset.v;
+      const set = pickerState.set || (pickerState.set = new Set());
+      set.has(n) ? set.delete(n) : set.add(n);
+      pickerState.quick = null;
+      renderPickerBody();
+      break;
+    }
+    case "ps-quick": {
+      const v = el.dataset.v;
+      if (v === "full") { pickerState.set = fullWeekSet(); pickerState.quick = null; }
+      else if (v === "all") { pickerState.set = fullWeekSet(); pickerState.quick = "all"; }
+      else if (v === "odd") { pickerState.set = specToSet("odd"); pickerState.quick = "odd"; }
+      else { pickerState.set = specToSet("even"); pickerState.quick = "even"; }
+      renderPickerBody();
+      break;
+    }
+    case "ps-save": savePicker(); break;
     case "check-update": {
       const hint = $("#about-update-hint");
       if (IS_NATIVE_APP) {
