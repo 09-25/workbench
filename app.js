@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.19";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.20";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -2274,6 +2274,7 @@ function looksRoomLine(s) {
   const t = String(s || "").trim();
   if (/^\[[^\]]*\]$/.test(t) || /^(?:第\s*)?\d{1,2}(?:\s*[-–~]\s*\d{1,2})?\s*节$/.test(t)) return false;
   if (/[场馆楼室厅区]$/.test(t) && t.length <= 10) return true;   // 田径场/体育馆/实验楼 这类纯中文场地
+  if (/[一-龥]{4,}/.test(t) && !/教室|馆|楼|室|厅|区/.test(t)) return false;   // 4+连续汉字且非场所 → 课程名行（"模式识别基础 (060011.01)"），不是教室
   return /\d/.test(t) && t.length <= 18 && !WEEK_LINE.test(t) && !looksTeacherLine(t);
 }
 /* 一个格子里可能有多门课：按「课程名行」分块 */

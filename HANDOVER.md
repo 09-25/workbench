@@ -76,7 +76,7 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 - **数据清洗**：sanitizeCert 白名单字段 + isRealDateStr 真日历校验（拦 2099-13-45）+ photo 必须 data:image/ 前缀 + 分数钳 0-100；恶意 gist 数据不会执行脚本
 - **配额保护**：save() 捕获 QuotaExceededError → toast 提醒删照片；照片超 900KB 自动二次压缩，仍超则拒收
 - **时间排列修复**：课表页左侧节次时间列 position:sticky（横向滚动不再滑出屏幕）；日志页窄屏日期栏两行排布（日期不再被挤成竖排逐字换行）
-- **版本**：web sw.js 缓存 workbench-v1.18；Android versionCode 20 / versionName 1.0.19（与 1.0.4-1.0.18 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+- **版本**：web sw.js 缓存 workbench-v1.19；Android versionCode 21 / versionName 1.0.20（与 1.0.4-1.0.19 同签名，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 - 测试：.tools/wb-test/cert-test.js（38项）+ adversarial-cert-test.js（20项对抗）已入常驻回归
 - 农历 +1 天 bug 仍未修（见上文排查方向）
 
@@ -163,3 +163,10 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
 ## 2026-09-06 补（1.0.19：去除陕理工专属内容，面向多校分发）
 - 导入弹窗的「陕理工 EAMS 导入步骤」块删除，换成**通用版**三步引导（不提任何学校/网址）；全局搜净"陕理工/snut/EAMS"字样（app.js 注释同步去专属化）
 - 应用现在无任何特定学校耦合：开学日期/节次时间由用户在设置里自己配，教务导入走通用解析
+
+## 2026-09-06 补（1.0.20：修复他校"假xls"课表漏识别）
+- 用户同学（西安某高校）的教务导出 .xls 实为 **UTF-8 HTML 伪装**（文件头 `    <ta`），非 OLE2 二进制——HTML 管线本可解析，但课程单元格内格式特殊导致漏课：
+  - 单元格多行：`课程名 (060011.01)` / `(教师1,教师2)` / `(1  教3-405(未央))`（**周次与教室空格分隔、无"周"字**、外层括号包内嵌校区括号），且一格多门同课名不同周次
+  - **根因**：`looksRoomLine` 把"课程名 (课程号)"行（含数字+≤18字）误判为教室行 → 不切块、课程名进教室字段
+  - **修复**：looksRoomLine 排除"4+连续汉字且无场所词（教室/馆/楼/室/厅/区）"的行；周次/教室空格分隔格式被 WEEK_LINE 的"括号纯周次"分支+specFromEduText/roomFromEduWeeksLine 正确消化
+- 样本沉淀：sample-xu.xls（真实他校课表），验收=识别出全部课程（含"模式识别基础"5 个周次段：1/2-12/1-8/15-16×2），第2周视图周一/周三模式识别（教2-406）可见
