@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "1.0.18";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "1.0.19";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -2190,7 +2190,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* ============================================================
-   从教务导入课表（陕理工 EAMS）
+   从教务导入课表
    支持：① 课表网页全选复制粘贴（text/html）② Excel 全选复制（TSV）
         ③ 另存的 .html 网页文件 ④ GBK 编码自动重读
    ============================================================ */
@@ -2253,7 +2253,7 @@ function secNoFromText(s) {
   return null;
 }
 
-// EAMS 常把周次写成“(11 9A111)”或“(3-4,6 )”，没有“周”字也必须识别；
+// 教务系统常把周次写成“(11 9A111)”或“(3-4,6 )”，没有“周”字也必须识别；
 // 否则会被误当教室，课程便退化成“每周”。
 const WEEK_LINE = /(单周|双周|\d+\s*[-–~]\s*\d+\s*周|\d+\s*周|周.{0,3}\d+|\d{1,2}\s*[,，、]\s*\d+|^[（(]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?(?:\s*[,，、]\s*\d{1,2}(?:\s*[-–~]\s*\d{1,2})?)*(?=[\s)）]))/;
 function roomFromEduWeeksLine(raw) {
