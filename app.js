@@ -52,7 +52,7 @@ const CERT_LEVELS = ["国家级", "省级", "市级", "校级", "院级", "其�
 const CERT_AWARDS = ["特等奖", "一等奖", "二等奖", "三等奖", "金奖", "银奖", "铜奖", "优秀奖", "合格证书", "其他"];
 const CERT_PHOTO_LIMIT = 1200000;   // 压缩后 dataURL 字符上限（约 900KB，防 localStorage 爆仓）
 const KEY = "hzx-workbench-v1";
-const APP_VERSION = "2.0.1";   // 与 android/app/build.gradle 的 versionName 保持一致
+const APP_VERSION = "2.1.0";   // 与 android/app/build.gradle 的 versionName 保持一致
 const LEGACY_TOKEN_KEY = "hzx-workbench-token";
 const now_ts = () => Date.now();
 const stamp = obj => { obj.updatedAt = now_ts(); return obj; };
@@ -2391,6 +2391,7 @@ function looksRoomLine(s) {
   if (/^\[[^\]]*\]$/.test(t) || /^(?:第\s*)?\d{1,2}(?:\s*[-–~]\s*\d{1,2})?\s*节$/.test(t)) return false;
   if (/[场馆楼室厅区]$/.test(t) && t.length <= 10) return true;   // 田径场/体育馆/实验楼 这类纯中文场地
   if (/[一-龥]{4,}/.test(t) && !/教室|馆|楼|室|厅|区/.test(t)) return false;   // 4+连续汉字且非场所 → 课程名行（"模式识别基础 (060011.01)"），不是教室
+  if (/[（(]\s*\d{5,}(?:\.\d+)?\s*[）)]/.test(t)) return false;   // 行内含 5+ 位课程号括号（如"(230031.30)"）→ 课程名行（体育V (230031.30)），不是教室
   return /\d/.test(t) && t.length <= 18 && !WEEK_LINE.test(t) && !looksTeacherLine(t);
 }
 /* 一个格子里可能有多门课：按「课程名行」分块 */
@@ -2607,6 +2608,93 @@ function looksLikeCSV(text) {
 const tsvField = v => /[\t\n"]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
 const csvToTSV = raw => parseCSVRows(raw).map(r => r.map(tsvField).join("\t")).join("\n");
 
+
+
+/* —— WakeUp 等课表 App 导出的 .ics（VCALENDAR/VEVENT）—— */
+function parseIcsBuffer(text) {
+  try {
+    /* RFC5545 续行折叠：换行后的空格/制表符并入上一行 */
+    const flat = String(text).replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "").replace(/\r/g, "");
+    const events = flat.split(/BEGIN:VEVENT/).slice(1).map(b => b.split("END:VEVENT")[0]);
+    if (!events.length) return { ok: false, msg: "这个 .ics 里没有课程事件（VEVENT）。" };
+    const pick = (block, key) => {
+      const re = new RegExp("^" + key + "[^:" + String.fromCharCode(92) + "n]*:([^" + String.fromCharCode(92) + "n]*)", "m");
+      const m = block.match(re);
+      return m ? m[1].trim() : "";
+    };
+    const entries = [];
+    for (const ev of events) {
+      const summary = pick(ev, "SUMMARY");
+      if (!summary) continue;
+      const dtstart = pick(ev, "DTSTART");            // 20260831T080000（TZID 本地时间）
+      const dtend = pick(ev, "DTEND");
+      const rrule = pick(ev, "RRULE");
+      const location = pick(ev, "LOCATION");
+      if (!/^\d{8}T/.test(dtstart)) continue;
+      const y = +dtstart.slice(0, 4), mo = +dtstart.slice(4, 6), dd = +dtstart.slice(6, 8);
+      const startHM = dtstart.slice(9, 11) + ":" + dtstart.slice(11, 13);
+      const endHM = dtend.slice(9, 11) + ":" + dtend.slice(11, 13);
+      const day = ((new Date(y, mo - 1, dd).getDay() + 6) % 7) + 1;
+      /* SUMMARY：课名[1-2节][考试][学分:..] —— 提取节次，其余中括号段丢弃 */
+      let name = summary;
+      const secM = summary.match(/\[\s*(\d{1,2})\s*[-\u2013~]\s*(\d{1,2})\s*节\s*\]/);
+      let secA = 0, secB = 0;
+      if (secM) { secA = +secM[1]; secB = +secM[2]; }
+      name = name.replace(/\[[^\]]*\]/g, "").trim();
+      /* 无[节次]时用起止时间匹配作息 */
+      if (!secA) {
+        const sIdx = state.slots.findIndex(sl => sl.start === startHM);
+        const eIdx = state.slots.findIndex(sl => sl.end === endHM);
+        if (sIdx < 0) continue;
+        secA = sIdx * 2 + 1;
+        secB = eIdx >= 0 ? eIdx * 2 + 2 : secA;
+      }
+      /* 周次：DTSTART 所在周 = 起始周；RRULE UNTIL（UTC）+8h 转北京时间取结课周 */
+      const w1 = weekOf(y + "-" + String(mo).padStart(2, "0") + "-" + String(dd).padStart(2, "0"));
+      const untilM = rrule.match(/UNTIL=(\d{8})T/);
+      let w2 = w1;
+      if (untilM) {
+        const uy = +untilM[1].slice(0, 4), um = +untilM[1].slice(4, 6), ud = +untilM[1].slice(6, 8);
+        const bj = new Date(Date.UTC(uy, um - 1, ud, 8));   // UNTIL 是 UTC：+8h 转北京当天
+        w2 = weekOf(bj.getFullYear() + "-" + String(bj.getMonth() + 1).padStart(2, "0") + "-" + String(bj.getDate()).padStart(2, "0"));
+      }
+      const interval = +((rrule.match(/INTERVAL=(\d+)/) || [0, 1])[1]);
+      let weeks = "all";
+      if (w1 >= 1) {
+        weeks = w1 === w2 ? String(w1) : w1 + "-" + w2;
+        if (interval === 2) weeks += w1 % 2 === 1 ? "单" : "双";
+      }
+      let room = "", teacher = "";
+      if (location) {
+        const sp = location.indexOf(" ");
+        if (sp < 0) room = location;
+        else { room = location.slice(0, sp); teacher = location.slice(sp + 1).trim(); }
+      }
+      entries.push({
+        day, secA, secB: Math.max(secB, secA),
+        name: name.slice(0, 40) || "未命名课程",
+        weeks, room, teacher, text: summary,
+      });
+    }
+    const seen = new Set();
+    const uniq = entries.filter(e => {
+      const k = [e.name, e.day, e.secA, e.weeks, e.teacher, e.room].join("|");
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    if (!uniq.length) return { ok: false, msg: ".ics 里没有可识别的课程事件。" };
+    const courses = uniq.map(e => ({
+      id: uid(), name: e.name, teacher: e.teacher, room: e.room,
+      day: e.day, slot: slotOf(e.secA), sec: secLabel(e.secA, e.secB),
+      weeks: e.weeks, color: importColor(e.name),
+    }));
+    return { ok: true, courses };
+  } catch (e) {
+    console.warn("ics parse failed:", e);
+    return { ok: false, msg: ".ics 解析失败：文件可能损坏。" };
+  }
+}
 function handleImportRaw(raw, label) {
   if (raw.startsWith("PK")) {
     impStatus(false, "这是真正的 Excel(.xlsx) 二进制文件。请用 Excel 打开 → 全选 → 复制 → 粘贴到上面，或从教务课表网页直接全选复制。");
@@ -2614,6 +2702,14 @@ function handleImportRaw(raw, label) {
   }
   if (raw.slice(0, 2) === "\u00d0\u00cf") {
     impStatus(false, "这是老版 Excel(.xls) 二进制文件。同上：用 Excel 打开后全选复制再粘贴。");
+    return;
+  }
+  if (/BEGIN:VCALENDAR/.test(raw)) {
+    const res2 = parseIcsBuffer(raw);
+    if (!res2.ok) { impStatus(false, res2.msg); return; }
+    pendingImport = res2.courses;
+    impStatus(true, `✅ 从${label}解析出 ${res2.courses.length} 门课程（WakeUp 等课表 App 导出）。检查预览没问题后点「合并导入」或「替换整个课表」。`);
+    renderImportPreview();
     return;
   }
   const res = /<table|<td|<tr/i.test(raw)
@@ -2710,13 +2806,19 @@ function xlsxPickName(text) {
   const lines = String(text).split(/\n/).map(l => l.trim()).filter(Boolean);
   if (!lines.length) return "";
   const isField = l => /场地[:：]|教师[:：]|教学班|考核方式|学时|学分|选课备?注|课程学时|周学时|上课时间|^\/|^[(（]\s*\d{1,2}/.test(l);
-  if (isField(lines[0])) return "";              // 首行就是字段行 → 无课程名（碎片格），跳过
+  /* 首行可能是上一门课的尾巴（字段行，如"学时:48/学分:3.0"）——跳过前导字段行找课名，全字段行才是碎片格 */
+  let start = 0;
+  while (start < lines.length && isField(lines[start])) start++;
+  if (start >= lines.length) return "";
   const bal = t => (t.match(/[\[［（(]/g) || []).length - (t.match(/[\]］）)]/g) || []).length;
-  let name = lines[0].replace(/[★☆＊*]+\s*$/, "");
-  for (let i = 1; i < Math.min(lines.length, 4); i++) {
-    if (bal(name) <= 0) break;                    // 名字已完整（括号闭合）
+  let name = lines[start].replace(/[★☆＊*]+\s*$/, "");
+  for (let i = start + 1; i < Math.min(lines.length, start + 6); i++) {
     if (isField(lines[i])) break;
+    /* 继续合并的条件：名字括号未闭合（折行）或续行以 ★ 结尾（教务标记的课名续行，如"计★"） */
+    if (bal(name) <= 0 && !/[★☆＊*]$/.test(lines[i])) break;
+    const hadStar = /[★☆＊*]$/.test(lines[i]);
     name += lines[i].replace(/[★☆＊*]+\s*$/, "");
+    if (hadStar) break;
   }
   name = name.replace(/[★☆＊*]+\s*$/, "").replace(/\s*[\[［][^\]］]*节[^\]］]*[\]］]\s*$/g, "").trim();
   return name.length >= 2 && name.length <= 30 ? name : "";

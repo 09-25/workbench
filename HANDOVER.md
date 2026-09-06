@@ -169,9 +169,20 @@ state = { profile{name,semesterStart,theme,updatedAt}, slots[5], slotsUpdatedAt,
   - 单元格多行：`课程名 (060011.01)` / `(教师1,教师2)` / `(1  教3-405(未央))`（**周次与教室空格分隔、无"周"字**、外层括号包内嵌校区括号），且一格多门同课名不同周次
   - **根因**：`looksRoomLine` 把"课程名 (课程号)"行（含数字+≤18字）误判为教室行 → 不切块、课程名进教室字段
   - **修复**：looksRoomLine 排除"4+连续汉字且无场所词（教室/馆/楼/室/厅/区）"的行；周次/教室空格分隔格式被 WEEK_LINE 的"括号纯周次"分支+specFromEduText/roomFromEduWeeksLine 正确消化
-- 样本沉淀：sample-xu.xls（真实他校课表），验收=识别出全部课程（含"模式识别基础"5 个周次段：1/2-12/1-8/15-16×2），第2周视图周一/周三模式识别（教2-406）可见- **版本**：web sw.js 缓存 workbench-v2.1；Android versionCode 23 / versionName 2.0.1（2.0.0 里程碑后首版；与 1.0.4 起同签名链连续，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
+- 样本沉淀：sample-xu.xls（真实他校课表），验收=识别出全部课程（含"模式识别基础"5 个周次段：1/2-12/1-8/15-16×2），第2周视图周一/周三模式识别（教2-406）可见- **版本**：web sw.js 缓存 workbench-v2.2；Android versionCode 24 / versionName 2.1.0（新增 .ics 导入的 minor 版；与 1.0.4 起同签名链连续，可覆盖安装；app.js 顶部 APP_VERSION 常量须与 gradle versionName 一致，android-package-test 已断言）
 
 ### 2.0.1（课程表单底部弹层选择器）
 - 添加课程弹窗的星期/节次/周次从原生 select 换成**底部弹层**：星期/节次大字列表单选，周次=快捷 chips（每周都上/单周/双周/全选）+ 1-22 宫格多选（canonicalWeeks 归一规范 spec）
 - 原生 select 转为 .sr-only 数据层：提交逻辑与 feature-test 的 selectOption/value 断言零改动兼容；specToSet 截到 22
 - picker-verify.js 整链路验收 ✓（选周六/第7-8节/双周+微调→custom spec→保存落库）
+
+## 2026-09-06 第十三轮（2.1.0：QA 三人实测修复单 + .ics 导入）
+
+QA 三份真实课表实测（何子轩 33/33 ✅、彭璐瑶 18/20、许思涵 26/28）暴露 4 个问题，全部修复：
+- **P1 体育V 丢失 ×2**：`looksRoomLine` 新增课程号排除——行内含 5+ 位数字课程号括号（"(230031.30)"）的行是课程名行不是教室；同格多门课（name/教师/周次教室 三行组）切块恢复
+- **P2 跨全天节次实验课丢失**：彭璐瑶周日列格子首行是上一门课的尾巴字段行（"学时:48/学分:3.0"），`xlsxPickName` 首行 isField 直接放弃整格 → 改为跳过前导字段行（最多到全字段行才放弃）；"(1-10节)6周,11周" 跨 5 大节课归到起始大节（secA=1）
+- **P3 跨行课名截断**：xlsxPickName 续行合并条件原来只看"括号未闭合"，纯课名跨行（"…工艺设
+计★"）被断；新增"续行以 ★ 结尾也合并"（★ 是教务标记课名续行的强信号）
+- **P2 功能缺口 .ics 导入**：`parseIcsBuffer`（VEVENT 解析：SUMMARY 提课名/去[考核][学分]段并提取[节次]、DTSTART 定星期与起始周、DTEND+slots 匹配兜底节次、RRULE UNTIL（UTC+8h）定结课周、INTERVAL=2 识别单双周、LOCATION 首空格分教室/教师）；accept 加 .ics；handleImportRaw 加 VCALENDAR 分支。WakeUp 样例 50 事件全识别 ✓（sample-wakeup.ics 沉淀）
+- 三个样本文件沉淀：sample-xu.xls（许思涵 30 门）、sample-peng.xlsx（彭璐瑶 20 门）、sample-wakeup.ics（50 事件）
+- **产品决策项（12 节制）评估结论**：暂不支持任意节数。应用 5 大节模型 + 用户可自编辑的作息时间已覆盖大多数场景；12 节制学校的线上课（11-12 节）会被归并到第 9-10 节显示（星期与课名保留，时间是应用内作息的 19:00-20:50）。后续版本可评估"作息大节数量可配置"。导入后引导用户核对"设置→作息时间"按源文件底部作息表调整
